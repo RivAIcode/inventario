@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Gráfico de Vencimientos</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="header">
+        <h1>📊 Gráfico de Vencimientos</h1>
+        <a href="{{ url_for('dashboard') }}">← Volver</a>
+    </div>
+    <div class="container" style="text-align: center;">
+        {% if grafico_url %}
+            <img src="data:image/png;base64,{{ grafico_url }}" alt="Gráfico de vencimientos" style="max-width: 100%; height: auto;">
+        {% else %}
+            <p>No hay datos suficientes para generar el gráfico</p>
+        {% endif %}
+        <br><br>
+        <a href="{{ url_for('dashboard') }}" class="btn btn-primary">Volver al Inventario</a>
+    </div>
+</body>
+</html>

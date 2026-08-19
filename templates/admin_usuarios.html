@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Administrar Usuarios</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        .usuarios-container {
+            margin: 20px;
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            overflow-x: auto;
+        }
+        .usuarios-tabla {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .usuarios-tabla th, .usuarios-tabla td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        .usuarios-tabla th {
+            background: #2196F3;
+            color: white;
+        }
+        .badge-admin {
+            background: #4CAF50;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+        }
+        .badge-user {
+            background: #666;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+        }
+        .acciones {
+            display: flex;
+            gap: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>👥 ADMINISTRAR USUARIOS</h1>
+        <div>
+            <span>👤 {{ current_user.nombre }}</span>
+            <a href="{{ url_for('logout') }}">Salir</a>
+        </div>
+    </div>
+
+    <div style="margin: 20px;">
+        <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">← Volver al Dashboard</a>
+        <a href="{{ url_for('admin_usuario_nuevo') }}" class="btn btn-primary">➕ NUEVO USUARIO</a>
+    </div>
+
+    <div class="usuarios-container">
+        <h2>📋 Lista de Usuarios</h2>
+        <table class="usuarios-tabla">
+            <thead>
+                <tr>
+                    <th>Usuario</th>
+                    <th>Nombre</th>
+                    <th>Rol</th>
+                    <th>Cambiar contraseña</th>
+                    <th>Fecha registro</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for u in usuarios %}
+                <tr>
+                    <td>{{ u.username }} {% if u.id == current_user.id %}<small>(tú)</small>{% endif %}</td>
+                    <td>{{ u.nombre }}</td>
+                    <td>{% if u.es_admin %}<span class="badge-admin">Administrador</span>{% else %}<span class="badge-user">Usuario</span>{% endif %}</td>
+                    <td>{% if u.cambiar_password %}✅ Pendiente{% else %}❌ No{% endif %}</td>
+                    <td>{{ u.fecha_registro.strftime('%d/%m/%Y') }}</td>
+                    <td class="acciones">
+                        <a href="{{ url_for('admin_usuario_editar', id=u.id) }}" class="btn btn-sm btn-info">✏️ Editar</a>
+                        {% if u.id != current_user.id %}
+                        <a href="{{ url_for('admin_usuario_eliminar', id=u.id) }}" class="btn btn-sm btn-danger" onclick="return confirm('¿Eliminar usuario {{ u.username }}?')">🗑️ Eliminar</a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>

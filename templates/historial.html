@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Historial del Equipo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=yes">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        .historial-container {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .historial-container h3 {
+            margin-top: 0;
+            color: #1E88E5;
+            border-bottom: 2px solid #1E88E5;
+            padding-bottom: 8px;
+        }
+        .datos-equipo {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .dato-item {
+            background: #f8f9fa;
+            padding: 8px 12px;
+            border-radius: 8px;
+        }
+        .dato-label {
+            font-weight: bold;
+            color: #2196F3;
+            font-size: 11px;
+            text-transform: uppercase;
+        }
+        .dato-valor {
+            font-size: 14px;
+            color: #333;
+            word-break: break-word;
+        }
+        .acciones-horizontales {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        
+        /* ====== TABLA DE HISTORIAL - COLUMNAS OPTIMIZADAS ====== */
+        .table-scroll-wrapper {
+            overflow-x: auto;
+        }
+        
+        .historial-tabla {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+            table-layout: fixed;
+        }
+        
+        .historial-tabla th,
+        .historial-tabla td {
+            padding: 5px 6px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+            vertical-align: middle;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+        
+        /* ====== ANCHOS OPTIMIZADOS ====== */
+        .historial-tabla th:nth-child(1),
+        .historial-tabla td:nth-child(1) {
+            width: 12%;
+            min-width: 65px;
+            max-width: 90px;
+            white-space: nowrap;
+            font-size: 11px;
+        }
+        
+        .historial-tabla th:nth-child(2),
+        .historial-tabla td:nth-child(2) {
+            width: 10%;
+            min-width: 65px;
+            max-width: 85px;
+            white-space: nowrap;
+            font-size: 11px;
+        }
+        
+        .historial-tabla th:nth-child(3),
+        .historial-tabla td:nth-child(3) {
+            width: 40%;
+            min-width: 150px;
+            max-width: 280px;
+            word-break: break-word;
+            font-size: 12px;
+            line-height: 1.4;
+        }
+        
+        .historial-tabla th:nth-child(4),
+        .historial-tabla td:nth-child(4) {
+            width: 10%;
+            min-width: 55px;
+            max-width: 75px;
+            white-space: nowrap;
+            font-size: 11px;
+        }
+        
+        .historial-tabla th:nth-child(5),
+        .historial-tabla td:nth-child(5) {
+            width: 12%;
+            min-width: 70px;
+            max-width: 100px;
+            white-space: nowrap;
+            font-size: 11px;
+        }
+        
+        .historial-tabla th:nth-child(6),
+        .historial-tabla td:nth-child(6) {
+            width: 16%;
+            min-width: 80px;
+            max-width: 120px;
+            white-space: nowrap;
+            font-size: 11px;
+        }
+        
+        .historial-tabla th {
+            background: #1E88E5;
+            color: white;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            font-size: 11px;
+        }
+        
+        .historial-tabla tr:hover {
+            background: #f5f5f5;
+        }
+        
+        .btn-sm {
+            padding: 4px 10px;
+            font-size: 12px;
+            border-radius: 4px;
+        }
+        
+        .archivo-card {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .archivo-info {
+            flex: 1;
+            min-width: 150px;
+        }
+        
+        /* ====== MÓVIL ====== */
+        @media (max-width: 768px) {
+            .historial-container {
+                padding: 10px;
+                margin: 8px;
+            }
+            .historial-tabla {
+                font-size: 10px;
+            }
+            .historial-tabla th,
+            .historial-tabla td {
+                padding: 3px 4px;
+            }
+            .historial-tabla th:nth-child(1),
+            .historial-tabla td:nth-child(1) {
+                min-width: 55px;
+                max-width: 65px;
+                font-size: 9px;
+            }
+            .historial-tabla th:nth-child(2),
+            .historial-tabla td:nth-child(2) {
+                min-width: 50px;
+                max-width: 65px;
+                font-size: 9px;
+            }
+            .historial-tabla th:nth-child(3),
+            .historial-tabla td:nth-child(3) {
+                min-width: 80px;
+                max-width: 120px;
+                font-size: 10px;
+            }
+            .historial-tabla th:nth-child(4),
+            .historial-tabla td:nth-child(4) {
+                min-width: 45px;
+                max-width: 55px;
+                font-size: 9px;
+            }
+            .historial-tabla th:nth-child(5),
+            .historial-tabla td:nth-child(5) {
+                min-width: 50px;
+                max-width: 70px;
+                font-size: 9px;
+            }
+            .historial-tabla th:nth-child(6),
+            .historial-tabla td:nth-child(6) {
+                min-width: 60px;
+                max-width: 80px;
+                font-size: 9px;
+            }
+            .datos-equipo {
+                grid-template-columns: 1fr 1fr;
+                gap: 6px;
+            }
+            .dato-item {
+                padding: 6px 10px;
+            }
+            .dato-valor {
+                font-size: 12px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .datos-equipo {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>📋 HISTORIAL DEL EQUIPO</h1>
+        <div>
+            <span>👤 {{ current_user.nombre }}</span>
+            <a href="{{ url_for('logout') }}">Salir</a>
+        </div>
+    </div>
+
+    <div style="margin: 20px;">
+        <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">← Volver al Dashboard</a>
+        <a href="{{ url_for('editar_equipo', id=equipo.id) }}" class="btn btn-primary">✏️ Editar Equipo</a>
+    </div>
+
+    <!-- ====== HISTORIAL DE CAMBIOS (ARRIBA) ====== -->
+    <div class="historial-container">
+        <h3>📜 HISTORIAL DE CAMBIOS</h3>
+        <div class="table-scroll-wrapper">
+            <table class="historial-tabla">
+                <thead>
+                    <tr>
+                        <th>Fecha/Hora</th>
+                        <th>Acción</th>
+                        <th>Detalle</th>
+                        <th>Usuario</th>
+                        <th>Responsable</th>
+                        <th>N° Informe</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for h in equipo.historial|sort(attribute='fecha_hora', reverse=True) %}
+                    <tr>
+                        <td>{{ h.fecha_hora.strftime('%d/%m/%y %H:%M') }}</td>
+                        <td>{{ h.accion }}</td>
+                        <td>{{ h.detalle }}</td>
+                        <td>{{ h.usuario or '-' }}</td>
+                        <td>{{ h.responsable or '-' }}</td>
+                        <td>
+                            {% if 'Informe:' in h.detalle %}
+                                {{ h.detalle.split('Informe: ')[1] }}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="6">No hay historial registrado</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ====== INFORMACIÓN COMPLETA DEL EQUIPO ====== -->
+    <div class="historial-container">
+        <h3>📊 INFORMACIÓN COMPLETA DEL EQUIPO</h3>
+        <div class="datos-equipo">
+            <div class="dato-item">
+                <div class="dato-label">Número Interno</div>
+                <div class="dato-valor">{{ equipo.nro_int }}</div>
+            </div>
+            <div class="dato-item">
+                <div class="dato-label">Número de Serie</div>
+                <div class="dato-valor">{{ equipo.nro_serie or '-' }}</div>
+            </div>
+            <div class="dato-item">
+                <div class="dato-label">Área</div>
+                <div class="dato-valor">{{ equipo.area or '-' }}</div>
+            </div>
+            <div class="dato-item">
+                <div class="dato-label">Localidad</div>
+                <div class="dato-valor">{{ equipo.localidad or '-' }}</div>
+            </div>
+            <div class="dato-item">
+                <div class="dato-label">Responsable</div>
+                <div class="dato-valor">{{ equipo.responsable or '-' }}</div>
+            </div>
+            <div class="dato-item">
+                <div class="dato-label">Tipo de Equipo</div>
+                <div class="dato-valor">{{ equipo.tipo_equipo or '-' }}</div>
+            </div>
+            <div class="dato-item">
+                <div class="dato-label">Modelo Equipo</div>
+                <div class="dato-valor">{{ equipo.modelo_equipo or '-' }}</div>
+            </div>
+            <div class="dato-item">
+                <div class="dato-label">Subcategoría</div>
+                <div class="dato-valor">{{ equipo.subcategoria or '-' }}</div>
+            </div>
+            <div class="dato-item">
+                <div class="dato-label">Modelo Sonda</div>
+                <div class="dato-valor">{{ equipo.modelo_sonda or '-' }}</div>
+            </div>
+            <div class="dato-item">
+                <div class="dato-label">Número Serie Sonda</div>
+                <div class="dato-valor">{{ equipo.nro_serie_sonda or '-' }}</div>
+            </div>
+            <div class="dato-item">
+                <div class="dato-label">Estado</div>
+                <div class="dato-valor"><span class="estado estado-{{ equipo.estado.lower().replace(' ', '-') }}">{{ equipo.estado }}</span></div>
+            </div>
+            <div class="dato-item">
+                <div class="dato-label">Fecha Contrastación</div>
+                <div class="dato-valor">{{ formatear_fecha(equipo.fecha_contrastacion) }}</div>
+            </div>
+            <div class="dato-item">
+                <div class="dato-label">Fecha Certificado</div>
+                <div class="dato-valor">{{ formatear_fecha(equipo.fecha_certificado) }}</div>
+            </div>
+            <div class="dato-item">
+                <div class="dato-label">Vencimiento Insumo</div>
+                <div class="dato-valor">{{ formatear_fecha(equipo.fecha_vencimiento_insumo) }}</div>
+            </div>
+            <!-- ====== NUEVO CAMPO N° INFORME ====== -->
+            <div class="dato-item">
+                <div class="dato-label">📄 N° Informe</div>
+                <div class="dato-valor">{{ equipo.nro_informe or '-' }}</div>
+            </div>
+            <div class="dato-item">
+                <div class="dato-label">Última Mantención</div>
+                <div class="dato-valor">{{ formatear_fecha(equipo.fecha_ultima_mantencion) }}</div>
+            </div>
+            <div class="dato-item">
+                <div class="dato-label">Retorno Mantención</div>
+                <div class="dato-valor">{{ formatear_fecha(equipo.fecha_retorno_mantencion) }}</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ====== ARCHIVOS ====== -->
+    <div class="historial-container">
+        <h3>📎 ARCHIVOS DEL EQUIPO</h3>
+        {% if archivos_fotos or archivos_docs %}
+            {% if archivos_fotos %}
+            <h4>🖼️ Fotos ({{ archivos_fotos|length }})</h4>
+            {% for archivo in archivos_fotos %}
+            <div class="archivo-card">
+                <div class="archivo-info">
+                    📷 <strong>{{ archivo.nombre_original }}</strong>
+                    <br><small>Subido: {{ formatear_fecha(archivo.fecha_subida) }}</small>
+                </div>
+                <div class="acciones-horizontales">
+                    <button onclick="verImagen('{{ url_for('media_files', filename='equipos_fotos/' + archivo.nombre_archivo) }}', '{{ archivo.nombre_original }}')" class="btn btn-sm btn-info">🖼️ Ver</button>
+                    <a href="{{ url_for('media_files', filename='equipos_fotos/' + archivo.nombre_archivo) }}" class="btn btn-sm btn-secondary" download>💾 Descargar</a>
+                    <a href="{{ url_for('eliminar_archivo', archivo_id=archivo.id) }}" class="btn btn-sm btn-danger" onclick="return confirm('¿Eliminar este archivo?')">🗑️ Eliminar</a>
+                </div>
+            </div>
+            {% endfor %}
+            {% endif %}
+
+            {% if archivos_docs %}
+            <h4 style="margin-top: 20px;">📄 Documentos ({{ archivos_docs|length }})</h4>
+            {% for archivo in archivos_docs %}
+            <div class="archivo-card">
+                <div class="archivo-info">
+                    📄 <strong>{{ archivo.nombre_original }}</strong>
+                    <br><small>Subido: {{ formatear_fecha(archivo.fecha_subida) }}</small>
+                </div>
+                <div class="acciones-horizontales">
+                    <a href="{{ url_for('media_files', filename='equipos_docs/' + archivo.nombre_archivo) }}" class="btn btn-sm btn-secondary" download>💾 Descargar</a>
+                    <a href="{{ url_for('eliminar_archivo', archivo_id=archivo.id) }}" class="btn btn-sm btn-danger" onclick="return confirm('¿Eliminar este archivo?')">🗑️ Eliminar</a>
+                </div>
+            </div>
+            {% endfor %}
+            {% endif %}
+        {% else %}
+            <p>No hay archivos asociados a este equipo.</p>
+        {% endif %}
+        
+        <div style="margin-top: 20px; padding-top: 15px; border-top: 1px solid #ddd;">
+            <h4>📤 Subir nuevo archivo</h4>
+            <form action="{{ url_for('subir_archivo', id=equipo.id) }}" method="POST" enctype="multipart/form-data">
+                <input type="file" name="archivo" accept="image/*,.pdf,.doc,.docx" required>
+                <button type="submit" class="btn btn-primary">Subir archivo</button>
+            </form>
+            <small>Formatos permitidos: imágenes, PDF, Word (doc, docx)</small>
+        </div>
+    </div>
+
+    <!-- Modal imágenes -->
+    <div id="imageModal" class="image-modal">
+        <button class="close-btn" onclick="cerrarModal()">✕</button>
+        <img id="modalImage" src="" alt="Vista previa">
+        <button class="download-btn" id="downloadModalBtn" onclick="descargarImagenModal()">💾 Descargar imagen</button>
+    </div>
+
+    <script>
+        let currentImageUrl = '';
+        let currentImageName = '';
+        
+        function verImagen(url, nombre) {
+            currentImageUrl = url;
+            currentImageName = nombre;
+            const modal = document.getElementById('imageModal');
+            const img = document.getElementById('modalImage');
+            img.src = url;
+            modal.style.display = 'block';
+            document.body.style.overflow = 'hidden';
+        }
+        
+        function cerrarModal() {
+            const modal = document.getElementById('imageModal');
+            modal.style.display = 'none';
+            document.getElementById('modalImage').src = '';
+            document.body.style.overflow = 'auto';
+        }
+        
+        function descargarImagenModal() {
+            const link = document.createElement('a');
+            link.href = currentImageUrl;
+            link.download = currentImageName;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+        
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                cerrarModal();
+            }
+        });
+        
+        document.getElementById('imageModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                cerrarModal();
+            }
+        });
+
+        // ========== ESCAPE PARA VOLVER AL DASHBOARD ==========
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                if (document.getElementById('imageModal').style.display !== 'block') {
+                    window.location.href = "{{ url_for('dashboard') }}";
+                }
+            }
+        });
+    </script>
+</body>
+</html>

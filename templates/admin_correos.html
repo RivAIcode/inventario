@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Configuración de Correos</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=yes">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #f0f4f8 0%, #e2e8f0 100%);
+            min-height: 100vh;
+        }
+        
+        .header-modern {
+            background: linear-gradient(135deg, #1E88E5 0%, #1565C0 100%);
+            padding: 20px 30px;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        }
+        
+        .header-modern h1 {
+            font-size: 24px;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .header-modern a {
+            color: white;
+            text-decoration: none;
+            background: rgba(255,255,255,0.2);
+            padding: 8px 16px;
+            border-radius: 20px;
+            transition: 0.2s;
+        }
+        
+        .header-modern a:hover {
+            background: rgba(255,255,255,0.3);
+        }
+        
+        .main-container {
+            max-width: 1300px;
+            margin: 0 auto;
+            padding: 25px 20px;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+        
+        .btn-back {
+            background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-back:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        
+        .btn-test {
+            background: linear-gradient(135deg, #f57c00 0%, #e65100 100%);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-test:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .card:hover {
+            box-shadow: 0 15px 40px rgba(0,0,0,0.12);
+        }
+        
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        
+        .card-header .icon {
+            font-size: 28px;
+        }
+        
+        .card-header h2 {
+            font-size: 20px;
+            color: #1E88E5;
+            margin: 0;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 14px;
+            transition: 0.2s;
+        }
+        
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: #1E88E5;
+            box-shadow: 0 0 0 3px rgba(30,136,229,0.2);
+        }
+        
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .checkbox-group input {
+            width: auto;
+            transform: scale(1.2);
+        }
+        
+        .btn-save {
+            background: linear-gradient(135deg, #1E88E5 0%, #1565C0 100%);
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-save:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(30,136,229,0.4);
+        }
+        
+        .destinatarios-list {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .destinatario-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 15px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            margin-bottom: 8px;
+            transition: 0.2s;
+        }
+        
+        .destinatario-item:hover {
+            background: #e9ecef;
+        }
+        
+        .destinatario-email {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+        }
+        
+        .btn-delete {
+            background: #dc3545;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 12px;
+            transition: 0.2s;
+        }
+        
+        .btn-delete:hover {
+            background: #c82333;
+        }
+        
+        .responsables-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        
+        .responsables-table th {
+            background: linear-gradient(135deg, #1E88E5 0%, #1565C0 100%);
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 13px;
+        }
+        
+        .responsables-table th:first-child {
+            border-radius: 12px 0 0 0;
+        }
+        
+        .responsables-table th:last-child {
+            border-radius: 0 12px 0 0;
+        }
+        
+        .responsables-table td {
+            padding: 12px;
+            border-bottom: 1px solid #e0e0e0;
+            font-size: 13px;
+        }
+        
+        .responsables-table tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .btn-edit {
+            background: #17a2b8;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 12px;
+            margin-right: 5px;
+            display: inline-block;
+        }
+        
+        .btn-edit:hover {
+            background: #138496;
+        }
+        
+        .btn-add {
+            background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 12px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 15px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: 0.2s;
+        }
+        
+        .btn-add:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(40,167,69,0.4);
+        }
+        
+        .form-row {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .form-row .form-group {
+            flex: 1;
+            min-width: 150px;
+        }
+        
+        .resumen-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        
+        .resumen-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 12px;
+            text-align: center;
+        }
+        
+        .resumen-label {
+            font-size: 12px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .resumen-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1E88E5;
+            margin-top: 5px;
+        }
+        
+        .modal-modern {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(4px);
+            z-index: 10000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-modern.active {
+            display: flex;
+        }
+        
+        .modal-content-modern {
+            background: white;
+            border-radius: 24px;
+            max-width: 450px;
+            width: 90%;
+            overflow: hidden;
+            animation: modalEntrar 0.3s ease-out;
+        }
+        
+        .modal-header-modern {
+            background: linear-gradient(135deg, #1E88E5 0%, #1565C0 100%);
+            padding: 16px 20px;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-header-modern h3 {
+            margin: 0;
+            font-size: 18px;
+        }
+        
+        .modal-close {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-body-modern {
+            padding: 20px;
+        }
+        
+        @keyframes modalEntrar {
+            from {
+                opacity: 0;
+                transform: translateY(-20px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .header-modern {
+                padding: 15px 20px;
+            }
+            .header-modern h1 {
+                font-size: 18px;
+            }
+            .main-container {
+                padding: 15px;
+            }
+            .card {
+                padding: 18px;
+            }
+            .responsables-table th, .responsables-table td {
+                padding: 8px;
+                font-size: 11px;
+            }
+            .btn-edit, .btn-delete {
+                padding: 4px 8px;
+                font-size: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header-modern">
+        <h1>⚙️ CONFIGURACIÓN DE CORREOS</h1>
+        <div style="display: flex; align-items: center; gap: 15px;">
+            <span>👤 {{ current_user.nombre }}</span>
+            <a href="{{ url_for('logout') }}">Salir</a>
+        </div>
+    </div>
+
+    <div class="main-container">
+        <div class="action-buttons">
+            <a href="{{ url_for('dashboard') }}" class="btn-back">← Volver al Dashboard</a>
+            <a href="{{ url_for('admin_correos_probar_envio') }}" class="btn-test">📧 Enviar correo de prueba</a>
+        </div>
+
+        <!-- Tarjeta: Envío automático -->
+        <div class="card">
+            <div class="card-header">
+                <span class="icon">📅</span>
+                <h2>Envío automático</h2>
+            </div>
+            <form method="POST" action="{{ url_for('admin_correos_guardar') }}">
+                <div class="checkbox-group">
+                    <input type="checkbox" name="activo" id="activo" {% if config.activo %}checked{% endif %}>
+                    <label for="activo" style="margin:0;">Activar envíos automáticos</label>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>🔄 Frecuencia</label>
+                        <select name="frecuencia">
+                            <option value="diario" {% if config.frecuencia == 'diario' %}selected{% endif %}>📅 Diario</option>
+                            <option value="semanal" {% if config.frecuencia == 'semanal' %}selected{% endif %}>📆 Semanal (Lunes)</option>
+                            <option value="mensual" {% if config.frecuencia == 'mensual' %}selected{% endif %}>📅 Mensual (Día 1)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>⏰ Hora de envío</label>
+                        <input type="time" name="hora_envio" value="{{ config.hora_envio }}" step="60">
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn-save">💾 Guardar configuración</button>
+            </form>
+        </div>
+
+        <!-- Tarjeta: Destinatarios adicionales (reciben TODO) -->
+        <div class="card">
+            <div class="card-header">
+                <span class="icon">📋</span>
+                <h2>Destinatarios adicionales (reciben TODOS los equipos)</h2>
+            </div>
+            <form method="POST" action="{{ url_for('admin_correos_agregar_destinatario') }}" style="display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;">
+                <input type="email" name="email" placeholder="correo@ejemplo.com" required style="flex: 1; padding: 12px; border: 2px solid #e0e0e0; border-radius: 12px;">
+                <button type="submit" class="btn-save" style="padding: 12px 20px;">➕ Agregar</button>
+            </form>
+            
+            <ul class="destinatarios-list">
+                {% for email in destinatarios_lista %}
+                <li class="destinatario-item">
+                    <span class="destinatario-email">📧 {{ email }}</span>
+                    <a href="{{ url_for('admin_correos_eliminar_destinatario', email=email) }}" class="btn-delete" onclick="return confirm('¿Eliminar este correo?')">🗑️ Eliminar</a>
+                </li>
+                {% else %}
+                <li style="text-align: center; padding: 20px; color: #666;">No hay destinatarios adicionales</li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <!-- Tarjeta: Responsables con alertas personalizadas -->
+        <div class="card">
+            <div class="card-header">
+                <span class="icon">👥</span>
+                <h2>Responsables con alertas personalizadas</h2>
+            </div>
+            <p style="color: #666; margin-bottom: 15px; font-size: 13px;">💡 Cada responsable recibe SOLO los equipos que tiene asignados</p>
+            
+            <button onclick="abrirModalAgregar()" class="btn-add">➕ Agregar responsable</button>
+            
+            <table class="responsables-table">
+                <thead>
+                    <tr>
+                        <th>Nombre</th>
+                        <th>Email</th>
+                        <th>Activo</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for r in responsables %}
+                    <tr>
+                        <td><strong>{{ r.nombre }}</strong></td>
+                        <td>{{ r.email or 'Sin email' }}</td>
+                        <td>{% if r.activo %}✅ Sí{% else %}❌ No{% endif %}</td>
+                        <td>
+                            <button onclick="editarResponsable({{ r.id }}, '{{ r.nombre }}', '{{ r.email or '' }}', {{ r.activo|lower }})" class="btn-edit">✏️ Editar</button>
+                            <a href="{{ url_for('admin_responsables_eliminar', id=r.id) }}" class="btn-delete" onclick="return confirm('¿Eliminar a {{ r.nombre }}?')">🗑️ Eliminar</a>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="4" style="text-align: center;">No hay responsables registrados</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Tarjeta: Resumen -->
+        <div class="card">
+            <div class="card-header">
+                <span class="icon">📊</span>
+                <h2>Resumen de configuración</h2>
+            </div>
+            <div class="resumen-grid">
+                <div class="resumen-item">
+                    <div class="resumen-label">Estado</div>
+                    <div class="resumen-value">{% if config.activo %}✅ Activo{% else %}❌ Inactivo{% endif %}</div>
+                </div>
+                <div class="resumen-item">
+                    <div class="resumen-label">Frecuencia</div>
+                    <div class="resumen-value">{{ config.frecuencia|capitalize }}</div>
+                </div>
+                <div class="resumen-item">
+                    <div class="resumen-label">Hora de envío</div>
+                    <div class="resumen-value">{{ config.hora_envio }}</div>
+                </div>
+                <div class="resumen-item">
+                    <div class="resumen-label">Último envío</div>
+                    <div class="resumen-value">{% if config.ultimo_envio %}{{ config.ultimo_envio.strftime('%d/%m/%Y %H:%M') }}{% else %}Nunca{% endif %}</div>
+                </div>
+                <div class="resumen-item">
+                    <div class="resumen-label">Destinatarios adicionales</div>
+                    <div class="resumen-value">{{ destinatarios_lista|length }}</div>
+                </div>
+                <div class="resumen-item">
+                    <div class="resumen-label">Responsables</div>
+                    <div class="resumen-value">{{ responsables|length }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal moderno para agregar/editar responsable -->
+    <div id="modalResponsable" class="modal-modern">
+        <div class="modal-content-modern">
+            <div class="modal-header-modern">
+                <h3 id="modalTitulo">Agregar Responsable</h3>
+                <button class="modal-close" onclick="cerrarModal()">&times;</button>
+            </div>
+            <div class="modal-body-modern">
+                <form id="formResponsable" method="POST">
+                    <input type="hidden" id="responsable_id" name="id">
+                    <div class="form-group">
+                        <label>👤 Nombre *</label>
+                        <input type="text" id="responsable_nombre" name="nombre" required placeholder="Ej: Daniel Rivera">
+                    </div>
+                    <div class="form-group">
+                        <label>📧 Email</label>
+                        <input type="email" id="responsable_email" name="email" placeholder="correo@ejemplo.com">
+                    </div>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="responsable_activo" name="activo" checked>
+                        <label for="responsable_activo" style="margin:0;">Activo (recibe alertas)</label>
+                    </div>
+                    <div style="display: flex; gap: 10px; margin-top: 20px;">
+                        <button type="submit" class="btn-save">💾 Guardar</button>
+                        <button type="button" onclick="cerrarModal()" style="flex:1; padding: 12px; border: 2px solid #e0e0e0; background: white; border-radius: 12px; cursor: pointer;">Cancelar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function abrirModalAgregar() {
+            document.getElementById('modalTitulo').textContent = 'Agregar Responsable';
+            document.getElementById('formResponsable').action = "{{ url_for('admin_responsables_agregar') }}";
+            document.getElementById('responsable_id').value = '';
+            document.getElementById('responsable_nombre').value = '';
+            document.getElementById('responsable_email').value = '';
+            document.getElementById('responsable_activo').checked = true;
+            document.getElementById('modalResponsable').classList.add('active');
+        }
+        
+        function editarResponsable(id, nombre, email, activo) {
+            document.getElementById('modalTitulo').textContent = 'Editar Responsable';
+            document.getElementById('formResponsable').action = "{{ url_for('admin_responsables_editar', id=0) }}".replace('0', id);
+            document.getElementById('responsable_nombre').value = nombre;
+            document.getElementById('responsable_email').value = email;
+            document.getElementById('responsable_activo').checked = activo;
+            document.getElementById('modalResponsable').classList.add('active');
+        }
+        
+        function cerrarModal() {
+            document.getElementById('modalResponsable').classList.remove('active');
+        }
+        
+        window.onclick = function(event) {
+            const modal = document.getElementById('modalResponsable');
+            if (event.target === modal) {
+                cerrarModal();
+            }
+        }
+    </script>
+</body>
+</html>

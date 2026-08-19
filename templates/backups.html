@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Respaldos - Inventario</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        .backups-container {
+            margin: 20px;
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            overflow-x: auto;
+        }
+        .backups-tabla {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .backups-tabla th, .backups-tabla td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        .backups-tabla th {
+            background: #2196F3;
+            color: white;
+        }
+        .badge-auto {
+            background: #4CAF50;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+        }
+        .badge-manual {
+            background: #FF9800;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+        }
+        .badge-emergencia {
+            background: #f44336;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+        }
+        .acciones {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-content {
+            background: white;
+            max-width: 500px;
+            width: 90%;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+        .modal-content input {
+            width: 100%;
+            padding: 10px;
+            margin: 15px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            text-align: center;
+        }
+        .btn-danger {
+            background: #f44336;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>💾 SISTEMA DE RESPALDOS</h1>
+        <div>
+            <span>👤 {{ current_user.nombre }}</span>
+            <a href="{{ url_for('logout') }}">Salir</a>
+        </div>
+    </div>
+
+    <div style="margin: 20px;">
+        <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">← Volver al Dashboard</a>
+        <a href="{{ url_for('backup_crear') }}" class="btn btn-primary">➕ CREAR RESPALDO MANUAL</a>
+    </div>
+
+    <div class="backups-container">
+        <h2>📋 Respaldos Disponibles</h2>
+        <p><small>⚠️ Los respaldos automáticos se crean diariamente a las 3:00 AM. Se mantienen los últimos 30 respaldos.</small></p>
+        
+        {% if backups %}
+        <table class="backups-tabla">
+            <thead>
+                <tr>
+                    <th>Fecha</th>
+                    <th>Tipo</th>
+                    <th>Tamaño</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for b in backups %}
+                <tr>
+                    <td>{{ b.fecha }}</td>
+                    <td>
+                        {% if b.tipo == 'auto' %}
+                            <span class="badge-auto">🤖 Automático</span>
+                        {% elif b.tipo == 'manual' %}
+                            <span class="badge-manual">✋ Manual</span>
+                        {% else %}
+                            <span class="badge-emergencia">🆘 Emergencia</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ b.tamaño }}</td>
+                    <td class="acciones">
+                        <button onclick="abrirModalRestaurar('{{ b.nombre }}', '{{ b.fecha }}')" class="btn btn-warning">🔄 Restaurar</button>
+                        <a href="{{ url_for('backup_eliminar', nombre=b.nombre) }}" class="btn btn-danger" onclick="return confirm('¿Eliminar este respaldo?')">🗑️ Eliminar</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+            <p>No hay respaldos disponibles. Crea el primer respaldo usando el botón "CREAR RESPALDO MANUAL".</p>
+        {% endif %}
+    </div>
+
+    <!-- Modal para restaurar -->
+    <div id="modalRestaurar" class="modal">
+        <div class="modal-content">
+            <h3>⚠️ RESTAURAR RESPALDO</h3>
+            <div id="modalInfo" style="background: #f0f0f0; padding: 10px; border-radius: 5px; margin: 10px 0;"></div>
+            <p style="color: #c62828;"><strong>⚠️ ADVERTENCIA:</strong> Esta acción reemplazará TODOS los datos actuales por los del respaldo seleccionado. Los cambios realizados después de la fecha del respaldo se perderán.</p>
+            <p>Escribe <strong>"RESTAURAR"</strong> para confirmar:</p>
+            <input type="text" id="confirmacionInput" placeholder="Escribe RESTAURAR">
+            <form id="formRestaurar" method="POST">
+                <input type="hidden" id="confirmacionHidden" name="confirmacion">
+                <div style="display: flex; gap: 10px; margin-top: 15px;">
+                    <button type="button" onclick="cerrarModal()" class="btn btn-secondary">Cancelar</button>
+                    <button type="submit" class="btn btn-danger">Confirmar Restauración</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let nombreRespaldo = '';
+        
+        function abrirModalRestaurar(nombre, fecha) {
+            nombreRespaldo = nombre;
+            const modal = document.getElementById('modalRestaurar');
+            const modalInfo = document.getElementById('modalInfo');
+            modalInfo.innerHTML = `<strong>Respaldo seleccionado:</strong> ${nombre}<br><strong>Fecha:</strong> ${fecha}`;
+            
+            const form = document.getElementById('formRestaurar');
+            form.action = "{{ url_for('backup_restaurar', nombre='') }}" + nombre;
+            
+            document.getElementById('confirmacionInput').value = '';
+            modal.style.display = 'flex';
+        }
+        
+        function cerrarModal() {
+            document.getElementById('modalRestaurar').style.display = 'none';
+        }
+        
+        document.getElementById('confirmacionInput').addEventListener('input', function() {
+            document.getElementById('confirmacionHidden').value = this.value;
+        });
+        
+        document.getElementById('formRestaurar').addEventListener('submit', function(e) {
+            const confirmacion = document.getElementById('confirmacionInput').value;
+            if (confirmacion !== 'RESTAURAR') {
+                e.preventDefault();
+                alert('Debes escribir "RESTAURAR" para confirmar');
+            }
+        });
+        
+        window.onclick = function(event) {
+            const modal = document.getElementById('modalRestaurar');
+            if (event.target === modal) {
+                cerrarModal();
+            }
+        }
+    </script>
+</body>
+</html>

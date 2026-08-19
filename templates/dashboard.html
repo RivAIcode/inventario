@@ -1,0 +1,1195 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Inventario de Equipos</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=yes">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    
+    <!-- ========== PWA (PROGRESSIVE WEB APP) ========== -->
+    <link rel="manifest" href="/static/manifest.json">
+    <meta name="theme-color" content="#1E88E5">
+    <meta name="mobile-web-app-capable" content="yes">
+    <link rel="apple-touch-icon" href="/static/icon-192.png">
+    <!-- ============================================== -->
+    
+    <style>
+        /* Estilos generales */
+        .btn-group {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .exportar-menu {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            min-width: 220px;
+            z-index: 1000;
+            overflow: hidden;
+        }
+        
+        .exportar-menu .menu-item {
+            display: block;
+            width: 100%;
+            text-align: left;
+            padding: 12px 15px;
+            text-decoration: none;
+            color: #333;
+            border-bottom: 1px solid #eee;
+            background: white;
+            cursor: pointer;
+            font-size: 14px;
+            transition: 0.2s;
+        }
+        
+        .exportar-menu .menu-item:hover {
+            background-color: #f0f4f8;
+        }
+        
+        /* MÓVIL: menú centrado tipo modal */
+        @media (max-width: 768px) {
+            .btn-group {
+                position: static;
+                width: 100%;
+            }
+            
+            .btn-group .btn-primary {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .exportar-menu {
+                position: fixed;
+                bottom: 20px;
+                left: 50%;
+                transform: translateX(-50%);
+                top: auto;
+                width: 90%;
+                max-width: 300px;
+                border-radius: 16px;
+                box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+                animation: slideUp 0.3s ease-out;
+            }
+            
+            .exportar-menu .menu-item {
+                text-align: center;
+                padding: 14px;
+                font-size: 15px;
+            }
+            
+            .exportar-menu .menu-item:last-child {
+                border-bottom: none;
+            }
+            
+            @keyframes slideUp {
+                from {
+                    opacity: 0;
+                    transform: translateX(-50%) translateY(30px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateX(-50%) translateY(0);
+                }
+            }
+        }
+        
+        @keyframes modalEntrar {
+            from {
+                opacity: 0;
+                transform: translateY(-30px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+        
+        /* ====== ESTILOS PARA ACCIONES CON DROPDOWN ====== */
+        .acciones {
+            white-space: nowrap;
+            min-width: 50px;
+            position: relative;
+        }
+        
+        .acciones .btn-mas {
+            padding: 6px 12px;
+            border-radius: 6px;
+            border: none;
+            background: #1E88E5;
+            color: white;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            line-height: 1;
+            min-width: 36px;
+            min-height: 36px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .acciones .btn-mas:hover {
+            background: #1565C0;
+            transform: scale(1.05);
+            box-shadow: 0 2px 8px rgba(30, 136, 229, 0.3);
+        }
+        
+        .acciones .btn-mas:active {
+            transform: scale(0.95);
+        }
+        
+        .acciones .dropdown-menu {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: 100%;
+            background: white;
+            min-width: 190px;
+            border-radius: 10px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.15);
+            z-index: 1000;
+            overflow: hidden;
+            padding: 6px 0;
+            margin-top: 4px;
+            animation: dropdownSlide 0.2s ease-out;
+        }
+        
+        @keyframes dropdownSlide {
+            from {
+                opacity: 0;
+                transform: translateY(-8px) scale(0.96);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+        
+        .acciones .dropdown-menu.show {
+            display: block;
+        }
+        
+        .acciones .dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 9px 16px;
+            text-decoration: none;
+            color: #333;
+            background: white;
+            border: none;
+            width: 100%;
+            text-align: left;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            transition: all 0.15s ease;
+            white-space: nowrap;
+        }
+        
+        .acciones .dropdown-item:hover {
+            background: #f0f4f8;
+        }
+        
+        .acciones .dropdown-item .icon {
+            font-size: 16px;
+            width: 24px;
+            text-align: center;
+        }
+        
+        .acciones .dropdown-item.danger {
+            color: #d32f2f;
+        }
+        .acciones .dropdown-item.danger:hover {
+            background: #ffebee;
+        }
+        
+        .acciones .dropdown-item.estado {
+            color: #E65100;
+        }
+        .acciones .dropdown-item.estado:hover {
+            background: #fff3e0;
+        }
+        
+        .acciones .dropdown-item.observacion {
+            color: #2E7D32;
+        }
+        .acciones .dropdown-item.observacion:hover {
+            background: #e8f5e9;
+        }
+        
+        .acciones .dropdown-item.editar {
+            color: #0D47A1;
+        }
+        .acciones .dropdown-item.editar:hover {
+            background: #e3f2fd;
+        }
+        
+        .acciones .dropdown-item.historial {
+            color: #6A1B9A;
+        }
+        .acciones .dropdown-item.historial:hover {
+            background: #f3e5f5;
+        }
+        
+        .acciones .locked {
+            padding: 6px 12px;
+            border-radius: 6px;
+            background: #e0e0e0;
+            color: #999;
+            font-size: 16px;
+            cursor: not-allowed;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            min-width: 36px;
+            min-height: 36px;
+            justify-content: center;
+        }
+        
+        /* ====== ESTADOS ====== */
+        .estado {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .estado-operativo { background: #4CAF50; color: white; }
+        .estado-mantencion { background: #FF9800; color: white; }
+        .estado-contrastacion { background: #00BCD4; color: white; }
+        .estado-prestado { background: #2196F3; color: white; }
+        .estado-volante { background: #9C27B0; color: white; }
+        .estado-fuera-de-servicio { background: #f44336; color: white; }
+        
+        /* ====== ALERTAS COMPACTAS ====== */
+        .alerta-cell {
+            text-align: center;
+            font-weight: 700;
+            font-size: 13px;
+            white-space: nowrap;
+        }
+        
+        .alerta-vencido {
+            background-color: #ffebee !important;
+        }
+        .alerta-vencido td {
+            background-color: #ffebee !important;
+        }
+        .alerta-vencido .alerta-cell {
+            color: #c62828;
+        }
+        
+        .alerta-proximo {
+            background-color: #fff8e1 !important;
+        }
+        .alerta-proximo td {
+            background-color: #fff8e1 !important;
+        }
+        .alerta-proximo .alerta-cell {
+            color: #e65100;
+        }
+        
+        .alerta-ok .alerta-cell {
+            color: #2E7D32;
+        }
+        .alerta-sin .alerta-cell {
+            color: #999;
+        }
+        
+        /* ====== TABLA ====== */
+        .table-scroll-wrapper {
+            overflow-x: auto;
+        }
+        
+        #tablaEquipos {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        #tablaEquipos th,
+        #tablaEquipos td {
+            padding: 6px 8px;
+            text-align: center;
+            border: 1px solid #ddd;
+            vertical-align: middle;
+            white-space: nowrap;
+        }
+        
+        #tablaEquipos th {
+            background: #1E88E5;
+            color: white;
+            font-weight: 600;
+            font-size: 12px;
+        }
+        
+        /* ====== ANCHOS AJUSTADOS A TUS DATOS ====== */
+        /* Ajusta estos valores según los caracteres reales de tus datos */
+        
+        /* Nro Serie - ~10 caracteres */
+        #tablaEquipos td:nth-child(3) {
+            max-width: 80px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        /* Localidad - ~12 caracteres */
+        #tablaEquipos td:nth-child(5) {
+            max-width: 90px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        /* Responsable - ~15 caracteres */
+        #tablaEquipos td:nth-child(6) {
+            max-width: 105px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        /* Equipo - ~18 caracteres */
+        #tablaEquipos td:nth-child(7) {
+            max-width: 120px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        /* Alerta */
+        #tablaEquipos td:nth-child(10) {
+            max-width: 65px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        /* ====== RESPONSIVE ====== */
+        @media (max-width: 768px) {
+            .acciones .btn-mas {
+                padding: 4px 10px;
+                font-size: 16px;
+                min-width: 32px;
+                min-height: 32px;
+            }
+            .acciones .dropdown-menu {
+                min-width: 170px;
+                right: -10px;
+            }
+            .acciones .dropdown-item {
+                padding: 8px 14px;
+                font-size: 12px;
+            }
+            td, th {
+                font-size: 11px;
+                padding: 4px 5px;
+            }
+            .alerta-cell {
+                font-size: 11px;
+            }
+            #tablaEquipos td:nth-child(3) { max-width: 60px; } /* Nro Serie */
+            #tablaEquipos td:nth-child(5) { max-width: 65px; } /* Localidad */
+            #tablaEquipos td:nth-child(6) { max-width: 75px; } /* Responsable */
+            #tablaEquipos td:nth-child(7) { max-width: 85px; } /* Equipo */
+        }
+        
+        @media (max-width: 480px) {
+            td, th {
+                font-size: 10px;
+                padding: 3px 4px;
+            }
+            #tablaEquipos td:nth-child(3) { max-width: 50px; }
+            #tablaEquipos td:nth-child(5) { max-width: 55px; }
+            #tablaEquipos td:nth-child(6) { max-width: 60px; }
+            #tablaEquipos td:nth-child(7) { max-width: 70px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>📊 SISTEMA DE INVENTARIO DE EQUIPOS</h1>
+        <div>
+            <span>👤 {{ current_user.nombre }}</span>
+            <a href="{{ url_for('logout') }}">Salir</a>
+        </div>
+    </div>
+
+    <div class="stats">
+        <div class="stat-card"><div class="stat-number">{{ total }}</div><div class="stat-label">📊 Total</div></div>
+        <div class="stat-card"><div class="stat-number">{{ operativo }}</div><div class="stat-label">🟢 Operativo</div></div>
+        <div class="stat-card"><div class="stat-number">{{ mantencion }}</div><div class="stat-label">🔧 Mantención</div></div>
+        <div class="stat-card"><div class="stat-number">{{ contrastacion }}</div><div class="stat-label">📊 Contrastación</div></div>
+        <div class="stat-card"><div class="stat-number">{{ prestado }}</div><div class="stat-label">🔄 Prestado</div></div>
+        <div class="stat-card"><div class="stat-number">{{ volante }}</div><div class="stat-label">🚗 Volante</div></div>
+        <div class="stat-card"><div class="stat-number">{{ fuera_servicio }}</div><div class="stat-label">⚠️ Fuera Servicio</div></div>
+        <div class="stat-card"><div class="stat-number" style="color: #c62828;">{{ vencidos }}</div><div class="stat-label">🔴 VENCIDOS</div></div>
+        <div class="stat-card"><div class="stat-number" style="color: #f57c00;">{{ proximos }}</div><div class="stat-label">🟡 PRÓXIMOS</div></div>
+    </div>
+
+    <div class="filtros">
+        <div class="filtro-group"><label>Nro Int</label><input type="text" id="filtro_nro_int" placeholder="Buscar..." onkeyup="aplicarFiltros()"></div>
+        <div class="filtro-group"><label>Nro Serie</label><input type="text" id="filtro_nro_serie" placeholder="Buscar..." onkeyup="aplicarFiltros()"></div>
+        <div class="filtro-group"><label>Área</label><select id="filtro_area" onchange="aplicarFiltros()"><option value="">Todas</option><option value="AP">AP</option><option value="AS">AS</option></select></div>
+        <div class="filtro-group"><label>Estado</label><select id="filtro_estado" onchange="aplicarFiltros()"><option value="">Todos</option><option value="Operativo">Operativo</option><option value="Mantencion">Mantención</option><option value="Contrastacion">Contrastación</option><option value="Prestado">Prestado</option><option value="Volante">Volante</option><option value="Fuera de Servicio">Fuera de Servicio</option></select></div>
+        <div class="filtro-group"><label>Localidad</label><input type="text" id="filtro_localidad" list="lista_localidades" placeholder="Escribe para buscar..." onkeyup="aplicarFiltros()" autocomplete="off"><datalist id="lista_localidades">{% for loc in LOCALIDADES %}<option value="{{ loc }}">{{ loc }}</option>{% endfor %}</datalist></div>
+        <div class="filtro-group"><label>Tipo Equipo</label><select id="filtro_tipo" onchange="aplicarFiltros()"><option value="">Todos</option>{% for tipo in TIPOS_EQUIPO %}<option value="{{ tipo }}">{{ tipo }}</option>{% endfor %}</select></div>
+        <div class="filtro-group"><button class="btn btn-secondary" onclick="limpiarFiltros()">🗑️ LIMPIAR</button></div>
+    </div>
+
+    <div class="actions">
+        <a href="{{ url_for('nuevo_equipo') }}" class="btn btn-primary">➕ AGREGAR</a>
+        <a href="{{ url_for('grafico') }}" class="btn btn-info">📊 GRÁFICO</a>
+        
+        <div class="btn-group">
+            <button class="btn btn-primary" onclick="toggleMenuExportar()" style="display: flex; align-items: center; gap: 5px;">
+                📊 EXPORTAR EXCEL ▼
+            </button>
+            <div id="menuExportar" class="exportar-menu" style="display: none;">
+                <a href="{{ url_for('exportar_excel') }}" class="menu-item">📊 Todos los equipos</a>
+                <button onclick="exportarSeleccionados()" id="btnExportarSeleccionadosMenu" class="menu-item">☑️ Equipos seleccionados (0)</button>
+                <button onclick="exportarFiltrados()" class="menu-item">🔍 Equipos filtrados actualmente</button>
+            </div>
+        </div>
+        
+        <a href="{{ url_for('exportar_pdf_alertas') }}" class="btn btn-danger">📄 EXPORTAR PDF ALERTAS</a>
+        <a href="{{ url_for('enviar_correo') }}" class="btn btn-warning">📧 ENVIAR ALERTAS</a>
+        <a href="{{ url_for('mantencion_dashboard') }}" class="btn btn-secondary">🔧 MANTENCIÓN</a>
+        <a href="{{ url_for('contrastacion_dashboard') }}" class="btn btn-secondary">📊 CONTRASTACIÓN</a>
+        {% if current_user.es_admin %}
+        <a href="{{ url_for('admin_usuarios') }}" class="btn btn-secondary">👥 USUARIOS</a>
+        <a href="{{ url_for('listar_backups') }}" class="btn btn-secondary">💾 RESPALDOS</a>
+        <a href="{{ url_for('admin_correos') }}" class="btn btn-secondary">⚙️ CORREOS</a>
+        {% endif %}
+        <a href="{{ url_for('perfil') }}" class="btn btn-info">🔐 MI PERFIL</a>
+        <button onclick="location.reload()" class="btn btn-info">🔄 ACTUALIZAR</button>
+        <small style="display: block; margin-top: 8px; color: #d32f2f; font-size: 13px; font-weight: bold;">⚠️ IMPORTANTE: Antes de editar, haz clic en "ACTUALIZAR"</small>
+    </div>
+
+    <div class="search-bar">
+        <input type="text" id="search" placeholder="🔍 Búsqueda rápida">
+        <small style="display:block; color:#666; margin-top:5px;">💡 Escribe para filtrar equipos</small>
+    </div>
+
+    <div class="table-container">
+        <div class="table-scroll-wrapper">
+            <table id="tablaEquipos">
+                <thead>
+                    <tr>
+                        <th><input type="checkbox" id="seleccionar-todos" onclick="seleccionarTodos()"></th>
+                        <th onclick="sortTable(1)">Nro Int</th>
+                        <th onclick="sortTable(2)">Nro Serie</th>
+                        <th onclick="sortTable(3)">Área</th>
+                        <th onclick="sortTable(4)">Localidad</th>
+                        <th onclick="sortTable(5)">Responsable</th>
+                        <th onclick="sortTable(6)">Equipo</th>
+                        <th onclick="sortTable(7)">Estado</th>
+                        <th onclick="sortTable(8)">Contrastación</th>
+                        <th title="Alerta de vencimiento">⚠️</th>
+                        <th style="min-width:50px;">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for eq in equipos %}
+                    {% set alerta = obtener_alerta(eq) %}
+                    {% set bloqueado, bloqueado_por, fecha_bloqueo = verificar_bloqueo(eq.id) %}
+                    
+                    <tr class="{{ alerta.clase }}" data-equipo-id="{{ eq.id }}">
+                        <td><input type="checkbox" class="select-equipo" value="{{ eq.id }}"></td>
+                        <td>{{ eq.nro_int }}</td>
+                        <td title="{{ eq.nro_serie or '-' }}">{{ eq.nro_serie or '-' }}</td>
+                        <td>{{ eq.area or '-' }}</td>
+                        <td title="{{ eq.localidad or '-' }}">{{ eq.localidad or '-' }}</td>
+                        <td title="{{ eq.responsable or '-' }}">{{ eq.responsable or '-' }}</td>
+                        <td title="{{ eq.tipo_equipo or '-' }}">{{ eq.tipo_equipo or '-' }}</td>
+                        <td><span class="estado estado-{{ eq.estado.lower().replace(' ', '-') }}">{{ eq.estado }}</span></td>
+                        <td>{{ formatear_fecha(eq.fecha_contrastacion) }}</td>
+                        <td class="alerta-cell" title="{{ alerta.texto }}">
+                            {{ alerta.icono }}{% if alerta.dias_texto %} {{ alerta.dias_texto }}{% endif %}
+                        </td>
+                        <td class="acciones">
+                            {% if bloqueado and bloqueado_por != current_user.nombre %}
+                                <span class="locked" title="Editando por {{ bloqueado_por }}">🔒</span>
+                            {% else %}
+                                <button class="btn-mas" onclick="toggleDropdown(event, {{ eq.id }})" title="Acciones">⋮</button>
+                                <div class="dropdown-menu" id="dropdown-{{ eq.id }}">
+                                    <button class="dropdown-item estado" onclick="cambiarEstadoCompleto({{ eq.id }}, '{{ eq.estado }}')">
+                                        <span class="icon">🔄</span> Cambiar Estado
+                                    </button>
+                                    <button class="dropdown-item observacion" onclick="abrirModalObservacion({{ eq.id }})">
+                                        <span class="icon">💬</span> Observación
+                                    </button>
+                                    <a href="{{ url_for('editar_equipo', id=eq.id) }}" class="dropdown-item editar">
+                                        <span class="icon">✏️</span> Editar
+                                    </a>
+                                    <a href="{{ url_for('ver_historial', id=eq.id) }}" class="dropdown-item historial">
+                                        <span class="icon">📋</span> Historial
+                                    </a>
+                                    <a href="{{ url_for('eliminar_equipo', id=eq.id) }}" class="dropdown-item danger" onclick="return confirm('¿Eliminar {{ eq.nro_int }}?')">
+                                        <span class="icon">🗑️</span> Eliminar
+                                    </a>
+                                </div>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="scroll-indicator">↔️ Desplázate horizontalmente →</div>
+    </div>
+
+    <div class="contador" id="contador"></div>
+
+    <!-- MODAL CAMBIO DE ESTADO - MODERNO -->
+    <div id="modalCambioEstado" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); backdrop-filter:blur(4px); z-index:10000; align-items:center; justify-content:center;">
+        <div style="background:white; border-radius:20px; max-width:420px; width:90%; margin:auto; box-shadow:0 20px 40px rgba(0,0,0,0.3); overflow:hidden; animation:modalEntrar 0.3s ease-out;">
+            
+            <div style="background:linear-gradient(135deg, #1E88E5 0%, #1565C0 100%); padding:12px 18px; color:white; display:flex; justify-content:space-between; align-items:center;">
+                <div style="display:flex; align-items:center; gap:8px;">
+                    <span style="font-size:20px;">🔄</span>
+                    <h3 style="margin:0; font-size:16px; font-weight:600;">Cambiar Estado</h3>
+                </div>
+                <button onclick="cerrarModalEstado()" style="background:rgba(255,255,255,0.2); border:none; color:white; font-size:18px; cursor:pointer; width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center;">&times;</button>
+            </div>
+            
+            <div style="padding:16px 18px;">
+                <div style="background:#f0f4f8; border-radius:12px; padding:10px 12px; margin-bottom:16px; display:flex; align-items:center; gap:10px;">
+                    <span style="font-size:20px;">📌</span>
+                    <div>
+                        <div style="font-size:10px; color:#666; text-transform:uppercase;">Estado Actual</div>
+                        <span id="estado_actual_texto" style="display:inline-block; padding:3px 10px; border-radius:20px; color:white; font-size:12px; margin-top:3px;"></span>
+                    </div>
+                </div>
+                
+                <form id="formCambioEstadoModal">
+                    <input type="hidden" id="cambio_equipo_id_modal">
+                    
+                    <div style="margin-bottom:14px;">
+                        <label style="display:block; font-weight:600; color:#333; margin-bottom:5px; font-size:12px;">✨ Nuevo Estado</label>
+                        <select id="cambio_nuevo_estado_modal" required style="width:100%; padding:8px 12px; border:2px solid #e0e0e0; border-radius:10px; font-size:13px; background:white;">
+                            <option value="">Seleccionar...</option>
+                            <option value="Operativo">🟢 Operativo</option>
+                            <option value="Volante">🚗 Volante</option>
+                            <option value="Mantencion">🔧 Mantención</option>
+                            <option value="Contrastacion">📊 Contrastación</option>
+                            <option value="Prestado">🔄 Prestado</option>
+                            <option value="Fuera de Servicio">⚠️ Fuera de Servicio</option>
+                        </select>
+                    </div>
+                    
+                    <div id="div_responsable_cambio_modal" style="display:none; margin-bottom:14px;">
+                        <label style="display:block; font-weight:600; color:#333; margin-bottom:5px; font-size:12px;">👤 Responsable</label>
+                        <input type="text" id="cambio_responsable_modal" placeholder="Nombre del responsable" style="width:100%; padding:8px 12px; border:2px solid #e0e0e0; border-radius:10px; font-size:13px;">
+                    </div>
+                    
+                    <div id="div_servicio_tecnico_modal" style="display:none; margin-bottom:14px;">
+                        <label style="display:block; font-weight:600; color:#333; margin-bottom:5px; font-size:12px;">🔧 Servicio Técnico</label>
+                        <input type="text" id="cambio_servicio_tecnico_modal" placeholder="Nombre del servicio técnico" style="width:100%; padding:8px 12px; border:2px solid #e0e0e0; border-radius:10px; font-size:13px;">
+                    </div>
+                    
+                    <div id="div_fecha_contrastacion_modal" style="display:none; margin-bottom:14px;">
+                        <label style="display:block; font-weight:600; color:#333; margin-bottom:5px; font-size:12px;">📅 Fecha Contrastación</label>
+                        <input type="date" id="cambio_fecha_contrastacion_modal" style="width:100%; padding:8px 12px; border:2px solid #e0e0e0; border-radius:10px; font-size:13px;">
+                    </div>
+                    
+                    <div id="div_fecha_envio_modal" style="display:none; margin-bottom:14px;">
+                        <label style="display:block; font-weight:600; color:#333; margin-bottom:5px; font-size:12px;">📤 Fecha envío laboratorio</label>
+                        <input type="date" id="cambio_fecha_envio_modal" style="width:100%; padding:8px 12px; border:2px solid #e0e0e0; border-radius:10px; font-size:13px;">
+                    </div>
+                    
+                    <div id="div_observacion_estado_modal" style="display:none; margin-bottom:16px;">
+                        <label style="display:block; font-weight:600; color:#333; margin-bottom:5px; font-size:12px;">💬 Observación</label>
+                        <textarea id="cambio_observacion_estado_modal" rows="2" placeholder="Nota sobre este cambio..." style="width:100%; padding:8px 12px; border:2px solid #e0e0e0; border-radius:10px; font-size:13px; resize:vertical; font-family:inherit;"></textarea>
+                    </div>
+                    
+                    <div style="display:flex; gap:10px; margin-top:8px;">
+                        <button type="button" onclick="cerrarModalEstado()" style="flex:1; padding:8px; border:2px solid #e0e0e0; background:white; border-radius:10px; font-size:13px; font-weight:500; cursor:pointer;">Cancelar</button>
+                        <button type="submit" id="btnCambiarEstado" style="flex:2; padding:8px; background:linear-gradient(135deg, #1E88E5 0%, #1565C0 100%); border:none; border-radius:10px; color:white; font-size:13px; font-weight:600; cursor:pointer;">✅ Guardar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL OBSERVACIÓN -->
+    <div id="modalObservacion" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1001; align-items:center; justify-content:center;">
+        <div style="background:white; border-radius:20px; max-width:400px; width:90%; margin:auto; padding:20px; box-shadow:0 20px 40px rgba(0,0,0,0.3);">
+            <h3 style="margin:0 0 15px 0; font-size:18px;">💬 Agregar Observación</h3>
+            <textarea id="observacion_texto" rows="4" style="width:100%; padding:10px; border:2px solid #e0e0e0; border-radius:12px; font-size:14px; resize:vertical;"></textarea>
+            <input type="hidden" id="observacion_equipo_id">
+            <div style="display:flex; gap:10px; margin-top:15px;">
+                <button onclick="guardarObservacion()" class="btn btn-primary" style="flex:1;">💾 Guardar</button>
+                <button onclick="cerrarModalObservacion()" class="btn btn-secondary" style="flex:1;">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Botón flotante para instalar PWA -->
+    <button id="btnInstalarApp" style="position: fixed; bottom: 20px; right: 20px; background: linear-gradient(135deg, #1E88E5 0%, #1565C0 100%); color: white; border: none; border-radius: 50px; padding: 12px 20px; z-index: 9999; box-shadow: 0 4px 15px rgba(0,0,0,0.3); cursor: pointer; font-size: 14px; font-weight: 600; display: none; align-items: center; gap: 8px;">
+        📱 Instalar App
+    </button>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script>
+        // ========== REGISTRAR SERVICE WORKER PARA PWA ==========
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/static/sw.js')
+                .then(reg => console.log('✅ Service Worker registrado:', reg))
+                .catch(err => console.log('❌ Error al registrar Service Worker:', err));
+        }
+        
+        // ========== INSTALACIÓN MANUAL DE PWA ==========
+        let deferredPrompt;
+        const btnInstalar = document.getElementById('btnInstalarApp');
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            btnInstalar.style.display = 'flex';
+        });
+
+        btnInstalar.addEventListener('click', async () => {
+            if (!deferredPrompt) return;
+            deferredPrompt.prompt();
+            const { outcome } = await deferredPrompt.userChoice;
+            console.log(`Usuario ${outcome === 'accepted' ? 'aceptó' : 'rechazó'} la instalación`);
+            btnInstalar.style.display = 'none';
+            deferredPrompt = null;
+        });
+
+        window.addEventListener('appinstalled', () => {
+            btnInstalar.style.display = 'none';
+            deferredPrompt = null;
+            console.log('App instalada correctamente');
+        });
+        // ======================================================
+        
+        // ========== FUNCIONES DE OBSERVACIÓN ==========
+        function abrirModalObservacion(equipoId) {
+            document.getElementById('observacion_equipo_id').value = equipoId;
+            document.getElementById('observacion_texto').value = '';
+            document.getElementById('modalObservacion').style.display = 'flex';
+        }
+        
+        function cerrarModalObservacion() { 
+            document.getElementById('modalObservacion').style.display = 'none'; 
+        }
+        
+        function guardarObservacion() {
+            const equipoId = document.getElementById('observacion_equipo_id').value;
+            const observacion = document.getElementById('observacion_texto').value.trim();
+            if (!observacion) { 
+                alert('Debe ingresar una observación'); 
+                return; 
+            }
+            
+            fetch('/equipo/agregar_observacion', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    equipo_id: equipoId, 
+                    observacion: observacion 
+                })
+            })
+            .then(r => r.json())
+            .then(data => { 
+                if (data.success) {
+                    location.reload(); 
+                } else {
+                    alert('Error: ' + (data.error || 'desconocido')); 
+                }
+            })
+            .catch(e => { 
+                console.error(e); 
+                alert('Error de conexión'); 
+            });
+        }
+
+        // ========== FUNCIONES DE CAMBIO DE ESTADO ==========
+        window.equipoIdActual = null;
+        function cambiarEstadoCompleto(equipoId, estadoActual) {
+            window.equipoIdActual = equipoId;
+            document.getElementById('cambio_equipo_id_modal').value = equipoId;
+            document.getElementById('cambio_nuevo_estado_modal').value = '';
+            document.getElementById('cambio_responsable_modal').value = '';
+            document.getElementById('cambio_servicio_tecnico_modal').value = '';
+            document.getElementById('cambio_fecha_contrastacion_modal').value = '';
+            document.getElementById('cambio_fecha_envio_modal').value = '';
+            document.getElementById('cambio_observacion_estado_modal').value = '';
+            document.getElementById('div_responsable_cambio_modal').style.display = 'none';
+            document.getElementById('div_servicio_tecnico_modal').style.display = 'none';
+            document.getElementById('div_fecha_contrastacion_modal').style.display = 'none';
+            document.getElementById('div_fecha_envio_modal').style.display = 'none';
+            document.getElementById('div_observacion_estado_modal').style.display = 'none';
+            const span = document.getElementById('estado_actual_texto');
+            span.textContent = estadoActual;
+            const colores = { 'Operativo':'#4CAF50', 'Mantencion':'#FF9800', 'Prestado':'#2196F3', 'Volante':'#9C27B0', 'Contrastacion':'#00BCD4', 'Fuera de Servicio':'#f44336' };
+            span.style.backgroundColor = colores[estadoActual] || '#666';
+            document.getElementById('modalCambioEstado').style.display = 'flex';
+        }
+        
+        function cerrarModalEstado() { 
+            document.getElementById('modalCambioEstado').style.display = 'none'; 
+        }
+
+        // ========== EVENTOS DEL MODAL DE CAMBIO DE ESTADO ==========
+        document.getElementById('cambio_nuevo_estado_modal').addEventListener('change', function() {
+            const e = this.value;
+            document.getElementById('div_responsable_cambio_modal').style.display = (e === 'Prestado' || e === 'Volante' || e === 'Fuera de Servicio' || e === 'Mantencion') ? 'block' : 'none';
+            document.getElementById('div_servicio_tecnico_modal').style.display = e === 'Mantencion' ? 'block' : 'none';
+            document.getElementById('div_fecha_contrastacion_modal').style.display = e === 'Contrastacion' ? 'block' : 'none';
+            document.getElementById('div_fecha_envio_modal').style.display = e === 'Contrastacion' ? 'block' : 'none';
+            document.getElementById('div_observacion_estado_modal').style.display = e ? 'block' : 'none';
+        });
+
+        // ========== UN SOLO EVENT LISTENER ==========
+        document.getElementById('formCambioEstadoModal').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const btn = document.getElementById('btnCambiarEstado');
+            btn.disabled = true;
+            btn.textContent = '⏳ Guardando...';
+            btn.style.opacity = '0.7';
+            
+            const nuevoEstado = document.getElementById('cambio_nuevo_estado_modal').value;
+            const nuevoResponsable = document.getElementById('cambio_responsable_modal').value;
+            const servicioTecnico = document.getElementById('cambio_servicio_tecnico_modal').value;
+            const fechaContrastacion = document.getElementById('cambio_fecha_contrastacion_modal').value;
+            const fechaEnvio = document.getElementById('cambio_fecha_envio_modal').value;
+            const observacion = document.getElementById('cambio_observacion_estado_modal').value;
+            
+            const restaurarBoton = () => {
+                btn.disabled = false;
+                btn.textContent = '✅ Guardar';
+                btn.style.opacity = '1';
+            };
+            
+            if (!nuevoEstado) { 
+                alert('Seleccione un estado'); 
+                restaurarBoton(); 
+                return; 
+            }
+            if ((nuevoEstado === 'Prestado' || nuevoEstado === 'Volante' || nuevoEstado === 'Fuera de Servicio' || nuevoEstado === 'Mantencion') && !nuevoResponsable) { 
+                alert('Debe ingresar el responsable'); 
+                restaurarBoton(); 
+                return; 
+            }
+            if (nuevoEstado === 'Mantencion' && !servicioTecnico) { 
+                alert('Debe ingresar el servicio técnico'); 
+                restaurarBoton(); 
+                return; 
+            }
+            if (nuevoEstado === 'Contrastacion' && !fechaEnvio) { 
+                alert('Debe ingresar la fecha de envío'); 
+                restaurarBoton(); 
+                return; 
+            }
+            
+            const fd = new FormData();
+            fd.append('estado', nuevoEstado);
+            if (nuevoResponsable) fd.append('nuevo_responsable', nuevoResponsable);
+            if (servicioTecnico) fd.append('servicio_tecnico', servicioTecnico);
+            if (fechaContrastacion) fd.append('fecha_contrastacion', fechaContrastacion);
+            if (fechaEnvio) fd.append('fecha_envio_laboratorio', fechaEnvio);
+            if (observacion) fd.append('observacion', observacion);
+            
+            try {
+                const resp = await fetch(`/equipo/cambiar_estado/${window.equipoIdActual}`, { method: 'POST', body: fd });
+                const data = await resp.json();
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert('Error al cambiar estado');
+                    restaurarBoton();
+                }
+            } catch(e) { 
+                alert('Error de conexión'); 
+                restaurarBoton();
+            }
+        });
+
+        // ========== FUNCIONES DE FILTROS Y ORDENAMIENTO ==========
+        let sortDirection = {};
+        function sortTable(n) {
+            const table = document.getElementById('tablaEquipos');
+            const tbody = table.tBodies[0];
+            const rows = Array.from(tbody.rows);
+            const dir = sortDirection[n] === 'asc' ? 'desc' : 'asc';
+            sortDirection[n] = dir;
+            rows.sort((a, b) => {
+                let aVal = a.cells[n]?.innerText.toLowerCase() || '';
+                let bVal = b.cells[n]?.innerText.toLowerCase() || '';
+                return dir === 'asc' ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
+            });
+            rows.forEach(row => tbody.appendChild(row));
+        }
+
+        function aplicarFiltros() {
+            const nroInt = document.getElementById('filtro_nro_int').value.toLowerCase();
+            const nroSerie = document.getElementById('filtro_nro_serie').value.toLowerCase();
+            const area = document.getElementById('filtro_area').value;
+            const estado = document.getElementById('filtro_estado').value;
+            const localidad = document.getElementById('filtro_localidad').value.toLowerCase();
+            const tipo = document.getElementById('filtro_tipo').value;
+            const rows = document.querySelectorAll('#tablaEquipos tbody tr');
+            let visible = 0;
+            rows.forEach(row => {
+                const c = row.cells;
+                let ok = true;
+                if (nroInt && !c[1].innerText.toLowerCase().includes(nroInt)) ok = false;
+                if (nroSerie && !c[2].innerText.toLowerCase().includes(nroSerie)) ok = false;
+                if (area && c[3].innerText !== area) ok = false;
+                if (estado && !c[7].innerText.includes(estado)) ok = false;
+                if (localidad && !c[4].innerText.toLowerCase().includes(localidad)) ok = false;
+                if (tipo && c[6].innerText !== tipo) ok = false;
+                row.style.display = ok ? '' : 'none';
+                if (ok) visible++;
+            });
+            document.getElementById('contador').innerHTML = `📋 Mostrando ${visible} de ${rows.length} equipos`;
+        }
+        
+        function limpiarFiltros() {
+            document.getElementById('filtro_nro_int').value = '';
+            document.getElementById('filtro_nro_serie').value = '';
+            document.getElementById('filtro_area').value = '';
+            document.getElementById('filtro_estado').value = '';
+            document.getElementById('filtro_localidad').value = '';
+            document.getElementById('filtro_tipo').value = '';
+            aplicarFiltros();
+        }
+        
+        function toggleMenuExportar() {
+            const menu = document.getElementById('menuExportar');
+            const esMovil = window.innerWidth <= 768;
+            
+            if (menu.style.display === 'block') {
+                menu.style.display = 'none';
+                return;
+            }
+            
+            menu.style.display = 'block';
+            
+            const cerrarMenu = function(e) {
+                const btnGroup = document.querySelector('.btn-group');
+                if (btnGroup && !btnGroup.contains(e.target)) {
+                    menu.style.display = 'none';
+                    document.removeEventListener('click', cerrarMenu);
+                    document.removeEventListener('touchstart', cerrarMenu);
+                }
+            };
+            
+            setTimeout(() => {
+                document.addEventListener('click', cerrarMenu);
+                document.addEventListener('touchstart', cerrarMenu);
+            }, 10);
+        }
+        
+        function exportarSeleccionados() {
+            const ids = Array.from(document.querySelectorAll('.select-equipo:checked')).map(cb => cb.value);
+            if (!ids.length) { alert('No hay equipos seleccionados'); return; }
+            const f = document.createElement('form'); f.method = 'POST'; f.action = "{{ url_for('exportar_excel_seleccionados') }}";
+            ids.forEach(id => { const i = document.createElement('input'); i.type = 'hidden'; i.name = 'ids'; i.value = id; f.appendChild(i); });
+            document.body.appendChild(f); f.submit(); document.body.removeChild(f);
+        }
+        
+        function exportarFiltrados() {
+            const ids = [];
+            document.querySelectorAll('#tablaEquipos tbody tr').forEach(row => {
+                if (row.style.display !== 'none') { const cb = row.querySelector('.select-equipo'); if (cb) ids.push(cb.value); }
+            });
+            if (!ids.length) { alert('No hay equipos visibles'); return; }
+            const f = document.createElement('form'); f.method = 'POST'; f.action = "{{ url_for('exportar_excel_seleccionados') }}";
+            ids.forEach(id => { const i = document.createElement('input'); i.type = 'hidden'; i.name = 'ids'; i.value = id; f.appendChild(i); });
+            document.body.appendChild(f); f.submit(); document.body.removeChild(f);
+        }
+        
+        function actualizarContadorExportar() {
+            const c = document.querySelectorAll('.select-equipo:checked').length;
+            const btn = document.getElementById('btnExportarSeleccionadosMenu');
+            if (btn) btn.innerHTML = `☑️ Equipos seleccionados (${c})`;
+        }
+        
+        function seleccionarTodos() {
+            const cbs = document.querySelectorAll('.select-equipo');
+            const sel = document.getElementById('seleccionar-todos').checked;
+            cbs.forEach(cb => cb.checked = sel);
+            actualizarContadorExportar();
+        }
+        
+        function actualizarBloqueos() {
+            fetch('/api/verificar_bloqueos')
+                .then(r => r.json())
+                .then(data => {
+                    document.querySelectorAll('#tablaEquipos tbody tr').forEach(row => {
+                        const id = row.getAttribute('data-equipo-id');
+                        if (!id || !data[id]) return;
+                        const info = data[id];
+                        const acc = row.querySelector('td.acciones');
+                        if (!acc) return;
+                        const html = acc.innerHTML;
+                        if (info.bloqueado === true && html.includes('✏️')) {
+                            acc.innerHTML = html.replace(/<a href="\/equipo\/editar\/\d+" class="btn btn-info" title="Editar equipo">✏️<\/a>/, '<span class="btn btn-secondary" style="background:#999; cursor:not-allowed; font-size:11px; padding:2px 6px;" title="Editando por ' + info.usuario + '">🔒</span>');
+                        } else if (info.bloqueado === false && html.includes('🔒')) {
+                            acc.innerHTML = html.replace(/<span class="btn btn-secondary" style="background:#999; cursor:not-allowed; font-size:11px; padding:2px 6px;" title="Editando por [^"]*">🔒<\/span>/, '<a href="/equipo/editar/' + id + '" class="btn btn-info" title="Editar equipo">✏️</a>');
+                        }
+                    });
+                })
+                .catch(e => console.error('Error al actualizar bloqueos:', e));
+        }
+
+        document.getElementById('search').addEventListener('keyup', function() {
+            const term = this.value.toLowerCase();
+            const rows = document.querySelectorAll('#tablaEquipos tbody tr');
+            let visible = 0;
+            rows.forEach(row => {
+                const match = term === '' || row.innerText.toLowerCase().includes(term);
+                row.style.display = match ? '' : 'none';
+                if (match) visible++;
+            });
+            document.getElementById('contador').innerHTML = term === '' ? `📋 Total: ${rows.length} equipos` : `🔍 Mostrando ${visible} de ${rows.length} equipos`;
+        });
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('contador').innerHTML = `📋 Total: ${document.querySelectorAll('#tablaEquipos tbody tr').length} equipos`;
+            actualizarContadorExportar();
+            document.querySelectorAll('.select-equipo').forEach(cb => cb.addEventListener('change', actualizarContadorExportar));
+            document.getElementById('modalCambioEstado').style.display = 'none';
+            document.getElementById('modalObservacion').style.display = 'none';
+            document.getElementById('menuExportar').style.display = 'none';
+        });
+        
+        document.addEventListener('click', e => { 
+            const m = document.getElementById('menuExportar'); 
+            const bg = document.querySelector('.btn-group'); 
+            if (m && bg && !bg.contains(e.target) && m.style.display === 'block') {
+                // No cerrar aquí porque ya manejamos el cierre en toggleMenuExportar
+            }
+        });
+        
+        window.onclick = e => { 
+            if (e.target === document.getElementById('modalCambioEstado')) cerrarModalEstado(); 
+            if (e.target === document.getElementById('modalObservacion')) cerrarModalObservacion(); 
+        };
+        
+        setInterval(actualizarBloqueos, 5000);
+
+        // ========== TECLAS DE ACCESO RÁPIDO (Alt + Shift) ==========
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                cerrarModalEstado();
+                cerrarModalObservacion();
+                return;
+            }
+
+            const tag = e.target.tagName.toLowerCase();
+            const type = e.target.type ? e.target.type.toLowerCase() : '';
+            
+            if (tag === 'textarea' || tag === 'select' || 
+                (tag === 'input' && (type === 'text' || type === 'password' || type === 'email' || type === 'number' || type === 'date' || type === 'time'))) {
+                return;
+            }
+
+            // ====== Alt + Shift + N = Nuevo Equipo ======
+            if (e.altKey && e.shiftKey && (e.key === 'n' || e.key === 'N')) {
+                e.preventDefault();
+                window.location.href = "{{ url_for('nuevo_equipo') }}";
+                return;
+            }
+
+            // ====== Alt + Shift + E = Editar Equipo ======
+            if (e.altKey && e.shiftKey && (e.key === 'e' || e.key === 'E')) {
+                e.preventDefault();
+                let checked = document.querySelector('.select-equipo:checked');
+                let equipoId = null;
+
+                if (checked) {
+                    equipoId = checked.value;
+                } else {
+                    const firstRow = document.querySelector('#tablaEquipos tbody tr:not([style*="display: none"])');
+                    if (firstRow) {
+                        const cb = firstRow.querySelector('.select-equipo');
+                        if (cb) {
+                            equipoId = cb.value;
+                        }
+                    }
+                }
+
+                if (equipoId) {
+                    window.location.href = `/equipo/editar/${equipoId}`;
+                } else {
+                    alert('No hay equipos disponibles');
+                }
+                return;
+            }
+
+            // ====== Alt + Shift + O = Agregar Observación ======
+            if (e.altKey && e.shiftKey && (e.key === 'o' || e.key === 'O')) {
+                e.preventDefault();
+                let checked = document.querySelector('.select-equipo:checked');
+                let equipoId = null;
+
+                if (checked) {
+                    equipoId = checked.value;
+                } else {
+                    const firstRow = document.querySelector('#tablaEquipos tbody tr:not([style*="display: none"])');
+                    if (firstRow) {
+                        const cb = firstRow.querySelector('.select-equipo');
+                        if (cb) {
+                            equipoId = cb.value;
+                        }
+                    }
+                }
+
+                if (equipoId) {
+                    abrirModalObservacion(equipoId);
+                } else {
+                    alert('No hay equipos disponibles');
+                }
+                return;
+            }
+
+            // ====== Alt + Shift + H = Ver Historial ======
+            if (e.altKey && e.shiftKey && (e.key === 'h' || e.key === 'H')) {
+                e.preventDefault();
+                let checked = document.querySelector('.select-equipo:checked');
+                let equipoId = null;
+
+                if (checked) {
+                    equipoId = checked.value;
+                } else {
+                    const firstRow = document.querySelector('#tablaEquipos tbody tr:not([style*="display: none"])');
+                    if (firstRow) {
+                        const cb = firstRow.querySelector('.select-equipo');
+                        if (cb) {
+                            equipoId = cb.value;
+                        }
+                    }
+                }
+
+                if (equipoId) {
+                    window.location.href = `/equipo/historial/${equipoId}`;
+                } else {
+                    alert('No hay equipos disponibles');
+                }
+                return;
+            }
+
+            // ====== Alt + Shift + C = Cambiar Estado ======
+            if (e.altKey && e.shiftKey && (e.key === 'c' || e.key === 'C')) {
+                e.preventDefault();
+                let checked = document.querySelector('.select-equipo:checked');
+                let equipoId = null;
+                let equipoEstado = null;
+
+                if (checked) {
+                    equipoId = checked.value;
+                    const row = checked.closest('tr');
+                    if (row) {
+                        const estadoCell = row.querySelector('.estado');
+                        if (estadoCell) {
+                            equipoEstado = estadoCell.textContent.trim();
+                        }
+                    }
+                } else {
+                    const firstRow = document.querySelector('#tablaEquipos tbody tr:not([style*="display: none"])');
+                    if (firstRow) {
+                        const cb = firstRow.querySelector('.select-equipo');
+                        if (cb) {
+                            equipoId = cb.value;
+                            const estadoCell = firstRow.querySelector('.estado');
+                            if (estadoCell) {
+                                equipoEstado = estadoCell.textContent.trim();
+                            }
+                        }
+                    }
+                }
+
+                if (equipoId && equipoEstado) {
+                    cambiarEstadoCompleto(parseInt(equipoId), equipoEstado);
+                } else {
+                    alert('No hay equipos disponibles');
+                }
+                return;
+            }
+
+            // ====== Alt + Shift + D = Eliminar Equipo ======
+            if (e.altKey && e.shiftKey && (e.key === 'd' || e.key === 'D')) {
+                e.preventDefault();
+                let checked = document.querySelector('.select-equipo:checked');
+                let equipoId = null;
+                let nroInt = null;
+
+                if (checked) {
+                    equipoId = checked.value;
+                    const row = checked.closest('tr');
+                    if (row) {
+                        const nroCell = row.querySelector('td:nth-child(2)');
+                        if (nroCell) {
+                            nroInt = nroCell.textContent.trim();
+                        }
+                    }
+                } else {
+                    const firstRow = document.querySelector('#tablaEquipos tbody tr:not([style*="display: none"])');
+                    if (firstRow) {
+                        const cb = firstRow.querySelector('.select-equipo');
+                        if (cb) {
+                            equipoId = cb.value;
+                            const nroCell = firstRow.querySelector('td:nth-child(2)');
+                            if (nroCell) {
+                                nroInt = nroCell.textContent.trim();
+                            }
+                        }
+                    }
+                }
+
+                if (equipoId && nroInt) {
+                    if (confirm(`¿Eliminar el equipo ${nroInt}?`)) {
+                        window.location.href = `/equipo/eliminar/${equipoId}`;
+                    }
+                } else {
+                    alert('No hay equipos disponibles');
+                }
+                return;
+            }
+        });
+
+        // ========== FUNCIÓN TOGGLE DROPDOWN ==========
+        function toggleDropdown(event, id) {
+            event.stopPropagation();
+            const menu = document.getElementById(`dropdown-${id}`);
+            const allMenus = document.querySelectorAll('.dropdown-menu');
+            
+            // Cerrar otros dropdowns
+            allMenus.forEach(m => {
+                if (m !== menu) m.classList.remove('show');
+            });
+            
+            menu.classList.toggle('show');
+            
+            // Cerrar al hacer clic fuera
+            const closeDropdown = function(e) {
+                if (!e.target.closest(`#dropdown-${id}`) && !e.target.closest('.btn-mas')) {
+                    menu.classList.remove('show');
+                    document.removeEventListener('click', closeDropdown);
+                }
+            };
+            
+            if (menu.classList.contains('show')) {
+                setTimeout(() => {
+                    document.addEventListener('click', closeDropdown);
+                }, 10);
+            }
+        }
+
+        // Cerrar dropdowns al hacer clic fuera (global)
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.acciones')) {
+                document.querySelectorAll('.dropdown-menu').forEach(m => {
+                    m.classList.remove('show');
+                });
+            }
+        });
+    </script>
+</body>
+</html>
