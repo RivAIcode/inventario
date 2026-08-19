@@ -107,150 +107,6 @@
             }
         }
         
-        /* ====== ESTILOS PARA ACCIONES CON DROPDOWN ====== */
-        .acciones {
-            white-space: nowrap;
-            min-width: 50px;
-            position: relative;
-        }
-        
-        .acciones .btn-mas {
-            padding: 6px 12px;
-            border-radius: 6px;
-            border: none;
-            background: #1E88E5;
-            color: white;
-            font-size: 18px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            line-height: 1;
-            min-width: 36px;
-            min-height: 36px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .acciones .btn-mas:hover {
-            background: #1565C0;
-            transform: scale(1.05);
-            box-shadow: 0 2px 8px rgba(30, 136, 229, 0.3);
-        }
-        
-        .acciones .btn-mas:active {
-            transform: scale(0.95);
-        }
-        
-        .acciones .dropdown-menu {
-            display: none;
-            position: absolute;
-            right: 0;
-            top: 100%;
-            background: white;
-            min-width: 190px;
-            border-radius: 10px;
-            box-shadow: 0 4px 24px rgba(0,0,0,0.15);
-            z-index: 1000;
-            overflow: hidden;
-            padding: 6px 0;
-            margin-top: 4px;
-            animation: dropdownSlide 0.2s ease-out;
-        }
-        
-        @keyframes dropdownSlide {
-            from {
-                opacity: 0;
-                transform: translateY(-8px) scale(0.96);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0) scale(1);
-            }
-        }
-        
-        .acciones .dropdown-menu.show {
-            display: block;
-        }
-        
-        .acciones .dropdown-item {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 9px 16px;
-            text-decoration: none;
-            color: #333;
-            background: white;
-            border: none;
-            width: 100%;
-            text-align: left;
-            cursor: pointer;
-            font-size: 13px;
-            font-weight: 500;
-            transition: all 0.15s ease;
-            white-space: nowrap;
-        }
-        
-        .acciones .dropdown-item:hover {
-            background: #f0f4f8;
-        }
-        
-        .acciones .dropdown-item .icon {
-            font-size: 16px;
-            width: 24px;
-            text-align: center;
-        }
-        
-        .acciones .dropdown-item.danger {
-            color: #d32f2f;
-        }
-        .acciones .dropdown-item.danger:hover {
-            background: #ffebee;
-        }
-        
-        .acciones .dropdown-item.estado {
-            color: #E65100;
-        }
-        .acciones .dropdown-item.estado:hover {
-            background: #fff3e0;
-        }
-        
-        .acciones .dropdown-item.observacion {
-            color: #2E7D32;
-        }
-        .acciones .dropdown-item.observacion:hover {
-            background: #e8f5e9;
-        }
-        
-        .acciones .dropdown-item.editar {
-            color: #0D47A1;
-        }
-        .acciones .dropdown-item.editar:hover {
-            background: #e3f2fd;
-        }
-        
-        .acciones .dropdown-item.historial {
-            color: #6A1B9A;
-        }
-        .acciones .dropdown-item.historial:hover {
-            background: #f3e5f5;
-        }
-        
-        .acciones .locked {
-            padding: 6px 12px;
-            border-radius: 6px;
-            background: #e0e0e0;
-            color: #999;
-            font-size: 16px;
-            cursor: not-allowed;
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            min-width: 36px;
-            min-height: 36px;
-            justify-content: center;
-        }
-        
         /* ====== ESTADOS ====== */
         .estado {
             display: inline-block;
@@ -272,6 +128,8 @@
             font-weight: 700;
             font-size: 13px;
             white-space: nowrap;
+            min-width: 45px;
+            max-width: 65px;
         }
         
         .alerta-vencido {
@@ -309,6 +167,8 @@
         #tablaEquipos {
             width: 100%;
             border-collapse: collapse;
+            table-layout: fixed;
+            min-width: 700px;
         }
         
         #tablaEquipos th,
@@ -317,6 +177,8 @@
             text-align: center;
             border: 1px solid #ddd;
             vertical-align: middle;
+            overflow: hidden;
+            text-overflow: ellipsis;
             white-space: nowrap;
         }
         
@@ -324,85 +186,150 @@
             background: #1E88E5;
             color: white;
             font-weight: 600;
+            font-size: 11px;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        
+        /* ====== ANCHOS FIJOS (sin columna acciones) ====== */
+        #tablaEquipos th:nth-child(1), #tablaEquipos td:nth-child(1) { width: 30px; min-width: 25px; max-width: 35px; } /* Checkbox */
+        #tablaEquipos th:nth-child(2), #tablaEquipos td:nth-child(2) { width: 50px; min-width: 40px; max-width: 60px; } /* Nro Int */
+        #tablaEquipos th:nth-child(3), #tablaEquipos td:nth-child(3) { width: 70px; min-width: 55px; max-width: 85px; } /* Nro Serie */
+        #tablaEquipos th:nth-child(4), #tablaEquipos td:nth-child(4) { width: 35px; min-width: 28px; max-width: 45px; } /* Área */
+        #tablaEquipos th:nth-child(5), #tablaEquipos td:nth-child(5) { width: 85px; min-width: 65px; max-width: 100px; } /* Localidad */
+        #tablaEquipos th:nth-child(6), #tablaEquipos td:nth-child(6) { width: 85px; min-width: 65px; max-width: 100px; } /* Responsable */
+        #tablaEquipos th:nth-child(7), #tablaEquipos td:nth-child(7) { width: 100px; min-width: 75px; max-width: 120px; } /* Equipo */
+        #tablaEquipos th:nth-child(8), #tablaEquipos td:nth-child(8) { width: 75px; min-width: 60px; max-width: 90px; } /* Estado */
+        #tablaEquipos th:nth-child(9), #tablaEquipos td:nth-child(9) { width: 70px; min-width: 55px; max-width: 85px; } /* Contrastación */
+        #tablaEquipos th:nth-child(10), #tablaEquipos td:nth-child(10) { width: 50px; min-width: 40px; max-width: 60px; } /* Alerta */
+        
+        /* ====== ACCIONES RÁPIDAS ====== */
+        .acciones-rapidas {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            align-items: center;
+            padding: 8px 12px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin: 10px 0;
+            border: 1px solid #e0e0e0;
+        }
+        
+        .acciones-rapidas .label {
+            font-weight: 600;
+            color: #555;
+            font-size: 13px;
+            margin-right: 4px;
+        }
+        
+        .acciones-rapidas .btn {
+            padding: 5px 12px;
             font-size: 12px;
+            border-radius: 6px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            border: none;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
         }
         
-        /* ====== ANCHOS AJUSTADOS A TUS DATOS ====== */
-        /* Ajusta estos valores según los caracteres reales de tus datos */
-        
-        /* Nro Serie - ~10 caracteres */
-        #tablaEquipos td:nth-child(3) {
-            max-width: 80px;
-            overflow: hidden;
-            text-overflow: ellipsis;
+        .acciones-rapidas .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
         }
         
-        /* Localidad - ~12 caracteres */
-        #tablaEquipos td:nth-child(5) {
-            max-width: 90px;
-            overflow: hidden;
-            text-overflow: ellipsis;
+        .acciones-rapidas .btn-primary { background: #1E88E5; color: white; }
+        .acciones-rapidas .btn-primary:hover { background: #1565C0; }
+        
+        .acciones-rapidas .btn-info { background: #e3f2fd; color: #0D47A1; }
+        .acciones-rapidas .btn-info:hover { background: #bbdefb; }
+        
+        .acciones-rapidas .btn-warning { background: #fff3e0; color: #E65100; }
+        .acciones-rapidas .btn-warning:hover { background: #ffe0b2; }
+        
+        .acciones-rapidas .btn-danger { background: #ffebee; color: #b71C1C; }
+        .acciones-rapidas .btn-danger:hover { background: #ffcdd2; }
+        
+        .acciones-rapidas .btn-success { background: #e8f5e9; color: #2E7D32; }
+        .acciones-rapidas .btn-success:hover { background: #c8e6c9; }
+        
+        /* ====== BARRA DE ACCIONES PRINCIPAL ====== */
+        .actions-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: center;
+            padding: 8px 12px;
+            margin: 5px 0 10px 0;
+            background: transparent;
+            border-radius: 8px;
+            border: none;
         }
         
-        /* Responsable - ~15 caracteres */
-        #tablaEquipos td:nth-child(6) {
-            max-width: 105px;
-            overflow: hidden;
-            text-overflow: ellipsis;
+        .actions-bar .btn {
+            padding: 6px 14px;
+            font-size: 12px;
+            border-radius: 6px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            border: none;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
         }
         
-        /* Equipo - ~18 caracteres */
-        #tablaEquipos td:nth-child(7) {
-            max-width: 120px;
-            overflow: hidden;
-            text-overflow: ellipsis;
+        .actions-bar .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
         }
         
-        /* Alerta */
-        #tablaEquipos td:nth-child(10) {
-            max-width: 65px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
+        .actions-bar .btn-primary { background: #1E88E5; color: white; }
+        .actions-bar .btn-primary:hover { background: #1565C0; }
+        .actions-bar .btn-danger { background: #d32f2f; color: white; }
+        .actions-bar .btn-danger:hover { background: #b71C1C; }
+        .actions-bar .btn-warning { background: #f57c00; color: white; }
+        .actions-bar .btn-warning:hover { background: #e65100; }
+        .actions-bar .btn-info { background: #e3f2fd; color: #0D47A1; }
+        .actions-bar .btn-info:hover { background: #bbdefb; }
+        .actions-bar .btn-secondary { background: #e0e0e0; color: #333; }
+        .actions-bar .btn-secondary:hover { background: #d0d0d0; }
         
-        /* ====== RESPONSIVE ====== */
         @media (max-width: 768px) {
-            .acciones .btn-mas {
-                padding: 4px 10px;
-                font-size: 16px;
-                min-width: 32px;
-                min-height: 32px;
+            .acciones-rapidas .btn {
+                padding: 4px 8px;
+                font-size: 10px;
             }
-            .acciones .dropdown-menu {
-                min-width: 170px;
-                right: -10px;
-            }
-            .acciones .dropdown-item {
-                padding: 8px 14px;
-                font-size: 12px;
-            }
-            td, th {
+            .acciones-rapidas .label {
                 font-size: 11px;
+            }
+            .actions-bar .btn {
+                padding: 4px 10px;
+                font-size: 10px;
+            }
+            #tablaEquipos {
+                min-width: 600px;
+            }
+            #tablaEquipos th, #tablaEquipos td {
+                font-size: 10px;
                 padding: 4px 5px;
             }
-            .alerta-cell {
-                font-size: 11px;
-            }
-            #tablaEquipos td:nth-child(3) { max-width: 60px; } /* Nro Serie */
-            #tablaEquipos td:nth-child(5) { max-width: 65px; } /* Localidad */
-            #tablaEquipos td:nth-child(6) { max-width: 75px; } /* Responsable */
-            #tablaEquipos td:nth-child(7) { max-width: 85px; } /* Equipo */
         }
         
         @media (max-width: 480px) {
-            td, th {
-                font-size: 10px;
+            #tablaEquipos {
+                min-width: 500px;
+            }
+            #tablaEquipos th, #tablaEquipos td {
+                font-size: 9px;
                 padding: 3px 4px;
             }
-            #tablaEquipos td:nth-child(3) { max-width: 50px; }
-            #tablaEquipos td:nth-child(5) { max-width: 55px; }
-            #tablaEquipos td:nth-child(6) { max-width: 60px; }
-            #tablaEquipos td:nth-child(7) { max-width: 70px; }
         }
     </style>
 </head>
@@ -432,15 +359,13 @@
         <div class="filtro-group"><label>Nro Serie</label><input type="text" id="filtro_nro_serie" placeholder="Buscar..." onkeyup="aplicarFiltros()"></div>
         <div class="filtro-group"><label>Área</label><select id="filtro_area" onchange="aplicarFiltros()"><option value="">Todas</option><option value="AP">AP</option><option value="AS">AS</option></select></div>
         <div class="filtro-group"><label>Estado</label><select id="filtro_estado" onchange="aplicarFiltros()"><option value="">Todos</option><option value="Operativo">Operativo</option><option value="Mantencion">Mantención</option><option value="Contrastacion">Contrastación</option><option value="Prestado">Prestado</option><option value="Volante">Volante</option><option value="Fuera de Servicio">Fuera de Servicio</option></select></div>
-        <div class="filtro-group"><label>Localidad</label><input type="text" id="filtro_localidad" list="lista_localidades" placeholder="Escribe para buscar..." onkeyup="aplicarFiltros()" autocomplete="off"><datalist id="lista_localidades">{% for loc in LOCALIDADES %}<option value="{{ loc }}">{{ loc }}</option>{% endfor %}</datalist></div>
-        <div class="filtro-group"><label>Tipo Equipo</label><select id="filtro_tipo" onchange="aplicarFiltros()"><option value="">Todos</option>{% for tipo in TIPOS_EQUIPO %}<option value="{{ tipo }}">{{ tipo }}</option>{% endfor %}</select></div>
+        <div class="filtro-group"><label>Localidad</label><input type="text" id="filtro_localidad" list="lista_localidades" placeholder="Escribe..." onkeyup="aplicarFiltros()" autocomplete="off"><datalist id="lista_localidades">{% for loc in LOCALIDADES %}<option value="{{ loc }}">{{ loc }}</option>{% endfor %}</datalist></div>
+        <div class="filtro-group"><label>Tipo</label><select id="filtro_tipo" onchange="aplicarFiltros()"><option value="">Todos</option>{% for tipo in TIPOS_EQUIPO %}<option value="{{ tipo }}">{{ tipo }}</option>{% endfor %}</select></div>
         <div class="filtro-group"><button class="btn btn-secondary" onclick="limpiarFiltros()">🗑️ LIMPIAR</button></div>
     </div>
 
-    <div class="actions">
-        <a href="{{ url_for('nuevo_equipo') }}" class="btn btn-primary">➕ AGREGAR</a>
-        <a href="{{ url_for('grafico') }}" class="btn btn-info">📊 GRÁFICO</a>
-        
+    <!-- ====== BARRA DE ACCIONES PRINCIPAL (alineada con margen) ====== -->
+    <div class="actions-bar" style="padding-left: 12px;">
         <div class="btn-group">
             <button class="btn btn-primary" onclick="toggleMenuExportar()" style="display: flex; align-items: center; gap: 5px;">
                 📊 EXPORTAR EXCEL ▼
@@ -452,18 +377,28 @@
             </div>
         </div>
         
-        <a href="{{ url_for('exportar_pdf_alertas') }}" class="btn btn-danger">📄 EXPORTAR PDF ALERTAS</a>
+        <a href="{{ url_for('exportar_pdf_alertas') }}" class="btn btn-danger">📄 PDF ALERTAS</a>
         <a href="{{ url_for('enviar_correo') }}" class="btn btn-warning">📧 ENVIAR ALERTAS</a>
-        <a href="{{ url_for('mantencion_dashboard') }}" class="btn btn-secondary">🔧 MANTENCIÓN</a>
-        <a href="{{ url_for('contrastacion_dashboard') }}" class="btn btn-secondary">📊 CONTRASTACIÓN</a>
+        
         {% if current_user.es_admin %}
         <a href="{{ url_for('admin_usuarios') }}" class="btn btn-secondary">👥 USUARIOS</a>
         <a href="{{ url_for('listar_backups') }}" class="btn btn-secondary">💾 RESPALDOS</a>
         <a href="{{ url_for('admin_correos') }}" class="btn btn-secondary">⚙️ CORREOS</a>
         {% endif %}
+        
         <a href="{{ url_for('perfil') }}" class="btn btn-info">🔐 MI PERFIL</a>
         <button onclick="location.reload()" class="btn btn-info">🔄 ACTUALIZAR</button>
-        <small style="display: block; margin-top: 8px; color: #d32f2f; font-size: 13px; font-weight: bold;">⚠️ IMPORTANTE: Antes de editar, haz clic en "ACTUALIZAR"</small>
+    </div>
+
+    <!-- ====== ACCIONES RÁPIDAS SOBRE LA TABLA ====== -->
+    <div class="acciones-rapidas">
+        <span class="label">⚡ Acciones:</span>
+        <a href="{{ url_for('nuevo_equipo') }}" class="btn btn-primary">➕ Nuevo</a>
+        <button onclick="accionRapida('historial')" class="btn btn-info" title="Ver historial del equipo seleccionado">📋 Historial</button>
+        <button onclick="accionRapida('editar')" class="btn btn-warning" title="Editar equipo seleccionado">✏️ Editar</button>
+        <button onclick="accionRapida('observacion')" class="btn btn-success" title="Agregar observación al equipo seleccionado">💬 Observación</button>
+        <button onclick="accionRapida('eliminar')" class="btn btn-danger" title="Eliminar equipo seleccionado">🗑️ Eliminar</button>
+        <span style="font-size: 11px; color: #999; margin-left: 5px;">(selecciona un equipo con ☑)</span>
     </div>
 
     <div class="search-bar">
@@ -485,8 +420,7 @@
                         <th onclick="sortTable(6)">Equipo</th>
                         <th onclick="sortTable(7)">Estado</th>
                         <th onclick="sortTable(8)">Contrastación</th>
-                        <th title="Alerta de vencimiento">⚠️</th>
-                        <th style="min-width:50px;">Acciones</th>
+                        <th title="Alerta">⚠️</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -496,7 +430,7 @@
                     
                     <tr class="{{ alerta.clase }}" data-equipo-id="{{ eq.id }}">
                         <td><input type="checkbox" class="select-equipo" value="{{ eq.id }}"></td>
-                        <td>{{ eq.nro_int }}</td>
+                        <td title="{{ eq.nro_int }}">{{ eq.nro_int }}</td>
                         <td title="{{ eq.nro_serie or '-' }}">{{ eq.nro_serie or '-' }}</td>
                         <td>{{ eq.area or '-' }}</td>
                         <td title="{{ eq.localidad or '-' }}">{{ eq.localidad or '-' }}</td>
@@ -506,30 +440,6 @@
                         <td>{{ formatear_fecha(eq.fecha_contrastacion) }}</td>
                         <td class="alerta-cell" title="{{ alerta.texto }}">
                             {{ alerta.icono }}{% if alerta.dias_texto %} {{ alerta.dias_texto }}{% endif %}
-                        </td>
-                        <td class="acciones">
-                            {% if bloqueado and bloqueado_por != current_user.nombre %}
-                                <span class="locked" title="Editando por {{ bloqueado_por }}">🔒</span>
-                            {% else %}
-                                <button class="btn-mas" onclick="toggleDropdown(event, {{ eq.id }})" title="Acciones">⋮</button>
-                                <div class="dropdown-menu" id="dropdown-{{ eq.id }}">
-                                    <button class="dropdown-item estado" onclick="cambiarEstadoCompleto({{ eq.id }}, '{{ eq.estado }}')">
-                                        <span class="icon">🔄</span> Cambiar Estado
-                                    </button>
-                                    <button class="dropdown-item observacion" onclick="abrirModalObservacion({{ eq.id }})">
-                                        <span class="icon">💬</span> Observación
-                                    </button>
-                                    <a href="{{ url_for('editar_equipo', id=eq.id) }}" class="dropdown-item editar">
-                                        <span class="icon">✏️</span> Editar
-                                    </a>
-                                    <a href="{{ url_for('ver_historial', id=eq.id) }}" class="dropdown-item historial">
-                                        <span class="icon">📋</span> Historial
-                                    </a>
-                                    <a href="{{ url_for('eliminar_equipo', id=eq.id) }}" class="dropdown-item danger" onclick="return confirm('¿Eliminar {{ eq.nro_int }}?')">
-                                        <span class="icon">🗑️</span> Eliminar
-                                    </a>
-                                </div>
-                            {% endif %}
                         </td>
                     </tr>
                     {% endfor %}
@@ -580,7 +490,12 @@
                     
                     <div id="div_responsable_cambio_modal" style="display:none; margin-bottom:14px;">
                         <label style="display:block; font-weight:600; color:#333; margin-bottom:5px; font-size:12px;">👤 Responsable</label>
-                        <input type="text" id="cambio_responsable_modal" placeholder="Nombre del responsable" style="width:100%; padding:8px 12px; border:2px solid #e0e0e0; border-radius:10px; font-size:13px;">
+                        <input type="text" id="cambio_responsable_modal" list="lista_responsables_cambio" placeholder="Nombre del responsable" style="width:100%; padding:8px 12px; border:2px solid #e0e0e0; border-radius:10px; font-size:13px;">
+                        <datalist id="lista_responsables_cambio">
+                            {% for resp in responsables_unicos %}
+                            <option value="{{ resp.nombre }}">{{ resp.nombre }} {% if resp.email %}({{ resp.email }}){% endif %}</option>
+                            {% endfor %}
+                        </datalist>
                     </div>
                     
                     <div id="div_servicio_tecnico_modal" style="display:none; margin-bottom:14px;">
@@ -925,14 +840,7 @@
                         const id = row.getAttribute('data-equipo-id');
                         if (!id || !data[id]) return;
                         const info = data[id];
-                        const acc = row.querySelector('td.acciones');
-                        if (!acc) return;
-                        const html = acc.innerHTML;
-                        if (info.bloqueado === true && html.includes('✏️')) {
-                            acc.innerHTML = html.replace(/<a href="\/equipo\/editar\/\d+" class="btn btn-info" title="Editar equipo">✏️<\/a>/, '<span class="btn btn-secondary" style="background:#999; cursor:not-allowed; font-size:11px; padding:2px 6px;" title="Editando por ' + info.usuario + '">🔒</span>');
-                        } else if (info.bloqueado === false && html.includes('🔒')) {
-                            acc.innerHTML = html.replace(/<span class="btn btn-secondary" style="background:#999; cursor:not-allowed; font-size:11px; padding:2px 6px;" title="Editando por [^"]*">🔒<\/span>/, '<a href="/equipo/editar/' + id + '" class="btn btn-info" title="Editar equipo">✏️</a>');
-                        }
+                        // Ya no hay botones en la tabla, solo mostramos estado
                     });
                 })
                 .catch(e => console.error('Error al actualizar bloqueos:', e));
@@ -950,7 +858,7 @@
             document.getElementById('contador').innerHTML = term === '' ? `📋 Total: ${rows.length} equipos` : `🔍 Mostrando ${visible} de ${rows.length} equipos`;
         });
         
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('contador').innerHTML = `📋 Total: ${document.querySelectorAll('#tablaEquipos tbody tr').length} equipos`;
             actualizarContadorExportar();
             document.querySelectorAll('.select-equipo').forEach(cb => cb.addEventListener('change', actualizarContadorExportar));
@@ -959,15 +867,8 @@
             document.getElementById('menuExportar').style.display = 'none';
         });
         
-        document.addEventListener('click', e => { 
-            const m = document.getElementById('menuExportar'); 
-            const bg = document.querySelector('.btn-group'); 
-            if (m && bg && !bg.contains(e.target) && m.style.display === 'block') {
-                // No cerrar aquí porque ya manejamos el cierre en toggleMenuExportar
-            }
-        });
-        
-        window.onclick = e => { 
+        // Cerrar modales al hacer clic fuera
+        window.onclick = function(e) { 
             if (e.target === document.getElementById('modalCambioEstado')) cerrarModalEstado(); 
             if (e.target === document.getElementById('modalObservacion')) cerrarModalObservacion(); 
         };
@@ -1000,78 +901,21 @@
             // ====== Alt + Shift + E = Editar Equipo ======
             if (e.altKey && e.shiftKey && (e.key === 'e' || e.key === 'E')) {
                 e.preventDefault();
-                let checked = document.querySelector('.select-equipo:checked');
-                let equipoId = null;
-
-                if (checked) {
-                    equipoId = checked.value;
-                } else {
-                    const firstRow = document.querySelector('#tablaEquipos tbody tr:not([style*="display: none"])');
-                    if (firstRow) {
-                        const cb = firstRow.querySelector('.select-equipo');
-                        if (cb) {
-                            equipoId = cb.value;
-                        }
-                    }
-                }
-
-                if (equipoId) {
-                    window.location.href = `/equipo/editar/${equipoId}`;
-                } else {
-                    alert('No hay equipos disponibles');
-                }
+                accionRapida('editar');
                 return;
             }
 
             // ====== Alt + Shift + O = Agregar Observación ======
             if (e.altKey && e.shiftKey && (e.key === 'o' || e.key === 'O')) {
                 e.preventDefault();
-                let checked = document.querySelector('.select-equipo:checked');
-                let equipoId = null;
-
-                if (checked) {
-                    equipoId = checked.value;
-                } else {
-                    const firstRow = document.querySelector('#tablaEquipos tbody tr:not([style*="display: none"])');
-                    if (firstRow) {
-                        const cb = firstRow.querySelector('.select-equipo');
-                        if (cb) {
-                            equipoId = cb.value;
-                        }
-                    }
-                }
-
-                if (equipoId) {
-                    abrirModalObservacion(equipoId);
-                } else {
-                    alert('No hay equipos disponibles');
-                }
+                accionRapida('observacion');
                 return;
             }
 
             // ====== Alt + Shift + H = Ver Historial ======
             if (e.altKey && e.shiftKey && (e.key === 'h' || e.key === 'H')) {
                 e.preventDefault();
-                let checked = document.querySelector('.select-equipo:checked');
-                let equipoId = null;
-
-                if (checked) {
-                    equipoId = checked.value;
-                } else {
-                    const firstRow = document.querySelector('#tablaEquipos tbody tr:not([style*="display: none"])');
-                    if (firstRow) {
-                        const cb = firstRow.querySelector('.select-equipo');
-                        if (cb) {
-                            equipoId = cb.value;
-                        }
-                    }
-                }
-
-                if (equipoId) {
-                    window.location.href = `/equipo/historial/${equipoId}`;
-                } else {
-                    alert('No hay equipos disponibles');
-                }
+                accionRapida('historial');
                 return;
             }
 
@@ -1116,80 +960,55 @@
             // ====== Alt + Shift + D = Eliminar Equipo ======
             if (e.altKey && e.shiftKey && (e.key === 'd' || e.key === 'D')) {
                 e.preventDefault();
-                let checked = document.querySelector('.select-equipo:checked');
-                let equipoId = null;
-                let nroInt = null;
-
-                if (checked) {
-                    equipoId = checked.value;
-                    const row = checked.closest('tr');
-                    if (row) {
-                        const nroCell = row.querySelector('td:nth-child(2)');
-                        if (nroCell) {
-                            nroInt = nroCell.textContent.trim();
-                        }
-                    }
-                } else {
-                    const firstRow = document.querySelector('#tablaEquipos tbody tr:not([style*="display: none"])');
-                    if (firstRow) {
-                        const cb = firstRow.querySelector('.select-equipo');
-                        if (cb) {
-                            equipoId = cb.value;
-                            const nroCell = firstRow.querySelector('td:nth-child(2)');
-                            if (nroCell) {
-                                nroInt = nroCell.textContent.trim();
-                            }
-                        }
-                    }
-                }
-
-                if (equipoId && nroInt) {
-                    if (confirm(`¿Eliminar el equipo ${nroInt}?`)) {
-                        window.location.href = `/equipo/eliminar/${equipoId}`;
-                    }
-                } else {
-                    alert('No hay equipos disponibles');
-                }
+                accionRapida('eliminar');
                 return;
             }
         });
 
-        // ========== FUNCIÓN TOGGLE DROPDOWN ==========
-        function toggleDropdown(event, id) {
-            event.stopPropagation();
-            const menu = document.getElementById(`dropdown-${id}`);
-            const allMenus = document.querySelectorAll('.dropdown-menu');
+        // ========== ACCIONES RÁPIDAS ==========
+        function accionRapida(tipo) {
+            const checked = document.querySelector('.select-equipo:checked');
+            let equipoId = null;
             
-            // Cerrar otros dropdowns
-            allMenus.forEach(m => {
-                if (m !== menu) m.classList.remove('show');
-            });
-            
-            menu.classList.toggle('show');
-            
-            // Cerrar al hacer clic fuera
-            const closeDropdown = function(e) {
-                if (!e.target.closest(`#dropdown-${id}`) && !e.target.closest('.btn-mas')) {
-                    menu.classList.remove('show');
-                    document.removeEventListener('click', closeDropdown);
+            if (checked) {
+                equipoId = checked.value;
+            } else {
+                const firstRow = document.querySelector('#tablaEquipos tbody tr:not([style*="display: none"])');
+                if (firstRow) {
+                    const cb = firstRow.querySelector('.select-equipo');
+                    if (cb) {
+                        equipoId = cb.value;
+                    }
                 }
-            };
+            }
             
-            if (menu.classList.contains('show')) {
-                setTimeout(() => {
-                    document.addEventListener('click', closeDropdown);
-                }, 10);
+            if (!equipoId) {
+                alert('⚠️ No hay equipos disponibles. Selecciona uno o asegúrate de que haya equipos en la tabla.');
+                return;
+            }
+            
+            switch(tipo) {
+                case 'historial':
+                    window.location.href = `/equipo/historial/${equipoId}`;
+                    break;
+                case 'editar':
+                    window.location.href = `/equipo/editar/${equipoId}`;
+                    break;
+                case 'observacion':
+                    abrirModalObservacion(equipoId);
+                    break;
+                case 'eliminar':
+                    const row = document.querySelector(`input[value="${equipoId}"]`).closest('tr');
+                    const nroCell = row ? row.querySelector('td:nth-child(2)') : null;
+                    const nroInt = nroCell ? nroCell.textContent.trim() : equipoId;
+                    if (confirm(`¿Eliminar el equipo ${nroInt}?`)) {
+                        window.location.href = `/equipo/eliminar/${equipoId}`;
+                    }
+                    break;
+                default:
+                    alert('Acción no reconocida');
             }
         }
-
-        // Cerrar dropdowns al hacer clic fuera (global)
-        document.addEventListener('click', function(e) {
-            if (!e.target.closest('.acciones')) {
-                document.querySelectorAll('.dropdown-menu').forEach(m => {
-                    m.classList.remove('show');
-                });
-            }
-        });
     </script>
 </body>
 </html>

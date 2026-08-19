@@ -46,7 +46,7 @@
             flex-wrap: wrap;
         }
         
-        /* ====== TABLA DE HISTORIAL - COLUMNAS OPTIMIZADAS ====== */
+        /* ====== TABLA DE HISTORIAL ====== */
         .table-scroll-wrapper {
             overflow-x: auto;
         }
@@ -68,7 +68,6 @@
             overflow-wrap: break-word;
         }
         
-        /* ====== ANCHOS OPTIMIZADOS ====== */
         .historial-tabla th:nth-child(1),
         .historial-tabla td:nth-child(1) {
             width: 12%;
@@ -138,6 +137,11 @@
             background: #f5f5f5;
         }
         
+        /* ====== FILAS OCULTAS POR FILTRO ====== */
+        .historial-tabla tr.fila-oculta {
+            display: none !important;
+        }
+        
         .btn-sm {
             padding: 4px 10px;
             font-size: 12px;
@@ -159,6 +163,65 @@
         .archivo-info {
             flex: 1;
             min-width: 150px;
+        }
+        
+        /* ====== BUSCADOR ====== */
+        .buscador-historial {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .buscador-historial .input-container {
+            flex: 1;
+            min-width: 200px;
+            position: relative;
+        }
+        
+        .buscador-historial .input-container input {
+            width: 100%;
+            padding: 8px 12px;
+            padding-left: 35px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+        
+        .buscador-historial .input-container input:focus {
+            border-color: #1E88E5;
+            outline: none;
+        }
+        
+        .buscador-historial .input-container .lupa {
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 16px;
+            color: #999;
+        }
+        
+        .buscador-historial select {
+            padding: 8px 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            background: white;
+            cursor: pointer;
+        }
+        
+        .buscador-historial select:focus {
+            border-color: #1E88E5;
+            outline: none;
+        }
+        
+        .buscador-historial .contador {
+            font-size: 12px;
+            color: #666;
+            margin-left: auto;
         }
         
         /* ====== MÓVIL ====== */
@@ -220,11 +283,26 @@
             .dato-valor {
                 font-size: 12px;
             }
+            .buscador-historial .input-container {
+                min-width: 150px;
+            }
+            .buscador-historial select {
+                font-size: 12px;
+                padding: 6px 10px;
+            }
         }
         
         @media (max-width: 480px) {
             .datos-equipo {
                 grid-template-columns: 1fr;
+            }
+            .buscador-historial {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .buscador-historial .contador {
+                margin-left: 0;
+                text-align: center;
             }
         }
     </style>
@@ -246,8 +324,28 @@
     <!-- ====== HISTORIAL DE CAMBIOS (ARRIBA) ====== -->
     <div class="historial-container">
         <h3>📜 HISTORIAL DE CAMBIOS</h3>
+        
+        <!-- ====== BUSCADOR ====== -->
+        <div class="buscador-historial">
+            <div class="input-container">
+                <span class="lupa">🔍</span>
+                <input type="text" id="buscadorHistorial" placeholder="Buscar en historial..." onkeyup="filtrarHistorial()">
+            </div>
+            <select id="filtroAccion" onchange="filtrarHistorial()">
+                <option value="">📋 Todas las acciones</option>
+                <option value="CREACION">➕ Creación</option>
+                <option value="CAMBIO">✏️ Cambio</option>
+                <option value="CAMBIO_ESTADO">🔄 Cambio de Estado</option>
+                <option value="CONTRASTACION">📊 Contrastación</option>
+                <option value="OBSERVACION">💬 Observación</option>
+                <option value="RESTAURACION">💾 Restauración</option>
+            </select>
+            <button onclick="limpiarFiltrosHistorial()" class="btn btn-secondary" style="padding: 8px 16px;">🗑️ Limpiar</button>
+            <span class="contador" id="contadorHistorial">Mostrando 0 de 0</span>
+        </div>
+        
         <div class="table-scroll-wrapper">
-            <table class="historial-tabla">
+            <table class="historial-tabla" id="tablaHistorial">
                 <thead>
                     <tr>
                         <th>Fecha/Hora</th>
@@ -342,7 +440,6 @@
                 <div class="dato-label">Vencimiento Insumo</div>
                 <div class="dato-valor">{{ formatear_fecha(equipo.fecha_vencimiento_insumo) }}</div>
             </div>
-            <!-- ====== NUEVO CAMPO N° INFORME ====== -->
             <div class="dato-item">
                 <div class="dato-label">📄 N° Informe</div>
                 <div class="dato-valor">{{ equipo.nro_informe or '-' }}</div>
@@ -464,6 +561,48 @@
                     window.location.href = "{{ url_for('dashboard') }}";
                 }
             }
+        });
+
+        // ========== FILTRO DE HISTORIAL ==========
+        function filtrarHistorial() {
+            const busqueda = document.getElementById('buscadorHistorial').value.toLowerCase();
+            const filtroAccion = document.getElementById('filtroAccion').value;
+            const filas = document.querySelectorAll('#tablaHistorial tbody tr');
+            let visibles = 0;
+            
+            filas.forEach(fila => {
+                const texto = fila.textContent.toLowerCase();
+                const accion = fila.querySelector('td:nth-child(2)')?.textContent || '';
+                
+                let coincide = true;
+                
+                if (busqueda && !texto.includes(busqueda)) {
+                    coincide = false;
+                }
+                
+                if (filtroAccion && accion !== filtroAccion) {
+                    coincide = false;
+                }
+                
+                fila.style.display = coincide ? '' : 'none';
+                if (coincide) visibles++;
+            });
+            
+            const total = filas.length;
+            document.getElementById('contadorHistorial').textContent = `Mostrando ${visibles} de ${total}`;
+        }
+
+        function limpiarFiltrosHistorial() {
+            document.getElementById('buscadorHistorial').value = '';
+            document.getElementById('filtroAccion').value = '';
+            filtrarHistorial();
+        }
+
+        // Ejecutar al cargar la página
+        document.addEventListener('DOMContentLoaded', function() {
+            const filas = document.querySelectorAll('#tablaHistorial tbody tr');
+            const total = filas.length;
+            document.getElementById('contadorHistorial').textContent = `Mostrando ${total} de ${total}`;
         });
     </script>
 </body>

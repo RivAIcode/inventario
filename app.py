@@ -603,6 +603,7 @@ def editar_equipo(id):
             return redirect(url_for('dashboard'))
     if request.method == 'POST':
         try:
+            # Guardar valores anteriores
             estado_anterior = equipo.estado
             responsable_anterior = equipo.responsable
             modelo_sonda_anterior = equipo.modelo_sonda
@@ -611,8 +612,10 @@ def editar_equipo(id):
             observaciones_anteriores = equipo.observaciones
             fecha_contrastacion_anterior = equipo.fecha_contrastacion
             nro_informe_anterior = equipo.nro_informe
-            
+
             nuevas_observaciones = request.form.get('observaciones', '')
+
+            # Actualizar campos
             equipo.nro_serie = request.form.get('nro_serie', '')
             equipo.area = request.form.get('area', '')
             equipo.localidad = request.form.get('localidad', '')
@@ -627,7 +630,8 @@ def editar_equipo(id):
             equipo.nro_informe = request.form.get('nro_informe', '')
             equipo.observaciones = nuevas_observaciones
             equipo.ultima_actualizacion = get_chile_time()
-            
+
+            # Fechas
             if request.form.get('fecha_contrastacion'):
                 equipo.fecha_contrastacion = datetime.strptime(request.form['fecha_contrastacion'], '%Y-%m-%d').date()
             if request.form.get('fecha_certificado'):
@@ -638,10 +642,11 @@ def editar_equipo(id):
                 equipo.fecha_ultima_mantencion = datetime.strptime(request.form['fecha_ultima_mantencion'], '%Y-%m-%d').date()
             if request.form.get('fecha_retorno_mantencion'):
                 equipo.fecha_retorno_mantencion = datetime.strptime(request.form['fecha_retorno_mantencion'], '%Y-%m-%d').date()
-            
+
             if equipo.tipo_equipo in TIPOS_CON_VENCIMIENTO_AUTOMATICO and equipo.fecha_certificado:
                 equipo.fecha_vencimiento_insumo = calcular_vencimiento_insumo(equipo.fecha_certificado)
-            
+
+            # Archivos
             archivos = request.files.getlist('archivos')
             for archivo in archivos:
                 if archivo and archivo.filename and archivo_permitido(archivo.filename):
@@ -658,42 +663,34 @@ def editar_equipo(id):
                         nombre_original=archivo.filename, nombre_archivo=nombre_seguro
                     )
                     db.session.add(archivo_db)
-            
+
+            # ====== CONSTRUIR LISTA DE CAMBIOS AGRUPADOS ======
             cambios = []
-            
+            historial_accion = 'CAMBIO'  # Por defecto
+
+            # 1. Cambio de estado
             if estado_anterior != equipo.estado:
                 cambios.append(f"Estado: {estado_anterior} → {equipo.estado}")
+
+            # 2. Cambio de responsable
             if responsable_anterior != equipo.responsable:
                 cambios.append(f"Responsable: {responsable_anterior or 'Ninguno'} → {equipo.responsable or 'Ninguno'}")
-            
-            # ====== DETECTAR CAMBIO EN FECHA DE CONTRASTACIÓN ======
+
+            # 3. Cambio de fecha de contrastación
             if fecha_contrastacion_anterior != equipo.fecha_contrastacion:
                 fecha_anterior = formatear_fecha(fecha_contrastacion_anterior) or 'Sin fecha'
                 fecha_nueva = formatear_fecha(equipo.fecha_contrastacion) or 'Sin fecha'
-                
-                # Construir el detalle con el N° Informe
                 detalle_contrastacion = f"Contrastación: {fecha_anterior} → {fecha_nueva}"
                 if equipo.nro_informe:
                     detalle_contrastacion += f" | Informe: {equipo.nro_informe}"
-                
-                historial_contrastacion = Historial(
-                    equipo_id=equipo.id,
-                    accion='CONTRASTACION',
-                    detalle=detalle_contrastacion,
-                    usuario=current_user.username,
-                    responsable=equipo.responsable
-                )
-                db.session.add(historial_contrastacion)
-                
-                # Si el N° Informe cambió junto con la fecha, no guardar CAMBIO separado
-                if nro_informe_anterior != equipo.nro_informe:
-                    pass
-            else:
-                # Si no cambió la fecha pero sí el N° Informe, guardar como CAMBIO
-                if nro_informe_anterior != equipo.nro_informe:
-                    cambios.append(f"N° Informe: {nro_informe_anterior or 'Ninguno'} → {equipo.nro_informe or 'Ninguno'}")
-            
-            # ====== CAMPOS DE PHMETRO ======
+                cambios.append(detalle_contrastacion)
+                historial_accion = 'CONTRASTACION'  # Si hay cambio de contrastación, usar esta acción
+
+            # 4. Cambio de N° Informe (si no hubo cambio de contrastación)
+            if fecha_contrastacion_anterior == equipo.fecha_contrastacion and nro_informe_anterior != equipo.nro_informe:
+                cambios.append(f"N° Informe: {nro_informe_anterior or 'Ninguno'} → {equipo.nro_informe or 'Ninguno'}")
+
+            # 5. Cambios de pHmetro (sonda)
             if equipo.tipo_equipo in TIPOS_CON_PHMETRO:
                 if modelo_sonda_anterior != equipo.modelo_sonda:
                     cambios.append(f"Modelo Sonda: {modelo_sonda_anterior or 'Ninguno'} → {equipo.modelo_sonda or 'Ninguno'}")
@@ -701,32 +698,35 @@ def editar_equipo(id):
                     cambios.append(f"Modelo Equipo: {modelo_equipo_anterior or 'Ninguno'} → {equipo.modelo_equipo or 'Ninguno'}")
                 if nro_serie_sonda_anterior != equipo.nro_serie_sonda:
                     cambios.append(f"Nro Serie Sonda: {nro_serie_sonda_anterior or 'Ninguno'} → {equipo.nro_serie_sonda or 'Ninguno'}")
-            
+
+            # ====== GUARDAR UN SOLO REGISTRO DE HISTORIAL CON TODOS LOS CAMBIOS ======
             if cambios:
+                detalle_final = " | ".join(cambios)
                 historial = Historial(
-                    equipo_id=equipo.id, 
-                    accion='CAMBIO', 
-                    detalle=' | '.join(cambios),
-                    usuario=current_user.username, 
+                    equipo_id=equipo.id,
+                    accion=historial_accion,
+                    detalle=detalle_final,
+                    usuario=current_user.username,
                     responsable=equipo.responsable
                 )
                 db.session.add(historial)
-            
+
+            # ====== GUARDAR OBSERVACIÓN SOLO SI ES NUEVA ======
             if nuevas_observaciones and nuevas_observaciones != observaciones_anteriores:
                 historial_obs = Historial(
-                    equipo_id=equipo.id, 
+                    equipo_id=equipo.id,
                     accion='OBSERVACION',
                     detalle=nuevas_observaciones,
-                    usuario=current_user.username, 
+                    usuario=current_user.username,
                     responsable=equipo.responsable
                 )
                 db.session.add(historial_obs)
-            
+
             db.session.commit()
             flash('Equipo actualizado correctamente', 'success')
             liberar_bloqueo(id)
             return redirect(url_for('dashboard'))
-            
+
         except Exception as e:
             db.session.rollback()
             flash(f'Error: {str(e)}', 'error')
