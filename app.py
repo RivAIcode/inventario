@@ -124,18 +124,11 @@ class Equipo(db.Model):
     version = db.Column(db.Integer, default=1)
 
     # ====== NUEVOS CAMPOS ======
-    # Contrastación
     fecha_certificado_contrastacion = db.Column(db.Date, nullable=True)
     nro_informe_contrastacion = db.Column(db.String(100), nullable=True)
-
-    # Mantención
     fecha_certificado_mantencion = db.Column(db.Date, nullable=True)
     nro_informe_mantencion = db.Column(db.String(100), nullable=True)
-
-    # Despacho general
     fecha_despacho = db.Column(db.Date, nullable=True)
-
-    # Termómetros e Insumos
     nro_certificado_termometro = db.Column(db.String(100), nullable=True)
     fecha_contrastacion_termometro = db.Column(db.Date, nullable=True)
 
@@ -370,7 +363,6 @@ def obtener_alerta(equipo):
                 'dias_texto': ''
             }
 
-    # Sin alerta
     return {
         'texto': '',
         'clase': '',
@@ -425,6 +417,9 @@ def enviar_correo_alertas_general(vencidos, proximos, destinatarios):
             html += '<table border="1" cellpadding="8" style="border-collapse:collapse; width:100%;">'
             html += '<tr style="background:#1E88E5; color:white;"><th>Nro Int</th><th>Nro Serie</th><th>Equipo</th><th>Localidad</th><th>Responsable</th><th>Alerta</th></tr>'
             for e in vencidos:
+                # ====== SALTAR EQUIPOS EN MANTENCIÓN O CONTRASTACIÓN ======
+                if e.estado in ['Mantencion', 'Contrastacion']:
+                    continue
                 alerta = obtener_alerta(e)
                 html += f'<tr><td style="padding:8px;">{e.nro_int}</td><td style="padding:8px;">{e.nro_serie or "-"}</td><td style="padding:8px;">{e.tipo_equipo or "-"}</td><td style="padding:8px;">{e.localidad or "-"}</td><td style="padding:8px;">{e.responsable or "-"}</td><td style="padding:8px; color:#c62828;">{alerta["texto"]}</td></tr>'
             html += '</table><br>'
@@ -434,6 +429,9 @@ def enviar_correo_alertas_general(vencidos, proximos, destinatarios):
             html += '<table border="1" cellpadding="8" style="border-collapse:collapse; width:100%;">'
             html += '<tr style="background:#1E88E5; color:white;"><th>Nro Int</th><th>Nro Serie</th><th>Equipo</th><th>Localidad</th><th>Responsable</th><th>Alerta</th></tr>'
             for e in proximos:
+                # ====== SALTAR EQUIPOS EN MANTENCIÓN O CONTRASTACIÓN ======
+                if e.estado in ['Mantencion', 'Contrastacion']:
+                    continue
                 alerta = obtener_alerta(e)
                 html += f'<tr><td style="padding:8px;">{e.nro_int}</td><td style="padding:8px;">{e.nro_serie or "-"}</td><td style="padding:8px;">{e.tipo_equipo or "-"}</td><td style="padding:8px;">{e.localidad or "-"}</td><td style="padding:8px;">{e.responsable or "-"}</td><td style="padding:8px; color:#f57c00;">{alerta["texto"]}</td></tr>'
             html += '</table><br>'
@@ -481,6 +479,9 @@ def enviar_correo_alertas_responsable(email_responsable, nombre_responsable, ven
             html += '<table border="1" cellpadding="8" style="border-collapse:collapse; width:100%;">'
             html += '<tr style="background:#1E88E5; color:white;"><th>Nro Int</th><th>Nro Serie</th><th>Equipo</th><th>Localidad</th><th>Alerta</th></tr>'
             for e in vencidos:
+                # ====== SALTAR EQUIPOS EN MANTENCIÓN O CONTRASTACIÓN ======
+                if e.estado in ['Mantencion', 'Contrastacion']:
+                    continue
                 alerta = obtener_alerta(e)
                 html += f'<tr><td style="padding:8px;">{e.nro_int}</td><td style="padding:8px;">{e.nro_serie or "-"}</td><td style="padding:8px;">{e.tipo_equipo or "-"}</td><td style="padding:8px;">{e.localidad or "-"}</td><td style="padding:8px; color:#c62828;">{alerta["texto"]}</td></tr>'
             html += '</table><br>'
@@ -490,6 +491,9 @@ def enviar_correo_alertas_responsable(email_responsable, nombre_responsable, ven
             html += '<table border="1" cellpadding="8" style="border-collapse:collapse; width:100%;">'
             html += '<tr style="background:#1E88E5; color:white;"><th>Nro Int</th><th>Nro Serie</th><th>Equipo</th><th>Localidad</th><th>Alerta</th></tr>'
             for e in proximos:
+                # ====== SALTAR EQUIPOS EN MANTENCIÓN O CONTRASTACIÓN ======
+                if e.estado in ['Mantencion', 'Contrastacion']:
+                    continue
                 alerta = obtener_alerta(e)
                 html += f'<tr><td style="padding:8px;">{e.nro_int}</td><td style="padding:8px;">{e.nro_serie or "-"}</td><td style="padding:8px;">{e.tipo_equipo or "-"}</td><td style="padding:8px;">{e.localidad or "-"}</td><td style="padding:8px; color:#f57c00;">{alerta["texto"]}</td></tr>'
             html += '</table><br>'
@@ -609,7 +613,6 @@ def nuevo_equipo():
                 estado=request.form.get('estado', 'Operativo'),
                 servicio_tecnico=request.form.get('servicio_tecnico', ''),
                 observaciones=request.form.get('observaciones', ''),
-                # Nuevos campos
                 nro_informe_contrastacion=request.form.get('nro_informe_contrastacion', ''),
                 nro_informe_mantencion=request.form.get('nro_informe_mantencion', ''),
                 nro_certificado_termometro=request.form.get('nro_certificado_termometro', ''),
@@ -684,7 +687,7 @@ def nuevo_equipo():
 @login_required
 def editar_equipo(id):
     equipo = Equipo.query.get_or_404(id)
-
+    
     # ====== LOGS DE DEPURACIÓN ======
     if request.method == 'POST':
         print("=" * 60)
@@ -695,7 +698,7 @@ def editar_equipo(id):
         print("=" * 60)
         print(f"📌 estado recibido: '{request.form.get('estado', 'NO ENVIADO')}'")
         print("=" * 60)
-
+    
     if request.method == 'GET':
         bloqueado, nombre_usuario, fecha_bloqueo = verificar_bloqueo(id)
         if bloqueado and nombre_usuario != current_user.nombre:
@@ -705,7 +708,7 @@ def editar_equipo(id):
         if not exito:
             flash(f'⚠️ El equipo está siendo editado por {nombre_existente}. Intenta más tarde.', 'error')
             return redirect(url_for('dashboard'))
-
+    
     if request.method == 'POST':
         try:
             estado_anterior = equipo.estado
@@ -719,7 +722,7 @@ def editar_equipo(id):
             fecha_ultima_mantencion_anterior = equipo.fecha_ultima_mantencion
 
             nuevas_observaciones = request.form.get('observaciones', '')
-
+            
             # ====== ACTUALIZAR TODOS LOS CAMPOS ======
             equipo.nro_serie = request.form.get('nro_serie', '')
             equipo.area = request.form.get('area', '')
@@ -730,10 +733,10 @@ def editar_equipo(id):
             equipo.modelo_sonda = request.form.get('modelo_sonda', '')
             equipo.modelo_equipo = request.form.get('modelo_equipo', '')
             equipo.nro_serie_sonda = request.form.get('nro_serie_sonda', '')
-
+            
             # ====== ESTA ES LA LÍNEA IMPORTANTE ======
             equipo.estado = request.form.get('estado', 'Operativo')
-
+            
             equipo.servicio_tecnico = request.form.get('servicio_tecnico', '')
             equipo.observaciones = nuevas_observaciones
             equipo.ultima_actualizacion = get_chile_time()
@@ -742,7 +745,7 @@ def editar_equipo(id):
             equipo.nro_informe_contrastacion = request.form.get('nro_informe_contrastacion', '')
             equipo.nro_informe_mantencion = request.form.get('nro_informe_mantencion', '')
             equipo.nro_certificado_termometro = request.form.get('nro_certificado_termometro', '')
-
+            
             equipo.fecha_certificado_contrastacion = datetime.strptime(request.form['fecha_certificado_contrastacion'], '%Y-%m-%d').date() if request.form.get('fecha_certificado_contrastacion') else None
             equipo.fecha_certificado_mantencion = datetime.strptime(request.form['fecha_certificado_mantencion'], '%Y-%m-%d').date() if request.form.get('fecha_certificado_mantencion') else None
             equipo.fecha_contrastacion_termometro = datetime.strptime(request.form['fecha_contrastacion_termometro'], '%Y-%m-%d').date() if request.form.get('fecha_contrastacion_termometro') else None
@@ -851,7 +854,7 @@ def editar_equipo(id):
             db.session.rollback()
             flash(f'Error: {str(e)}', 'error')
             liberar_bloqueo(id)
-
+    
     archivos_fotos = Archivo.query.filter_by(equipo_id=equipo.id, tipo='foto').all()
     archivos_docs = Archivo.query.filter_by(equipo_id=equipo.id, tipo='documento').all()
     responsables_unicos = Responsable.query.order_by(Responsable.nombre).all()
@@ -1242,6 +1245,9 @@ def enviar_correo():
 
     for e in equipos:
         if e.estado == 'Contrastacion':
+            continue
+        # ====== SALTAR EQUIPOS EN MANTENCIÓN ======
+        if e.estado == 'Mantencion':
             continue
         alerta = obtener_alerta(e)
         if 'VENCIDO' in alerta['texto'] or 'VENCIDA' in alerta['texto']:
@@ -1663,6 +1669,9 @@ def admin_correos_probar_envio():
 
     for e in equipos:
         if e.estado == 'Contrastacion':
+            continue
+        # ====== SALTAR EQUIPOS EN MANTENCIÓN ======
+        if e.estado == 'Mantencion':
             continue
         alerta = obtener_alerta(e)
         if 'VENCIDO' in alerta['texto'] or 'VENCIDA' in alerta['texto']:
@@ -2402,6 +2411,9 @@ def enviar_alertas_automatico():
     for e in equipos:
         if e.estado == 'Contrastacion':
             continue
+        # ====== SALTAR EQUIPOS EN MANTENCIÓN ======
+        if e.estado == 'Mantencion':
+            continue
         alerta = obtener_alerta(e)
         if 'VENCIDO' in alerta['texto'] or 'VENCIDA' in alerta['texto']:
             vencidos.append(e)
@@ -2469,7 +2481,7 @@ def api_verificar_nro_int():
     if not nro_int:
         return jsonify({'existe': False})
     existe = Equipo.query.filter(Equipo.nro_int == nro_int).first() is not None
-    return jsonify({'existe': existe})  # <--- CORRECTO: DEVUELVE LA VARIABLE
+    return jsonify({'existe': existe})
 
 @app.route('/api/verificar_nro_serie')
 @login_required
@@ -2478,7 +2490,7 @@ def api_verificar_nro_serie():
     if not nro_serie:
         return jsonify({'existe': False})
     existe = Equipo.query.filter(Equipo.nro_serie == nro_serie).first() is not None
-    return jsonify({'existe': existe})  # <--- CORRECTO: DEVUELVE LA VARIABLE
+    return jsonify({'existe': existe})
 
 @app.route('/limpiar_flash', methods=['POST'])
 def limpiar_flash():
