@@ -284,6 +284,13 @@ def obtener_alerta(equipo):
                 'icono': '🟡',
                 'dias_texto': f'{dias}d'
             }
+        # Si no está en plazo de alerta, mostrar la fecha normal
+        return {
+            'texto': f'Vence contrastación termómetro: {formatear_fecha(fecha_venc)}',
+            'clase': '',
+            'icono': '✅',
+            'dias_texto': ''
+        }
 
     # ====== PRIORIDAD 2: TERMÓMETRO PATRÓN - CERTIFICADO (30 días) ======
     if tipo == 'Termometro patron AS' and equipo.fecha_certificado:
@@ -312,33 +319,30 @@ def obtener_alerta(equipo):
             }
 
     # ====== PRIORIDAD 2: EQUIPOS CON CONTRASTACIÓN (Colorímetros, Pocket, Multiparamétro) ======
-    # CORREGIDO: Usa fecha_certificado_contrastacion
-    if tipo in TIPOS_CON_CONTRASTACION:
-        fecha_contrastacion = equipo.fecha_certificado_contrastacion
-        if fecha_contrastacion:
-            fecha_venc = calcular_vencimiento_contrastacion(fecha_contrastacion)
-            if fecha_venc:
-                dias = (fecha_venc - hoy).days
-                if dias < 0:
-                    return {
-                        'texto': f'⚠️ VENCIDO (venció: {formatear_fecha(fecha_venc)})',
-                        'clase': 'alerta-vencido',
-                        'icono': '🔴',
-                        'dias_texto': f'{abs(dias)}d'
-                    }
-                elif dias <= 15:
-                    return {
-                        'texto': f'⚠️ VENCE EN {dias} DÍAS ({formatear_fecha(fecha_venc)})',
-                        'clase': 'alerta-proximo',
-                        'icono': '🟡',
-                        'dias_texto': f'{dias}d'
-                    }
+    if tipo in TIPOS_CON_CONTRASTACION and equipo.fecha_certificado_contrastacion:
+        fecha_venc = calcular_vencimiento_contrastacion(equipo.fecha_certificado_contrastacion)
+        if fecha_venc:
+            dias = (fecha_venc - hoy).days
+            if dias < 0:
                 return {
-                    'texto': f'Vence: {formatear_fecha(fecha_venc)}',
-                    'clase': '',
-                    'icono': '✅',
-                    'dias_texto': ''
+                    'texto': f'⚠️ VENCIDO (venció: {formatear_fecha(fecha_venc)})',
+                    'clase': 'alerta-vencido',
+                    'icono': '🔴',
+                    'dias_texto': f'{abs(dias)}d'
                 }
+            elif dias <= 15:
+                return {
+                    'texto': f'⚠️ VENCE EN {dias} DÍAS ({formatear_fecha(fecha_venc)})',
+                    'clase': 'alerta-proximo',
+                    'icono': '🟡',
+                    'dias_texto': f'{dias}d'
+                }
+            return {
+                'texto': f'Vence: {formatear_fecha(fecha_venc)}',
+                'clase': '',
+                'icono': '✅',
+                'dias_texto': ''
+            }
 
     # ====== PRIORIDAD 2: EQUIPOS CON CERTIFICADO (Gelex, Stabcal) ======
     if tipo in TIPOS_CON_CERTIFICADO and tipo != 'Termometro patron AS':
@@ -366,7 +370,6 @@ def obtener_alerta(equipo):
                 'dias_texto': ''
             }
 
-    # Sin alerta
     return {
         'texto': '',
         'clase': '',
@@ -421,9 +424,6 @@ def enviar_correo_alertas_general(vencidos, proximos, destinatarios):
             html += '<table border="1" cellpadding="8" style="border-collapse:collapse; width:100%;">'
             html += '<tr style="background:#1E88E5; color:white;"><th>Nro Int</th><th>Nro Serie</th><th>Equipo</th><th>Localidad</th><th>Responsable</th><th>Alerta</th></tr>'
             for e in vencidos:
-                # ====== SALTAR EQUIPOS EN MANTENCIÓN O CONTRASTACIÓN ======
-                if e.estado in ['Mantencion', 'Contrastacion']:
-                    continue
                 alerta = obtener_alerta(e)
                 html += f'<tr><td style="padding:8px;">{e.nro_int}</td><td style="padding:8px;">{e.nro_serie or "-"}</td><td style="padding:8px;">{e.tipo_equipo or "-"}</td><td style="padding:8px;">{e.localidad or "-"}</td><td style="padding:8px;">{e.responsable or "-"}</td><td style="padding:8px; color:#c62828;">{alerta["texto"]}</td></tr>'
             html += '</table><br>'
@@ -433,9 +433,6 @@ def enviar_correo_alertas_general(vencidos, proximos, destinatarios):
             html += '<table border="1" cellpadding="8" style="border-collapse:collapse; width:100%;">'
             html += '<tr style="background:#1E88E5; color:white;"><th>Nro Int</th><th>Nro Serie</th><th>Equipo</th><th>Localidad</th><th>Responsable</th><th>Alerta</th></tr>'
             for e in proximos:
-                # ====== SALTAR EQUIPOS EN MANTENCIÓN O CONTRASTACIÓN ======
-                if e.estado in ['Mantencion', 'Contrastacion']:
-                    continue
                 alerta = obtener_alerta(e)
                 html += f'<tr><td style="padding:8px;">{e.nro_int}</td><td style="padding:8px;">{e.nro_serie or "-"}</td><td style="padding:8px;">{e.tipo_equipo or "-"}</td><td style="padding:8px;">{e.localidad or "-"}</td><td style="padding:8px;">{e.responsable or "-"}</td><td style="padding:8px; color:#f57c00;">{alerta["texto"]}</td></tr>'
             html += '</table><br>'
@@ -483,9 +480,6 @@ def enviar_correo_alertas_responsable(email_responsable, nombre_responsable, ven
             html += '<table border="1" cellpadding="8" style="border-collapse:collapse; width:100%;">'
             html += '<tr style="background:#1E88E5; color:white;"><th>Nro Int</th><th>Nro Serie</th><th>Equipo</th><th>Localidad</th><th>Alerta</th></tr>'
             for e in vencidos:
-                # ====== SALTAR EQUIPOS EN MANTENCIÓN O CONTRASTACIÓN ======
-                if e.estado in ['Mantencion', 'Contrastacion']:
-                    continue
                 alerta = obtener_alerta(e)
                 html += f'<tr><td style="padding:8px;">{e.nro_int}</td><td style="padding:8px;">{e.nro_serie or "-"}</td><td style="padding:8px;">{e.tipo_equipo or "-"}</td><td style="padding:8px;">{e.localidad or "-"}</td><td style="padding:8px; color:#c62828;">{alerta["texto"]}</td></tr>'
             html += '</table><br>'
@@ -495,9 +489,6 @@ def enviar_correo_alertas_responsable(email_responsable, nombre_responsable, ven
             html += '<table border="1" cellpadding="8" style="border-collapse:collapse; width:100%;">'
             html += '<tr style="background:#1E88E5; color:white;"><th>Nro Int</th><th>Nro Serie</th><th>Equipo</th><th>Localidad</th><th>Alerta</th></tr>'
             for e in proximos:
-                # ====== SALTAR EQUIPOS EN MANTENCIÓN O CONTRASTACIÓN ======
-                if e.estado in ['Mantencion', 'Contrastacion']:
-                    continue
                 alerta = obtener_alerta(e)
                 html += f'<tr><td style="padding:8px;">{e.nro_int}</td><td style="padding:8px;">{e.nro_serie or "-"}</td><td style="padding:8px;">{e.tipo_equipo or "-"}</td><td style="padding:8px;">{e.localidad or "-"}</td><td style="padding:8px; color:#f57c00;">{alerta["texto"]}</td></tr>'
             html += '</table><br>'
@@ -564,9 +555,10 @@ def dashboard():
     proximos = 0
     for e in equipos:
         alerta = obtener_alerta(e)
-        if 'VENCIDO' in alerta['texto'] or 'VENCIDA' in alerta['texto']:
+        alerta_texto = alerta['texto'].upper()
+        if 'VENCIDO' in alerta_texto or 'VENCIDA' in alerta_texto:
             vencidos += 1
-        elif 'VENCE' in alerta['texto']:
+        elif 'VENCE' in alerta_texto:
             proximos += 1
 
     responsables_unicos = Responsable.query.order_by(Responsable.nombre).all()
@@ -691,18 +683,7 @@ def nuevo_equipo():
 @login_required
 def editar_equipo(id):
     equipo = Equipo.query.get_or_404(id)
-
-    # ====== LOGS DE DEPURACIÓN ======
-    if request.method == 'POST':
-        print("=" * 60)
-        print("📥 EDITAR_EQUIPO - DATOS RECIBIDOS:")
-        print(f"  ID del equipo: {id}")
-        for key, value in request.form.items():
-            print(f"  {key} = '{value}'")
-        print("=" * 60)
-        print(f"📌 estado recibido: '{request.form.get('estado', 'NO ENVIADO')}'")
-        print("=" * 60)
-
+    
     if request.method == 'GET':
         bloqueado, nombre_usuario, fecha_bloqueo = verificar_bloqueo(id)
         if bloqueado and nombre_usuario != current_user.nombre:
@@ -712,7 +693,7 @@ def editar_equipo(id):
         if not exito:
             flash(f'⚠️ El equipo está siendo editado por {nombre_existente}. Intenta más tarde.', 'error')
             return redirect(url_for('dashboard'))
-
+    
     if request.method == 'POST':
         try:
             estado_anterior = equipo.estado
@@ -726,8 +707,7 @@ def editar_equipo(id):
             fecha_ultima_mantencion_anterior = equipo.fecha_ultima_mantencion
 
             nuevas_observaciones = request.form.get('observaciones', '')
-
-            # ====== ACTUALIZAR TODOS LOS CAMPOS ======
+            
             equipo.nro_serie = request.form.get('nro_serie', '')
             equipo.area = request.form.get('area', '')
             equipo.localidad = request.form.get('localidad', '')
@@ -737,19 +717,14 @@ def editar_equipo(id):
             equipo.modelo_sonda = request.form.get('modelo_sonda', '')
             equipo.modelo_equipo = request.form.get('modelo_equipo', '')
             equipo.nro_serie_sonda = request.form.get('nro_serie_sonda', '')
-
-            # ====== ESTA ES LA LÍNEA IMPORTANTE ======
             equipo.estado = request.form.get('estado', 'Operativo')
-
             equipo.servicio_tecnico = request.form.get('servicio_tecnico', '')
             equipo.observaciones = nuevas_observaciones
             equipo.ultima_actualizacion = get_chile_time()
 
-            # Nuevos campos
             equipo.nro_informe_contrastacion = request.form.get('nro_informe_contrastacion', '')
             equipo.nro_informe_mantencion = request.form.get('nro_informe_mantencion', '')
             equipo.nro_certificado_termometro = request.form.get('nro_certificado_termometro', '')
-
             equipo.fecha_certificado_contrastacion = datetime.strptime(request.form['fecha_certificado_contrastacion'], '%Y-%m-%d').date() if request.form.get('fecha_certificado_contrastacion') else None
             equipo.fecha_certificado_mantencion = datetime.strptime(request.form['fecha_certificado_mantencion'], '%Y-%m-%d').date() if request.form.get('fecha_certificado_mantencion') else None
             equipo.fecha_contrastacion_termometro = datetime.strptime(request.form['fecha_contrastacion_termometro'], '%Y-%m-%d').date() if request.form.get('fecha_contrastacion_termometro') else None
@@ -771,7 +746,6 @@ def editar_equipo(id):
             if equipo.tipo_equipo in TIPOS_CON_VENCIMIENTO_AUTOMATICO and equipo.fecha_certificado:
                 equipo.fecha_vencimiento_insumo = calcular_vencimiento_insumo(equipo.fecha_certificado)
 
-            # Archivos
             archivos = request.files.getlist('archivos')
             for archivo in archivos:
                 if archivo and archivo.filename and archivo_permitido(archivo.filename):
@@ -789,7 +763,6 @@ def editar_equipo(id):
                     )
                     db.session.add(archivo_db)
 
-            # Historial
             cambios = []
             historial_accion = 'CAMBIO'
 
@@ -858,7 +831,7 @@ def editar_equipo(id):
             db.session.rollback()
             flash(f'Error: {str(e)}', 'error')
             liberar_bloqueo(id)
-
+    
     archivos_fotos = Archivo.query.filter_by(equipo_id=equipo.id, tipo='foto').all()
     archivos_docs = Archivo.query.filter_by(equipo_id=equipo.id, tipo='documento').all()
     responsables_unicos = Responsable.query.order_by(Responsable.nombre).all()
@@ -1250,17 +1223,17 @@ def enviar_correo():
     for e in equipos:
         if e.estado == 'Contrastacion':
             continue
-        # ====== SALTAR EQUIPOS EN MANTENCIÓN ======
         if e.estado == 'Mantencion':
             continue
         alerta = obtener_alerta(e)
-        if 'VENCIDO' in alerta['texto'] or 'VENCIDA' in alerta['texto']:
+        alerta_texto = alerta['texto'].upper()
+        if 'VENCIDO' in alerta_texto or 'VENCIDA' in alerta_texto:
             vencidos.append(e)
             if e.responsable:
                 if e.responsable not in equipos_por_responsable:
                     equipos_por_responsable[e.responsable] = {'vencidos': [], 'proximos': []}
                 equipos_por_responsable[e.responsable]['vencidos'].append(e)
-        elif 'VENCE' in alerta['texto']:
+        elif 'VENCE' in alerta_texto:
             proximos.append(e)
             if e.responsable:
                 if e.responsable not in equipos_por_responsable:
@@ -1305,9 +1278,10 @@ def exportar_pdf_alertas():
     proximos = []
     for e in equipos:
         alerta = obtener_alerta(e)
-        if 'VENCIDO' in alerta['texto'] or 'VENCIDA' in alerta['texto']:
+        alerta_texto = alerta['texto'].upper()
+        if 'VENCIDO' in alerta_texto or 'VENCIDA' in alerta_texto:
             vencidos.append(e)
-        elif 'VENCE' in alerta['texto']:
+        elif 'VENCE' in alerta_texto:
             proximos.append(e)
     if not vencidos and not proximos:
         flash('✅ No hay equipos vencidos o próximos a vencer', 'success')
@@ -1674,17 +1648,17 @@ def admin_correos_probar_envio():
     for e in equipos:
         if e.estado == 'Contrastacion':
             continue
-        # ====== SALTAR EQUIPOS EN MANTENCIÓN ======
         if e.estado == 'Mantencion':
             continue
         alerta = obtener_alerta(e)
-        if 'VENCIDO' in alerta['texto'] or 'VENCIDA' in alerta['texto']:
+        alerta_texto = alerta['texto'].upper()
+        if 'VENCIDO' in alerta_texto or 'VENCIDA' in alerta_texto:
             vencidos.append(e)
             if e.responsable:
                 if e.responsable not in equipos_por_responsable:
                     equipos_por_responsable[e.responsable] = {'vencidos': [], 'proximos': []}
                 equipos_por_responsable[e.responsable]['vencidos'].append(e)
-        elif 'VENCE' in alerta['texto']:
+        elif 'VENCE' in alerta_texto:
             proximos.append(e)
             if e.responsable:
                 if e.responsable not in equipos_por_responsable:
@@ -2415,17 +2389,17 @@ def enviar_alertas_automatico():
     for e in equipos:
         if e.estado == 'Contrastacion':
             continue
-        # ====== SALTAR EQUIPOS EN MANTENCIÓN ======
         if e.estado == 'Mantencion':
             continue
         alerta = obtener_alerta(e)
-        if 'VENCIDO' in alerta['texto'] or 'VENCIDA' in alerta['texto']:
+        alerta_texto = alerta['texto'].upper()
+        if 'VENCIDO' in alerta_texto or 'VENCIDA' in alerta_texto:
             vencidos.append(e)
             if e.responsable:
                 if e.responsable not in equipos_por_responsable:
                     equipos_por_responsable[e.responsable] = {'vencidos': [], 'proximos': []}
                 equipos_por_responsable[e.responsable]['vencidos'].append(e)
-        elif 'VENCE' in alerta['texto']:
+        elif 'VENCE' in alerta_texto:
             proximos.append(e)
             if e.responsable:
                 if e.responsable not in equipos_por_responsable:
