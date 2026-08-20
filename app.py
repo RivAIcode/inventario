@@ -2473,7 +2473,7 @@ def api_verificar_nro_int():
     if not nro_int:
         return jsonify({'existe': False})
     existe = Equipo.query.filter(Equipo.nro_int == nro_int).first() is not None
-    return jsonify({'existe': True})
+    return jsonify({'existe': existe})  # <--- CORRECTO: DEVUELVE LA VARIABLE
 
 @app.route('/api/verificar_nro_serie')
 @login_required
@@ -2482,7 +2482,7 @@ def api_verificar_nro_serie():
     if not nro_serie:
         return jsonify({'existe': False})
     existe = Equipo.query.filter(Equipo.nro_serie == nro_serie).first() is not None
-    return jsonify({'existe': True})
+    return jsonify({'existe': existe})  # <--- CORRECTO: DEVUELVE LA VARIABLE
 
 @app.route('/limpiar_flash', methods=['POST'])
 def limpiar_flash():

@@ -11,10 +11,25 @@
             .container { padding: 15px; margin: 10px; }
             .btn { width: 100%; margin-bottom: 10px; text-align: center; }
         }
-        .error-nro-int { color: #d32f2f; font-size: 12px; margin-top: 5px; display: none; }
-        .error-nro-serie { color: #d32f2f; font-size: 12px; margin-top: 5px; display: none; }
-        .input-error { border: 2px solid #d32f2f !important; background-color: #ffebee !important; }
-        .input-success { border: 2px solid #4caf50 !important; }
+        .error-nro-int {
+            color: #d32f2f;
+            font-size: 12px;
+            margin-top: 5px;
+            display: none;
+        }
+        .error-nro-serie {
+            color: #d32f2f;
+            font-size: 12px;
+            margin-top: 5px;
+            display: none;
+        }
+        .input-error {
+            border: 2px solid #d32f2f !important;
+            background-color: #ffebee !important;
+        }
+        .input-success {
+            border: 2px solid #4caf50 !important;
+        }
         
         /* ====== SECCIONES DEL FORMULARIO ====== */
         .seccion-formulario {
@@ -362,29 +377,50 @@
     </div>
 
     <script>
-        // ========== VALIDACIÓN DE NRO INT Y NRO SERIE ==========
+        // ========== ELEMENTOS ==========
         const nroIntInput = document.getElementById('nro_int');
         const nroIntError = document.getElementById('nro_int_error');
         const nroSerieInput = document.getElementById('nro_serie');
         const nroSerieError = document.getElementById('nro_serie_error');
+
+        // Obtener valores originales (para edición)
         const nroIntOriginal = '{{ equipo.nro_int if equipo else '' }}';
         const nroSerieOriginal = '{{ equipo.nro_serie if equipo else '' }}';
-        let timeoutInt = null, timeoutSerie = null;
 
+        // Depuración
+        console.log('Original Nro Int:', nroIntOriginal);
+        console.log('Original Nro Serie:', nroSerieOriginal);
+
+        let timeoutInt = null;
+        let timeoutSerie = null;
+
+        // ========== VALIDACIÓN EN TIEMPO REAL ==========
         function verificarNroInt() {
             const nroInt = nroIntInput.value.trim();
+
+            // Si el campo está vacío
+            if (nroInt === '') {
+                nroIntError.style.display = 'none';
+                nroIntInput.classList.remove('input-error');
+                nroIntInput.classList.remove('input-success');
+                return;
+            }
+
+            // Si es el mismo número que tenía originalmente (edición), no mostrar error
             if (nroIntOriginal && nroInt === nroIntOriginal) {
                 nroIntError.style.display = 'none';
                 nroIntInput.classList.remove('input-error');
                 nroIntInput.classList.add('input-success');
                 return;
             }
+
             if (nroInt.length < 2) {
                 nroIntError.style.display = 'none';
                 nroIntInput.classList.remove('input-error');
                 nroIntInput.classList.remove('input-success');
                 return;
             }
+
             fetch(`/api/verificar_nro_int?nro_int=${encodeURIComponent(nroInt)}`)
                 .then(response => response.json())
                 .then(data => {
@@ -404,18 +440,23 @@
 
         function verificarNroSerie() {
             const nroSerie = nroSerieInput.value.trim();
+
+            // Si el campo está vacío
+            if (nroSerie === '') {
+                nroSerieError.style.display = 'none';
+                nroSerieInput.classList.remove('input-error');
+                nroSerieInput.classList.remove('input-success');
+                return;
+            }
+
+            // Si es el mismo número de serie que tenía originalmente (edición), no mostrar error
             if (nroSerieOriginal && nroSerie === nroSerieOriginal) {
                 nroSerieError.style.display = 'none';
                 nroSerieInput.classList.remove('input-error');
                 nroSerieInput.classList.add('input-success');
                 return;
             }
-            if (!nroSerie) {
-                nroSerieError.style.display = 'none';
-                nroSerieInput.classList.remove('input-error');
-                nroSerieInput.classList.remove('input-success');
-                return;
-            }
+
             fetch(`/api/verificar_nro_serie?nro_serie=${encodeURIComponent(nroSerie)}`)
                 .then(response => response.json())
                 .then(data => {
@@ -433,6 +474,7 @@
                 .catch(error => console.error('Error:', error));
         }
 
+        // Eventos en tiempo real
         nroIntInput.addEventListener('keyup', function() {
             if (timeoutInt) clearTimeout(timeoutInt);
             timeoutInt = setTimeout(verificarNroInt, 500);
@@ -445,27 +487,40 @@
         });
         nroSerieInput.addEventListener('blur', verificarNroSerie);
 
-        if (nroIntOriginal) nroIntInput.classList.add('input-success');
-        if (nroSerieOriginal) nroSerieInput.classList.add('input-success');
+        // Inicializar estados en edición
+        if (nroIntOriginal) {
+            nroIntInput.classList.add('input-success');
+        }
+        if (nroSerieOriginal) {
+            nroSerieInput.classList.add('input-success');
+        }
 
         // ========== VALIDACIÓN AL ENVIAR ==========
         document.getElementById('equipoForm').addEventListener('submit', function(e) {
             e.preventDefault();
+            
             const nroInt = nroIntInput.value.trim();
             const nroSerie = nroSerieInput.value.trim();
+
+            // Validar que el número interno no esté vacío
             if (!nroInt) {
                 alert('❌ El número interno es obligatorio.');
                 nroIntInput.focus();
                 return;
             }
+
+            // PRIMERO: Verificar número interno
             fetch(`/api/verificar_nro_int?nro_int=${encodeURIComponent(nroInt)}`)
                 .then(response => response.json())
                 .then(data => {
+                    // Si existe y es diferente al original (edición)
                     if (data.existe && nroInt !== nroIntOriginal) {
                         alert(`❌ El número interno "${nroInt}" ya está en uso.`);
                         nroIntInput.focus();
                         return;
                     }
+
+                    // SEGUNDO: Si hay número de serie, verificarlo
                     if (nroSerie) {
                         return fetch(`/api/verificar_nro_serie?nro_serie=${encodeURIComponent(nroSerie)}`)
                             .then(response => response.json())
@@ -475,9 +530,12 @@
                                     nroSerieInput.focus();
                                     return;
                                 }
+                                // Todo válido: enviar formulario
                                 document.getElementById('equipoForm').submit();
                             });
                     }
+
+                    // Si no hay número de serie, enviar directamente
                     document.getElementById('equipoForm').submit();
                 })
                 .catch(error => {
