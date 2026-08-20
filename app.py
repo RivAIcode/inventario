@@ -312,30 +312,33 @@ def obtener_alerta(equipo):
             }
 
     # ====== PRIORIDAD 2: EQUIPOS CON CONTRASTACIÓN (Colorímetros, Pocket, Multiparamétro) ======
-    if tipo in TIPOS_CON_CONTRASTACION and equipo.fecha_contrastacion:
-        fecha_venc = calcular_vencimiento_contrastacion(equipo.fecha_contrastacion)
-        if fecha_venc:
-            dias = (fecha_venc - hoy).days
-            if dias < 0:
+    # CORREGIDO: Usa fecha_certificado_contrastacion
+    if tipo in TIPOS_CON_CONTRASTACION:
+        fecha_contrastacion = equipo.fecha_certificado_contrastacion
+        if fecha_contrastacion:
+            fecha_venc = calcular_vencimiento_contrastacion(fecha_contrastacion)
+            if fecha_venc:
+                dias = (fecha_venc - hoy).days
+                if dias < 0:
+                    return {
+                        'texto': f'⚠️ VENCIDO (venció: {formatear_fecha(fecha_venc)})',
+                        'clase': 'alerta-vencido',
+                        'icono': '🔴',
+                        'dias_texto': f'{abs(dias)}d'
+                    }
+                elif dias <= 15:
+                    return {
+                        'texto': f'⚠️ VENCE EN {dias} DÍAS ({formatear_fecha(fecha_venc)})',
+                        'clase': 'alerta-proximo',
+                        'icono': '🟡',
+                        'dias_texto': f'{dias}d'
+                    }
                 return {
-                    'texto': f'⚠️ VENCIDO (venció: {formatear_fecha(fecha_venc)})',
-                    'clase': 'alerta-vencido',
-                    'icono': '🔴',
-                    'dias_texto': f'{abs(dias)}d'
+                    'texto': f'Vence: {formatear_fecha(fecha_venc)}',
+                    'clase': '',
+                    'icono': '✅',
+                    'dias_texto': ''
                 }
-            elif dias <= 15:
-                return {
-                    'texto': f'⚠️ VENCE EN {dias} DÍAS ({formatear_fecha(fecha_venc)})',
-                    'clase': 'alerta-proximo',
-                    'icono': '🟡',
-                    'dias_texto': f'{dias}d'
-                }
-            return {
-                'texto': f'Vence: {formatear_fecha(fecha_venc)}',
-                'clase': '',
-                'icono': '✅',
-                'dias_texto': ''
-            }
 
     # ====== PRIORIDAD 2: EQUIPOS CON CERTIFICADO (Gelex, Stabcal) ======
     if tipo in TIPOS_CON_CERTIFICADO and tipo != 'Termometro patron AS':
@@ -363,6 +366,7 @@ def obtener_alerta(equipo):
                 'dias_texto': ''
             }
 
+    # Sin alerta
     return {
         'texto': '',
         'clase': '',
@@ -687,7 +691,7 @@ def nuevo_equipo():
 @login_required
 def editar_equipo(id):
     equipo = Equipo.query.get_or_404(id)
-    
+
     # ====== LOGS DE DEPURACIÓN ======
     if request.method == 'POST':
         print("=" * 60)
@@ -698,7 +702,7 @@ def editar_equipo(id):
         print("=" * 60)
         print(f"📌 estado recibido: '{request.form.get('estado', 'NO ENVIADO')}'")
         print("=" * 60)
-    
+
     if request.method == 'GET':
         bloqueado, nombre_usuario, fecha_bloqueo = verificar_bloqueo(id)
         if bloqueado and nombre_usuario != current_user.nombre:
@@ -708,7 +712,7 @@ def editar_equipo(id):
         if not exito:
             flash(f'⚠️ El equipo está siendo editado por {nombre_existente}. Intenta más tarde.', 'error')
             return redirect(url_for('dashboard'))
-    
+
     if request.method == 'POST':
         try:
             estado_anterior = equipo.estado
@@ -722,7 +726,7 @@ def editar_equipo(id):
             fecha_ultima_mantencion_anterior = equipo.fecha_ultima_mantencion
 
             nuevas_observaciones = request.form.get('observaciones', '')
-            
+
             # ====== ACTUALIZAR TODOS LOS CAMPOS ======
             equipo.nro_serie = request.form.get('nro_serie', '')
             equipo.area = request.form.get('area', '')
@@ -733,10 +737,10 @@ def editar_equipo(id):
             equipo.modelo_sonda = request.form.get('modelo_sonda', '')
             equipo.modelo_equipo = request.form.get('modelo_equipo', '')
             equipo.nro_serie_sonda = request.form.get('nro_serie_sonda', '')
-            
+
             # ====== ESTA ES LA LÍNEA IMPORTANTE ======
             equipo.estado = request.form.get('estado', 'Operativo')
-            
+
             equipo.servicio_tecnico = request.form.get('servicio_tecnico', '')
             equipo.observaciones = nuevas_observaciones
             equipo.ultima_actualizacion = get_chile_time()
@@ -745,7 +749,7 @@ def editar_equipo(id):
             equipo.nro_informe_contrastacion = request.form.get('nro_informe_contrastacion', '')
             equipo.nro_informe_mantencion = request.form.get('nro_informe_mantencion', '')
             equipo.nro_certificado_termometro = request.form.get('nro_certificado_termometro', '')
-            
+
             equipo.fecha_certificado_contrastacion = datetime.strptime(request.form['fecha_certificado_contrastacion'], '%Y-%m-%d').date() if request.form.get('fecha_certificado_contrastacion') else None
             equipo.fecha_certificado_mantencion = datetime.strptime(request.form['fecha_certificado_mantencion'], '%Y-%m-%d').date() if request.form.get('fecha_certificado_mantencion') else None
             equipo.fecha_contrastacion_termometro = datetime.strptime(request.form['fecha_contrastacion_termometro'], '%Y-%m-%d').date() if request.form.get('fecha_contrastacion_termometro') else None
@@ -854,7 +858,7 @@ def editar_equipo(id):
             db.session.rollback()
             flash(f'Error: {str(e)}', 'error')
             liberar_bloqueo(id)
-    
+
     archivos_fotos = Archivo.query.filter_by(equipo_id=equipo.id, tipo='foto').all()
     archivos_docs = Archivo.query.filter_by(equipo_id=equipo.id, tipo='documento').all()
     responsables_unicos = Responsable.query.order_by(Responsable.nombre).all()

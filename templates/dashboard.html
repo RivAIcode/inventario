@@ -5,14 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=yes">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     
-    <!-- PWA -->
+    <!-- ========== PWA (PROGRESSIVE WEB APP) ========== -->
     <link rel="manifest" href="/static/manifest.json">
     <meta name="theme-color" content="#1E88E5">
     <meta name="mobile-web-app-capable" content="yes">
     <link rel="apple-touch-icon" href="/static/icon-192.png">
+    <!-- ============================================== -->
     
     <style>
-        .btn-group { position: relative; display: inline-block; }
+        /* Estilos generales */
+        .btn-group {
+            position: relative;
+            display: inline-block;
+        }
+        
         .exportar-menu {
             position: absolute;
             top: 100%;
@@ -24,6 +30,7 @@
             z-index: 1000;
             overflow: hidden;
         }
+        
         .exportar-menu .menu-item {
             display: block;
             width: 100%;
@@ -37,11 +44,23 @@
             font-size: 14px;
             transition: 0.2s;
         }
-        .exportar-menu .menu-item:hover { background-color: #f0f4f8; }
         
+        .exportar-menu .menu-item:hover {
+            background-color: #f0f4f8;
+        }
+        
+        /* MÓVIL: menú centrado tipo modal */
         @media (max-width: 768px) {
-            .btn-group { position: static; width: 100%; }
-            .btn-group .btn-primary { width: 100%; justify-content: center; }
+            .btn-group {
+                position: static;
+                width: 100%;
+            }
+            
+            .btn-group .btn-primary {
+                width: 100%;
+                justify-content: center;
+            }
+            
             .exportar-menu {
                 position: fixed;
                 bottom: 20px;
@@ -54,23 +73,41 @@
                 box-shadow: 0 10px 30px rgba(0,0,0,0.3);
                 animation: slideUp 0.3s ease-out;
             }
-            .exportar-menu .menu-item { text-align: center; padding: 14px; font-size: 15px; }
-            .exportar-menu .menu-item:last-child { border-bottom: none; }
-            @keyframes slideUp {
-                from { opacity: 0; transform: translateX(-50%) translateY(30px); }
-                to { opacity: 1; transform: translateX(-50%) translateY(0); }
+            
+            .exportar-menu .menu-item {
+                text-align: center;
+                padding: 14px;
+                font-size: 15px;
             }
-            .modal-content-campos { padding: 10px !important; }
-            .modal-content-campos .form-row { flex-direction: column !important; gap: 8px !important; }
-            .modal-content-campos .form-group { width: 100% !important; }
-            .modal-secciones { max-height: 70vh; overflow-y: auto; }
+            
+            .exportar-menu .menu-item:last-child {
+                border-bottom: none;
+            }
+            
+            @keyframes slideUp {
+                from {
+                    opacity: 0;
+                    transform: translateX(-50%) translateY(30px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateX(-50%) translateY(0);
+                }
+            }
         }
         
         @keyframes modalEntrar {
-            from { opacity: 0; transform: translateY(-30px) scale(0.95); }
-            to { opacity: 1; transform: translateY(0) scale(1); }
+            from {
+                opacity: 0;
+                transform: translateY(-30px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
         }
         
+        /* ====== ESTADOS ====== */
         .estado {
             display: inline-block;
             padding: 2px 8px;
@@ -85,6 +122,7 @@
         .estado-volante { background: #9C27B0; color: white; }
         .estado-fuera-de-servicio { background: #f44336; color: white; }
         
+        /* ====== ALERTAS COMPACTAS ====== */
         .alerta-cell {
             text-align: center;
             font-weight: 700;
@@ -93,29 +131,69 @@
             min-width: 45px;
             max-width: 65px;
         }
-        .alerta-vencido { background-color: #ffebee !important; }
-        .alerta-vencido td { background-color: #ffebee !important; }
-        .alerta-vencido .alerta-cell { color: #c62828; }
-        .alerta-proximo { background-color: #fff8e1 !important; }
-        .alerta-proximo td { background-color: #fff8e1 !important; }
-        .alerta-proximo .alerta-cell { color: #e65100; }
-        .alerta-ok .alerta-cell { color: #2E7D32; }
-        .alerta-sin .alerta-cell { color: #999; }
-        .alerta-contrastacion { background-color: #e3f2fd !important; }
-        .alerta-contrastacion td { background-color: #e3f2fd !important; }
-        .alerta-contrastacion .alerta-cell { color: #0D47A1; }
-        .alerta-mantencion { background-color: #fff3e0 !important; }
-        .alerta-mantencion td { background-color: #fff3e0 !important; }
-        .alerta-mantencion .alerta-cell { color: #E65100; }
         
-        .table-scroll-wrapper { overflow-x: auto; }
+        .alerta-vencido {
+            background-color: #ffebee !important;
+        }
+        .alerta-vencido td {
+            background-color: #ffebee !important;
+        }
+        .alerta-vencido .alerta-cell {
+            color: #c62828;
+        }
+        
+        .alerta-proximo {
+            background-color: #fff8e1 !important;
+        }
+        .alerta-proximo td {
+            background-color: #fff8e1 !important;
+        }
+        .alerta-proximo .alerta-cell {
+            color: #e65100;
+        }
+        
+        .alerta-ok .alerta-cell {
+            color: #2E7D32;
+        }
+        .alerta-sin .alerta-cell {
+            color: #999;
+        }
+        
+        /* ====== NUEVOS ESTILOS PARA ESTADOS ====== */
+        .alerta-contrastacion {
+            background-color: #e3f2fd !important;
+        }
+        .alerta-contrastacion td {
+            background-color: #e3f2fd !important;
+        }
+        .alerta-contrastacion .alerta-cell {
+            color: #0D47A1;
+        }
+        
+        .alerta-mantencion {
+            background-color: #fff3e0 !important;
+        }
+        .alerta-mantencion td {
+            background-color: #fff3e0 !important;
+        }
+        .alerta-mantencion .alerta-cell {
+            color: #E65100;
+        }
+        
+        /* ====== TABLA ====== */
+        .table-scroll-wrapper {
+            overflow-x: auto;
+        }
+        
         #tablaEquipos {
             width: 100%;
             border-collapse: collapse;
             table-layout: fixed;
             min-width: 700px;
         }
-        #tablaEquipos th, #tablaEquipos td {
+        
+        #tablaEquipos th,
+        #tablaEquipos td {
             padding: 6px 8px;
             text-align: center;
             border: 1px solid #ddd;
@@ -124,6 +202,7 @@
             text-overflow: ellipsis;
             white-space: nowrap;
         }
+        
         #tablaEquipos th {
             background: #1E88E5;
             color: white;
@@ -133,6 +212,8 @@
             top: 0;
             z-index: 10;
         }
+        
+        /* ====== ANCHOS FIJOS ====== */
         #tablaEquipos th:nth-child(1), #tablaEquipos td:nth-child(1) { width: 30px; min-width: 25px; max-width: 35px; }
         #tablaEquipos th:nth-child(2), #tablaEquipos td:nth-child(2) { width: 50px; min-width: 40px; max-width: 60px; }
         #tablaEquipos th:nth-child(3), #tablaEquipos td:nth-child(3) { width: 70px; min-width: 55px; max-width: 85px; }
@@ -144,6 +225,7 @@
         #tablaEquipos th:nth-child(9), #tablaEquipos td:nth-child(9) { width: 70px; min-width: 55px; max-width: 85px; }
         #tablaEquipos th:nth-child(10), #tablaEquipos td:nth-child(10) { width: 50px; min-width: 40px; max-width: 60px; }
         
+        /* ====== ACCIONES RÁPIDAS ====== */
         .acciones-rapidas {
             display: flex;
             flex-wrap: wrap;
@@ -155,12 +237,14 @@
             margin: 10px 0;
             border: 1px solid #e0e0e0;
         }
+        
         .acciones-rapidas .label {
             font-weight: 600;
             color: #555;
             font-size: 13px;
             margin-right: 4px;
         }
+        
         .acciones-rapidas .btn {
             padding: 5px 12px;
             font-size: 12px;
@@ -174,10 +258,12 @@
             align-items: center;
             gap: 4px;
         }
+        
         .acciones-rapidas .btn:hover {
             transform: translateY(-1px);
             box-shadow: 0 2px 8px rgba(0,0,0,0.15);
         }
+        
         .acciones-rapidas .btn-primary { background: #1E88E5; color: white; }
         .acciones-rapidas .btn-primary:hover { background: #1565C0; }
         .acciones-rapidas .btn-info { background: #e3f2fd; color: #0D47A1; }
@@ -189,6 +275,7 @@
         .acciones-rapidas .btn-success { background: #e8f5e9; color: #2E7D32; }
         .acciones-rapidas .btn-success:hover { background: #c8e6c9; }
         
+        /* ====== BARRA DE ACCIONES PRINCIPAL ====== */
         .actions-bar {
             display: flex;
             flex-wrap: wrap;
@@ -200,6 +287,7 @@
             border-radius: 8px;
             border: none;
         }
+        
         .actions-bar .btn {
             padding: 6px 14px;
             font-size: 12px;
@@ -213,10 +301,12 @@
             align-items: center;
             gap: 4px;
         }
+        
         .actions-bar .btn:hover {
             transform: translateY(-1px);
             box-shadow: 0 2px 8px rgba(0,0,0,0.15);
         }
+        
         .actions-bar .btn-primary { background: #1E88E5; color: white; }
         .actions-bar .btn-primary:hover { background: #1565C0; }
         .actions-bar .btn-danger { background: #d32f2f; color: white; }
@@ -229,18 +319,53 @@
         .actions-bar .btn-secondary:hover { background: #d0d0d0; }
         
         @media (max-width: 768px) {
-            .acciones-rapidas .btn { padding: 4px 8px; font-size: 10px; }
-            .acciones-rapidas .label { font-size: 11px; }
-            .actions-bar .btn { padding: 4px 10px; font-size: 10px; }
-            #tablaEquipos { min-width: 600px; }
-            #tablaEquipos th, #tablaEquipos td { font-size: 10px; padding: 4px 5px; }
-        }
-        @media (max-width: 480px) {
-            #tablaEquipos { min-width: 500px; }
-            #tablaEquipos th, #tablaEquipos td { font-size: 9px; padding: 3px 4px; }
+            .acciones-rapidas .btn {
+                padding: 4px 8px;
+                font-size: 10px;
+            }
+            .acciones-rapidas .label {
+                font-size: 11px;
+            }
+            .actions-bar .btn {
+                padding: 4px 10px;
+                font-size: 10px;
+            }
+            #tablaEquipos {
+                min-width: 600px;
+            }
+            #tablaEquipos th, #tablaEquipos td {
+                font-size: 10px;
+                padding: 4px 5px;
+            }
         }
         
-        /* ====== ESTILOS DEL MODAL ====== */
+        @media (max-width: 480px) {
+            #tablaEquipos {
+                min-width: 500px;
+            }
+            #tablaEquipos th, #tablaEquipos td {
+                font-size: 9px;
+                padding: 3px 4px;
+            }
+        }
+        
+        /* ====== ESTILOS MODAL HISTORIAL ====== */
+        .accion-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 600;
+            background: #e3f2fd;
+            color: #0D47A1;
+        }
+        .accion-badge.creacion { background: #e8f5e9; color: #2E7D32; }
+        .accion-badge.cambio { background: #fff3e0; color: #E65100; }
+        .accion-badge.cambio-estado { background: #f3e5f5; color: #6A1B9A; }
+        .accion-badge.observacion { background: #e3f2fd; color: #0D47A1; }
+        .accion-badge.contrastacion { background: #e0f7fa; color: #00695C; }
+        
+        /* ====== ESTILOS MODAL EDICION ====== */
         .modal-content-campos {
             padding: 16px 18px;
         }
@@ -313,27 +438,49 @@
             margin-top: 2px;
         }
         
-        /* ====== MODAL HISTORIAL ====== */
-        .historial-tabla {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 12px;
-        }
-        .historial-tabla th, .historial-tabla td {
-            padding: 5px 8px;
-            text-align: left;
-            border-bottom: 1px solid #eee;
-        }
-        .historial-tabla th {
-            background: #1E88E5;
-            color: white;
-            font-weight: 600;
-            position: sticky;
+        /* ====== MODAL OBSERVACION ====== */
+        .modal-observacion {
+            display: none;
+            position: fixed;
             top: 0;
-            z-index: 10;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1001;
+            align-items: center;
+            justify-content: center;
         }
-        .historial-tabla tr:hover { background: #f5f5f5; }
-        .modal-historial-body { max-height: 400px; overflow-y: auto; }
+        .modal-observacion .modal-content {
+            background: white;
+            border-radius: 20px;
+            max-width: 400px;
+            width: 90%;
+            margin: auto;
+            padding: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+        .modal-observacion .modal-content h3 {
+            margin: 0 0 15px 0;
+            font-size: 18px;
+        }
+        .modal-observacion .modal-content textarea {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 14px;
+            resize: vertical;
+        }
+        .modal-observacion .modal-content .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .modal-observacion .modal-content .btn-group .btn {
+            flex: 1;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
@@ -367,6 +514,7 @@
         <div class="filtro-group"><button class="btn btn-secondary" onclick="limpiarFiltros()">🗑️ LIMPIAR</button></div>
     </div>
 
+    <!-- ====== BARRA DE ACCIONES PRINCIPAL ====== -->
     <div class="actions-bar" style="padding-left: 12px;">
         <div class="btn-group">
             <button class="btn btn-primary" onclick="toggleMenuExportar()" style="display: flex; align-items: center; gap: 5px;">
@@ -378,17 +526,21 @@
                 <button onclick="exportarFiltrados()" class="menu-item">🔍 Equipos filtrados actualmente</button>
             </div>
         </div>
+        
         <a href="{{ url_for('exportar_pdf_alertas') }}" class="btn btn-danger">📄 PDF ALERTAS</a>
         <a href="{{ url_for('enviar_correo') }}" class="btn btn-warning">📧 ENVIAR ALERTAS</a>
+        
         {% if current_user.es_admin %}
         <a href="{{ url_for('admin_usuarios') }}" class="btn btn-secondary">👥 USUARIOS</a>
         <a href="{{ url_for('listar_backups') }}" class="btn btn-secondary">💾 RESPALDOS</a>
         <a href="{{ url_for('admin_correos') }}" class="btn btn-secondary">⚙️ CORREOS</a>
         {% endif %}
+        
         <a href="{{ url_for('perfil') }}" class="btn btn-info">🔐 MI PERFIL</a>
         <button onclick="location.reload()" class="btn btn-info">🔄 ACTUALIZAR</button>
     </div>
 
+    <!-- ====== ACCIONES RÁPIDAS SOBRE LA TABLA ====== -->
     <div class="acciones-rapidas">
         <span class="label">⚡ Acciones:</span>
         <a href="{{ url_for('nuevo_equipo') }}" class="btn btn-primary">➕ Nuevo</a>
@@ -475,7 +627,7 @@
 
     <div class="contador" id="contador"></div>
 
-    <!-- ====== MODAL DE EDICIÓN COMPLETO ====== -->
+    <!-- ====== MODAL DE EDICIÓN ====== -->
     <div id="modalEditarEquipo" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); backdrop-filter:blur(4px); z-index:10000; align-items:center; justify-content:center;">
         <div style="background:white; border-radius:20px; max-width:750px; width:95%; margin:auto; box-shadow:0 20px 40px rgba(0,0,0,0.3); overflow:hidden; animation:modalEntrar 0.3s ease-out; max-height:95vh;">
             
@@ -722,9 +874,11 @@
         </div>
     </div>
 
-    <!-- ====== MODAL HISTORIAL ====== -->
+    <!-- ====== MODAL HISTORIAL MEJORADO ====== -->
     <div id="modalHistorial" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); backdrop-filter:blur(4px); z-index:10000; align-items:center; justify-content:center;">
-        <div style="background:white; border-radius:20px; max-width:750px; width:95%; margin:auto; box-shadow:0 20px 40px rgba(0,0,0,0.3); overflow:hidden; animation:modalEntrar 0.3s ease-out; max-height:90vh;">
+        <div style="background:white; border-radius:20px; max-width:850px; width:95%; margin:auto; box-shadow:0 20px 40px rgba(0,0,0,0.3); overflow:hidden; animation:modalEntrar 0.3s ease-out; max-height:95vh;">
+            
+            <!-- HEADER -->
             <div style="background:linear-gradient(135deg, #6A1B9A 0%, #4A148C 100%); padding:12px 18px; color:white; display:flex; justify-content:space-between; align-items:center; position:sticky; top:0; z-index:10;">
                 <div style="display:flex; align-items:center; gap:8px;">
                     <span style="font-size:20px;">📋</span>
@@ -732,36 +886,57 @@
                 </div>
                 <button onclick="cerrarModalHistorial()" style="background:rgba(255,255,255,0.2); border:none; color:white; font-size:18px; cursor:pointer; width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center;">&times;</button>
             </div>
-            <div style="padding:12px 16px;">
-                <div id="historialInfoEquipo" style="background:#f0f4f8; padding:8px 12px; border-radius:8px; margin-bottom:12px; font-size:13px;"></div>
-                <div class="modal-historial-body">
-                    <table class="historial-tabla" id="tablaHistorial">
-                        <thead>
-                            <tr>
-                                <th>Fecha/Hora</th>
-                                <th>Acción</th>
-                                <th>Detalle</th>
-                                <th>Usuario</th>
-                            </tr>
-                        </thead>
-                        <tbody id="historialBody">
-                            <tr><td colspan="4" style="text-align:center; color:#999;">Cargando historial...</td></tr>
-                        </tbody>
-                    </table>
+            
+            <!-- INFO DEL EQUIPO -->
+            <div style="padding:10px 16px; background:#f0f4f8; display:flex; flex-wrap:wrap; gap:12px; align-items:center; border-bottom:1px solid #e0e0e0;">
+                <span id="historialInfoEquipo" style="font-weight:600; font-size:13px;"></span>
+                <span id="historialEstadoEquipo" style="font-size:12px; padding:2px 10px; border-radius:12px; color:white;"></span>
+                <span style="font-size:12px; color:#999; margin-left:auto;">ID: <span id="historialEquipoId">-</span></span>
+            </div>
+            
+            <!-- BARRA DE BÚSQUEDA Y EXPORTAR -->
+            <div style="padding:10px 16px; display:flex; gap:10px; flex-wrap:wrap; align-items:center; border-bottom:1px solid #e0e0e0;">
+                <div style="flex:1; min-width:200px; position:relative;">
+                    <input type="text" id="buscarHistorialModal" placeholder="🔍 Buscar en historial..." 
+                           style="width:100%; padding:8px 12px 8px 36px; border:2px solid #e0e0e0; border-radius:8px; font-size:13px; transition:border-color 0.3s;"
+                           onkeyup="filtrarHistorialModal()">
+                    <span style="position:absolute; left:10px; top:50%; transform:translateY(-50%); font-size:16px; color:#999;">🔍</span>
                 </div>
+                <span id="resultadoHistorialModal" style="font-size:12px; color:#666; white-space:nowrap;">0 registros</span>
+                <button onclick="exportarHistorialModal()" style="background:#1E88E5; color:white; border:none; padding:8px 16px; border-radius:8px; cursor:pointer; font-size:13px; display:flex; align-items:center; gap:6px; white-space:nowrap;">
+                    📊 Exportar Excel
+                </button>
+            </div>
+            
+            <!-- TABLA -->
+            <div style="padding:10px 16px; overflow-y:auto; max-height:calc(90vh - 240px);">
+                <table style="width:100%; border-collapse:collapse; font-size:12px;">
+                    <thead>
+                        <tr style="background:#1E88E5; color:white; position:sticky; top:0; z-index:10;">
+                            <th style="padding:6px 8px; text-align:left; min-width:80px; cursor:pointer;" onclick="ordenarHistorialModal(0)">Fecha/Hora ↕</th>
+                            <th style="padding:6px 8px; text-align:left; min-width:70px; cursor:pointer;" onclick="ordenarHistorialModal(1)">Acción ↕</th>
+                            <th style="padding:6px 8px; text-align:left; min-width:150px; cursor:pointer;" onclick="ordenarHistorialModal(2)">Detalle ↕</th>
+                            <th style="padding:6px 8px; text-align:left; min-width:60px; cursor:pointer;" onclick="ordenarHistorialModal(3)">Usuario ↕</th>
+                            <th style="padding:6px 8px; text-align:left; min-width:80px; cursor:pointer;" onclick="ordenarHistorialModal(4)">Responsable ↕</th>
+                        </tr>
+                    </thead>
+                    <tbody id="historialBodyModal">
+                        <tr><td colspan="5" style="text-align:center; color:#999; padding:30px;">Cargando historial...</td></tr>
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
 
     <!-- ====== MODAL OBSERVACIÓN ====== -->
-    <div id="modalObservacion" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1001; align-items:center; justify-content:center;">
-        <div style="background:white; border-radius:20px; max-width:400px; width:90%; margin:auto; padding:20px; box-shadow:0 20px 40px rgba(0,0,0,0.3);">
-            <h3 style="margin:0 0 15px 0; font-size:18px;">💬 Agregar Observación</h3>
-            <textarea id="observacion_texto" rows="4" style="width:100%; padding:10px; border:2px solid #e0e0e0; border-radius:12px; font-size:14px; resize:vertical;"></textarea>
+    <div id="modalObservacion" class="modal-observacion">
+        <div class="modal-content">
+            <h3>💬 Agregar Observación</h3>
+            <textarea id="observacion_texto" rows="4"></textarea>
             <input type="hidden" id="observacion_equipo_id">
-            <div style="display:flex; gap:10px; margin-top:15px;">
-                <button onclick="guardarObservacion()" class="btn btn-primary" style="flex:1;">💾 Guardar</button>
-                <button onclick="cerrarModalObservacion()" class="btn btn-secondary" style="flex:1;">Cancelar</button>
+            <div class="btn-group">
+                <button onclick="guardarObservacion()" class="btn btn-primary">💾 Guardar</button>
+                <button onclick="cerrarModalObservacion()" class="btn btn-secondary">Cancelar</button>
             </div>
         </div>
     </div>
@@ -781,6 +956,9 @@
         const TIPOS_INSUMO = {{ TIPOS_CON_VENCIMIENTO_MANUAL|tojson }};
 
         let equipoIdActual = null;
+        let historialData = [];
+        let historialFiltrado = [];
+        let historialOrden = { columna: -1, ascendente: true };
 
         // ========== PWA ==========
         if ('serviceWorker' in navigator) {
@@ -851,7 +1029,7 @@
             });
         }
 
-        // ========== ABRIR MODAL DE EDICIÓN ==========
+        // ========== ABRIR MODAL EDICIÓN ==========
         function abrirModalEditar(equipoId) {
             const row = document.querySelector(`tr[data-equipo-id="${equipoId}"]`);
             if (!row) {
@@ -903,7 +1081,7 @@
             document.getElementById('modalEditarEquipo').style.display = 'none';
         }
 
-        // ========== ACTUALIZAR CAMPOS DEL MODAL ==========
+        // ========== ACTUALIZAR CAMPOS MODAL EDICIÓN ==========
         function actualizarCamposModal() {
             const tipo = document.getElementById('modal_tipo_equipo').value;
             const estado = document.getElementById('modal_estado').value;
@@ -911,14 +1089,10 @@
             document.getElementById('modal_div_sonda').style.display = TIPOS_CON_PHMETRO.includes(tipo) ? 'flex' : 'none';
             document.getElementById('modal_subcategoria').style.display = TIPOS_CON_SUBCATEGORIA.includes(tipo) ? 'block' : 'none';
             
-            // Contrastación: solo para Pocket, Colorímetro, Multiparamétro
             const showContrastacion = TIPOS_CON_CONTRASTACION.includes(tipo);
             document.getElementById('modal_seccion_contrastacion').style.display = showContrastacion ? 'block' : 'none';
-            
-            // Mantención: solo cuando estado es Mantencion o Fuera de Servicio
             document.getElementById('modal_seccion_mantencion').style.display = (estado === 'Mantencion' || estado === 'Fuera de Servicio') ? 'block' : 'none';
             
-            // Termómetros e Insumos
             const esTermometro = TIPOS_TERMOMETRO.includes(tipo);
             const esInsumo = TIPOS_INSUMO.includes(tipo);
             
@@ -941,7 +1115,7 @@
             }
         }
 
-        // ========== ENVIAR FORMULARIO DEL MODAL ==========
+        // ========== ENVIAR FORMULARIO EDICIÓN ==========
         document.getElementById('formEditarModal').addEventListener('submit', async function(e) {
             e.preventDefault();
             
@@ -953,7 +1127,6 @@
             const estado = document.getElementById('modal_estado').value;
             const fechaEnvio = document.getElementById('modal_fecha_envio_laboratorio').value;
             
-            // Validaciones
             if (estado === 'Contrastacion' && !fechaEnvio) {
                 alert('⚠️ Para "Contrastación" debes ingresar la "Fecha Ingreso Laboratorio".');
                 btn.disabled = false;
@@ -971,7 +1144,6 @@
                 const html = await resp.text();
                 
                 if (html.includes('alert-success') || html.includes('success')) {
-                    // SIN ALERT - recarga directamente
                     location.reload();
                 } else if (html.includes('alert-error')) {
                     const errorMatch = html.match(/alert-error[^>]*>([^<]*)</);
@@ -997,7 +1169,7 @@
             btn.textContent = '💾 Actualizar Equipo';
         });
 
-        // ========== MODAL HISTORIAL ==========
+        // ========== ABRIR MODAL HISTORIAL ==========
         function abrirModalHistorial(equipoId) {
             const row = document.querySelector(`tr[data-equipo-id="${equipoId}"]`);
             if (!row) {
@@ -1006,12 +1178,15 @@
             }
             
             const dataset = row.dataset;
-            document.getElementById('historialInfoEquipo').innerHTML = `
-                <strong>Nro Int:</strong> ${dataset.nroInt || '-'} | 
-                <strong>Equipo:</strong> ${dataset.tipo || '-'} | 
-                <strong>Estado:</strong> <span class="estado estado-${(dataset.estado || 'Operativo').toLowerCase().replace(' ', '-')}">${dataset.estado || 'Operativo'}</span>
-            `;
-            document.getElementById('historialBody').innerHTML = '<tr><td colspan="4" style="text-align:center; color:#999;">Cargando historial...</td></tr>';
+            document.getElementById('historialInfoEquipo').textContent = `Nro Int: ${dataset.nroInt || '-'} | Equipo: ${dataset.tipo || '-'}`;
+            
+            const estado = dataset.estado || 'Operativo';
+            const colores = { 'Operativo':'#4CAF50', 'Mantencion':'#FF9800', 'Prestado':'#2196F3', 'Volante':'#9C27B0', 'Contrastacion':'#00BCD4', 'Fuera de Servicio':'#f44336' };
+            document.getElementById('historialEstadoEquipo').textContent = `Estado: ${estado}`;
+            document.getElementById('historialEstadoEquipo').style.backgroundColor = colores[estado] || '#666';
+            document.getElementById('historialEquipoId').textContent = equipoId;
+            
+            document.getElementById('historialBodyModal').innerHTML = '<tr><td colspan="5" style="text-align:center; color:#999; padding:30px;">Cargando historial...</td></tr>';
             document.getElementById('modalHistorial').style.display = 'flex';
             
             fetch(`/equipo/historial/${equipoId}`)
@@ -1019,15 +1194,27 @@
                 .then(html => {
                     const parser = new DOMParser();
                     const doc = parser.parseFromString(html, 'text/html');
-                    const tabla = doc.querySelector('.historial-tabla tbody');
-                    if (tabla && tabla.innerHTML) {
-                        document.getElementById('historialBody').innerHTML = tabla.innerHTML;
-                    } else {
-                        document.getElementById('historialBody').innerHTML = '<tr><td colspan="4" style="text-align:center; color:#999;">No hay historial registrado</td></tr>';
-                    }
+                    const rows = doc.querySelectorAll('.historial-tabla tbody tr');
+                    
+                    historialData = [];
+                    rows.forEach(row => {
+                        const cells = row.querySelectorAll('td');
+                        if (cells.length >= 5) {
+                            historialData.push({
+                                fecha: cells[0].textContent.trim(),
+                                accion: cells[1].textContent.trim(),
+                                detalle: cells[2].textContent.trim(),
+                                usuario: cells[3].textContent.trim(),
+                                responsable: cells[4].textContent.trim()
+                            });
+                        }
+                    });
+                    
+                    historialFiltrado = [...historialData];
+                    renderizarHistorialModal();
                 })
                 .catch(() => {
-                    document.getElementById('historialBody').innerHTML = '<tr><td colspan="4" style="text-align:center; color:#c62828;">Error al cargar el historial</td></tr>';
+                    document.getElementById('historialBodyModal').innerHTML = '<tr><td colspan="5" style="text-align:center; color:#c62828; padding:30px;">Error al cargar el historial</td></tr>';
                 });
         }
 
@@ -1035,7 +1222,157 @@
             document.getElementById('modalHistorial').style.display = 'none';
         }
 
-        // ========== EVENTOS DEL MODAL ==========
+        // ========== RENDERIZAR TABLA HISTORIAL ==========
+        function renderizarHistorialModal() {
+            const tbody = document.getElementById('historialBodyModal');
+            if (!historialFiltrado.length) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#999; padding:30px;">No hay registros que coincidan con la búsqueda</td></tr>';
+                document.getElementById('resultadoHistorialModal').textContent = '0 registros';
+                return;
+            }
+            
+            let html = '';
+            historialFiltrado.forEach(item => {
+                const accionClass = {
+                    'CREACION': 'creacion',
+                    'CAMBIO': 'cambio',
+                    'CAMBIO_ESTADO': 'cambio-estado',
+                    'OBSERVACION': 'observacion',
+                    'CONTRASTACION': 'contrastacion'
+                }[item.accion] || '';
+                html += `<tr>
+                    <td style="padding:5px 8px; border-bottom:1px solid #eee; font-size:11px;">${item.fecha}</td>
+                    <td style="padding:5px 8px; border-bottom:1px solid #eee;"><span class="accion-badge ${accionClass}">${item.accion}</span></td>
+                    <td style="padding:5px 8px; border-bottom:1px solid #eee; font-size:12px;">${item.detalle}</td>
+                    <td style="padding:5px 8px; border-bottom:1px solid #eee; font-size:11px;">${item.usuario}</td>
+                    <td style="padding:5px 8px; border-bottom:1px solid #eee; font-size:11px;">${item.responsable}</td>
+                </tr>`;
+            });
+            tbody.innerHTML = html;
+            document.getElementById('resultadoHistorialModal').textContent = `${historialFiltrado.length} registros`;
+        }
+
+        // ========== FILTRO HISTORIAL ==========
+        function filtrarHistorialModal() {
+            const filtro = document.getElementById('buscarHistorialModal').value.toLowerCase().trim();
+            if (!filtro) {
+                historialFiltrado = [...historialData];
+            } else {
+                historialFiltrado = historialData.filter(item => 
+                    item.fecha.toLowerCase().includes(filtro) ||
+                    item.accion.toLowerCase().includes(filtro) ||
+                    item.detalle.toLowerCase().includes(filtro) ||
+                    item.usuario.toLowerCase().includes(filtro) ||
+                    item.responsable.toLowerCase().includes(filtro)
+                );
+            }
+            renderizarHistorialModal();
+        }
+
+        // ========== ORDENAR HISTORIAL ==========
+        function ordenarHistorialModal(columna) {
+            const columnas = ['fecha', 'accion', 'detalle', 'usuario', 'responsable'];
+            if (historialOrden.columna === columna) {
+                historialOrden.ascendente = !historialOrden.ascendente;
+            } else {
+                historialOrden.columna = columna;
+                historialOrden.ascendente = true;
+            }
+            
+            historialFiltrado.sort((a, b) => {
+                let valA = a[columnas[columna]].toLowerCase();
+                let valB = b[columnas[columna]].toLowerCase();
+                if (columna === 0) {
+                    try {
+                        const partesA = valA.split(' ');
+                        const partesB = valB.split(' ');
+                        valA = new Date(partesA[0].split('/').reverse().join('/') + ' ' + partesA[1]).getTime() || 0;
+                        valB = new Date(partesB[0].split('/').reverse().join('/') + ' ' + partesB[1]).getTime() || 0;
+                    } catch(e) {}
+                }
+                if (valA < valB) return historialOrden.ascendente ? -1 : 1;
+                if (valA > valB) return historialOrden.ascendente ? 1 : -1;
+                return 0;
+            });
+            renderizarHistorialModal();
+        }
+
+        // ========== EXPORTAR HISTORIAL A EXCEL ==========
+        function exportarHistorialModal() {
+            if (!historialFiltrado.length) {
+                alert('No hay datos para exportar');
+                return;
+            }
+            
+            let html = `
+            <html xmlns:o="urn:schemas-microsoft-com:office:office" 
+                  xmlns:x="urn:schemas-microsoft-com:office:excel" 
+                  xmlns="http://www.w3.org/TR/REC-html40">
+            <head>
+                <meta charset="UTF-8">
+                <!--[if gte mso 9]>
+                <xml>
+                    <x:ExcelWorkbook>
+                        <x:ExcelWorksheets>
+                            <x:ExcelWorksheet>
+                                <x:Name>Historial</x:Name>
+                                <x:WorksheetOptions>
+                                    <x:DisplayGridlines/>
+                                </x:WorksheetOptions>
+                            </x:ExcelWorksheet>
+                        </x:ExcelWorksheets>
+                    </x:ExcelWorkbook>
+                </xml>
+                <![endif]-->
+                <style>
+                    th { background: #1E88E5; color: white; font-weight: bold; padding: 8px; border: 1px solid #ccc; }
+                    td { padding: 6px 8px; border: 1px solid #ccc; }
+                    table { border-collapse: collapse; width: 100%; font-family: Arial, sans-serif; font-size: 12px; }
+            </style>
+            </head>
+            <body>
+                <h2>Historial del Equipo</h2>
+                <p>Equipo: ${document.getElementById('historialInfoEquipo').textContent}</p>
+                <p>Exportado: ${new Date().toLocaleString()}</p>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Fecha/Hora</th>
+                            <th>Acción</th>
+                            <th>Detalle</th>
+                            <th>Usuario</th>
+                            <th>Responsable</th>
+                        </tr>
+                    </thead>
+                    <tbody>`;
+            
+            historialFiltrado.forEach(item => {
+                html += `<tr>
+                            <td>${item.fecha}</td>
+                            <td>${item.accion}</td>
+                            <td>${item.detalle}</td>
+                            <td>${item.usuario}</td>
+                            <td>${item.responsable}</td>
+                        </tr>`;
+            });
+            
+            html += `
+                    </tbody>
+                </table>
+                <p><small>Generado automáticamente - Sistema de Inventario</small></p>
+            </body>
+            </html>`;
+            
+            const blob = new Blob([html], { type: 'application/vnd.ms-excel;charset=utf-8' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            const equipoId = document.getElementById('historialEquipoId').textContent;
+            link.download = `historial_equipo_${equipoId}_${new Date().toISOString().slice(0,10)}.xls`;
+            link.click();
+            URL.revokeObjectURL(link.href);
+        }
+
+        // ========== EVENTOS MODALES ==========
         document.getElementById('modal_tipo_equipo').addEventListener('change', actualizarCamposModal);
         document.getElementById('modal_estado').addEventListener('change', actualizarCamposModal);
         document.getElementById('modal_fecha_despacho').addEventListener('change', function() {
