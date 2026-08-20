@@ -348,139 +348,6 @@
                 padding: 3px 4px;
             }
         }
-        
-        /* ====== ESTILOS MODAL HISTORIAL ====== */
-        .accion-badge {
-            display: inline-block;
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-size: 10px;
-            font-weight: 600;
-            background: #e3f2fd;
-            color: #0D47A1;
-        }
-        .accion-badge.creacion { background: #e8f5e9; color: #2E7D32; }
-        .accion-badge.cambio { background: #fff3e0; color: #E65100; }
-        .accion-badge.cambio-estado { background: #f3e5f5; color: #6A1B9A; }
-        .accion-badge.observacion { background: #e3f2fd; color: #0D47A1; }
-        .accion-badge.contrastacion { background: #e0f7fa; color: #00695C; }
-        
-        /* ====== ESTILOS MODAL EDICION ====== */
-        .modal-content-campos {
-            padding: 16px 18px;
-        }
-        .modal-content-campos .form-row {
-            display: flex;
-            gap: 12px;
-            margin-bottom: 8px;
-            flex-wrap: wrap;
-        }
-        .modal-content-campos .form-group {
-            flex: 1;
-            min-width: 140px;
-        }
-        .modal-content-campos .form-group label {
-            display: block;
-            font-weight: 600;
-            color: #333;
-            margin-bottom: 3px;
-            font-size: 11px;
-        }
-        .modal-content-campos .form-group input,
-        .modal-content-campos .form-group select,
-        .modal-content-campos .form-group textarea {
-            width: 100%;
-            padding: 6px 10px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            font-size: 12px;
-            background: white;
-            font-family: inherit;
-        }
-        .modal-content-campos .form-group input:focus,
-        .modal-content-campos .form-group select:focus,
-        .modal-content-campos .form-group textarea:focus {
-            outline: none;
-            border-color: #1E88E5;
-        }
-        .modal-content-campos .form-group textarea {
-            resize: vertical;
-            min-height: 40px;
-        }
-        .modal-content-campos .seccion-modal {
-            background: #f8f9fa;
-            border-radius: 8px;
-            padding: 10px 14px;
-            margin: 8px 0;
-            border-left: 3px solid #1E88E5;
-        }
-        .modal-content-campos .seccion-modal h5 {
-            margin: 0 0 8px 0;
-            color: #1E88E5;
-            font-size: 13px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        .modal-content-campos .seccion-modal .form-row {
-            margin-bottom: 4px;
-        }
-        .modal-content-campos .seccion-modal .form-row:last-child {
-            margin-bottom: 0;
-        }
-        .modal-content-campos .texto-obligatorio {
-            color: #d32f2f;
-            font-size: 10px;
-        }
-        .modal-content-campos .campo-ayuda {
-            font-size: 10px;
-            color: #666;
-            margin-top: 2px;
-        }
-        
-        /* ====== MODAL OBSERVACION ====== */
-        .modal-observacion {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.5);
-            z-index: 1001;
-            align-items: center;
-            justify-content: center;
-        }
-        .modal-observacion .modal-content {
-            background: white;
-            border-radius: 20px;
-            max-width: 400px;
-            width: 90%;
-            margin: auto;
-            padding: 20px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
-        }
-        .modal-observacion .modal-content h3 {
-            margin: 0 0 15px 0;
-            font-size: 18px;
-        }
-        .modal-observacion .modal-content textarea {
-            width: 100%;
-            padding: 10px;
-            border: 2px solid #e0e0e0;
-            border-radius: 12px;
-            font-size: 14px;
-            resize: vertical;
-        }
-        .modal-observacion .modal-content .btn-group {
-            display: flex;
-            gap: 10px;
-            margin-top: 15px;
-        }
-        .modal-observacion .modal-content .btn-group .btn {
-            flex: 1;
-            text-align: center;
-        }
     </style>
 </head>
 <body>
@@ -549,6 +416,18 @@
         <button onclick="accionRapida('observacion')" class="btn btn-success" title="Agregar observación al equipo seleccionado">💬 Observación</button>
         <button onclick="accionRapida('eliminar')" class="btn btn-danger" title="Eliminar equipo seleccionado">🗑️ Eliminar</button>
         <span style="font-size: 11px; color: #999; margin-left: 5px;">(selecciona un equipo con ☑)</span>
+    </div>
+
+    <!-- ====== FILTROS RÁPIDOS DE ALERTAS ====== -->
+    <div style="display:flex; gap:6px; flex-wrap:wrap; margin:8px 0; padding:6px 10px; background:#f8f9fa; border-radius:8px; align-items:center; border:1px solid #e0e0e0;">
+        <span style="font-weight:600; color:#555; font-size:12px;">🔍 Alertas:</span>
+        <button onclick="filtrarAlertas('todos')" class="btn btn-secondary" style="padding:3px 10px; font-size:11px;">📊 Todos</button>
+        <button onclick="filtrarAlertas('vencidos')" class="btn btn-danger" style="padding:3px 10px; font-size:11px;">🔴 Vencidos</button>
+        <button onclick="filtrarAlertas('proximos')" class="btn btn-warning" style="padding:3px 10px; font-size:11px;">🟡 Próximos</button>
+        <button onclick="filtrarAlertas('ok')" class="btn btn-success" style="padding:3px 10px; font-size:11px;">🟢 OK</button>
+        <button onclick="filtrarAlertas('contrastacion')" class="btn btn-info" style="padding:3px 10px; font-size:11px;">📊 Contrastación</button>
+        <button onclick="filtrarAlertas('mantencion')" class="btn btn-warning" style="padding:3px 10px; font-size:11px;">🔧 Mantención</button>
+        <span id="contadorFiltro" style="font-size:11px; color:#666; margin-left:5px;">Mostrando: todos</span>
     </div>
 
     <div class="search-bar">
@@ -874,11 +753,10 @@
         </div>
     </div>
 
-    <!-- ====== MODAL HISTORIAL MEJORADO ====== -->
+    <!-- ====== MODAL HISTORIAL ====== -->
     <div id="modalHistorial" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); backdrop-filter:blur(4px); z-index:10000; align-items:center; justify-content:center;">
         <div style="background:white; border-radius:20px; max-width:850px; width:95%; margin:auto; box-shadow:0 20px 40px rgba(0,0,0,0.3); overflow:hidden; animation:modalEntrar 0.3s ease-out; max-height:95vh;">
             
-            <!-- HEADER -->
             <div style="background:linear-gradient(135deg, #6A1B9A 0%, #4A148C 100%); padding:12px 18px; color:white; display:flex; justify-content:space-between; align-items:center; position:sticky; top:0; z-index:10;">
                 <div style="display:flex; align-items:center; gap:8px;">
                     <span style="font-size:20px;">📋</span>
@@ -887,14 +765,12 @@
                 <button onclick="cerrarModalHistorial()" style="background:rgba(255,255,255,0.2); border:none; color:white; font-size:18px; cursor:pointer; width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center;">&times;</button>
             </div>
             
-            <!-- INFO DEL EQUIPO -->
             <div style="padding:10px 16px; background:#f0f4f8; display:flex; flex-wrap:wrap; gap:12px; align-items:center; border-bottom:1px solid #e0e0e0;">
                 <span id="historialInfoEquipo" style="font-weight:600; font-size:13px;"></span>
                 <span id="historialEstadoEquipo" style="font-size:12px; padding:2px 10px; border-radius:12px; color:white;"></span>
                 <span style="font-size:12px; color:#999; margin-left:auto;">ID: <span id="historialEquipoId">-</span></span>
             </div>
             
-            <!-- BARRA DE BÚSQUEDA Y EXPORTAR -->
             <div style="padding:10px 16px; display:flex; gap:10px; flex-wrap:wrap; align-items:center; border-bottom:1px solid #e0e0e0;">
                 <div style="flex:1; min-width:200px; position:relative;">
                     <input type="text" id="buscarHistorialModal" placeholder="🔍 Buscar en historial..." 
@@ -908,7 +784,6 @@
                 </button>
             </div>
             
-            <!-- TABLA -->
             <div style="padding:10px 16px; overflow-y:auto; max-height:calc(90vh - 240px);">
                 <table style="width:100%; border-collapse:collapse; font-size:12px;">
                     <thead>
@@ -929,14 +804,14 @@
     </div>
 
     <!-- ====== MODAL OBSERVACIÓN ====== -->
-    <div id="modalObservacion" class="modal-observacion">
-        <div class="modal-content">
-            <h3>💬 Agregar Observación</h3>
-            <textarea id="observacion_texto" rows="4"></textarea>
+    <div id="modalObservacion" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1001; align-items:center; justify-content:center;">
+        <div style="background:white; border-radius:20px; max-width:400px; width:90%; margin:auto; padding:20px; box-shadow:0 20px 40px rgba(0,0,0,0.3);">
+            <h3 style="margin:0 0 15px 0; font-size:18px;">💬 Agregar Observación</h3>
+            <textarea id="observacion_texto" rows="4" style="width:100%; padding:10px; border:2px solid #e0e0e0; border-radius:12px; font-size:14px; resize:vertical;"></textarea>
             <input type="hidden" id="observacion_equipo_id">
-            <div class="btn-group">
-                <button onclick="guardarObservacion()" class="btn btn-primary">💾 Guardar</button>
-                <button onclick="cerrarModalObservacion()" class="btn btn-secondary">Cancelar</button>
+            <div style="display:flex; gap:10px; margin-top:15px;">
+                <button onclick="guardarObservacion()" class="btn btn-primary" style="flex:1;">💾 Guardar</button>
+                <button onclick="cerrarModalObservacion()" class="btn btn-secondary" style="flex:1;">Cancelar</button>
             </div>
         </div>
     </div>
@@ -1549,6 +1424,62 @@
             document.getElementById('contador').innerHTML = term === '' ? `📋 Total: ${rows.length} equipos` : `🔍 Mostrando ${visible} de ${rows.length} equipos`;
         });
 
+        // ========== FILTRO DE ALERTAS ==========
+        function filtrarAlertas(tipo) {
+            const rows = document.querySelectorAll('#tablaEquipos tbody tr');
+            let contador = 0;
+            
+            rows.forEach(row => {
+                const alertaCell = row.querySelector('.alerta-cell');
+                const estadoCell = row.querySelector('.estado');
+                let mostrar = false;
+                
+                if (!alertaCell) {
+                    row.style.display = 'none';
+                    return;
+                }
+                
+                const alertaTexto = alertaCell.textContent || '';
+                const estadoTexto = estadoCell ? estadoCell.textContent.trim() : '';
+                
+                switch(tipo) {
+                    case 'todos':
+                        mostrar = true;
+                        break;
+                    case 'vencidos':
+                        mostrar = alertaTexto.includes('🔴') || alertaTexto.includes('VENCIDO') || alertaTexto.includes('VENCIDA');
+                        break;
+                    case 'proximos':
+                        mostrar = alertaTexto.includes('🟡') || alertaTexto.includes('VENCE') || alertaTexto.includes('Vence');
+                        break;
+                    case 'ok':
+                        mostrar = alertaTexto.includes('✅') || alertaTexto === '➖' || alertaTexto === '';
+                        break;
+                    case 'contrastacion':
+                        mostrar = alertaTexto.includes('📊') || estadoTexto === 'Contrastacion';
+                        break;
+                    case 'mantencion':
+                        mostrar = alertaTexto.includes('🔧') || estadoTexto === 'Mantencion';
+                        break;
+                    default:
+                        mostrar = true;
+                }
+                
+                row.style.display = mostrar ? '' : 'none';
+                if (mostrar) contador++;
+            });
+            
+            const nombres = {
+                'todos': 'todos',
+                'vencidos': '🔴 vencidos',
+                'proximos': '🟡 próximos a vencer',
+                'ok': '🟢 OK',
+                'contrastacion': '📊 en contrastación',
+                'mantencion': '🔧 en mantención'
+            };
+            document.getElementById('contadorFiltro').textContent = `Mostrando: ${contador} equipos (${nombres[tipo] || tipo})`;
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('contador').innerHTML = `📋 Total: ${document.querySelectorAll('#tablaEquipos tbody tr').length} equipos`;
             actualizarContadorExportar();
@@ -1557,6 +1488,9 @@
             document.getElementById('modalHistorial').style.display = 'none';
             document.getElementById('modalObservacion').style.display = 'none';
             document.getElementById('menuExportar').style.display = 'none';
+            
+            // Inicializar contador de filtro
+            document.getElementById('contadorFiltro').textContent = 'Mostrando: todos';
         });
 
         window.onclick = function(e) {
