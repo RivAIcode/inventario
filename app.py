@@ -118,11 +118,26 @@ class Equipo(db.Model):
     fecha_vencimiento_insumo = db.Column(db.Date)
     fecha_ultima_mantencion = db.Column(db.Date)
     fecha_retorno_mantencion = db.Column(db.Date)
-    nro_informe = db.Column(db.String(100))
     observaciones = db.Column(db.Text)
     fecha_creacion = db.Column(db.DateTime, default=get_chile_time)
     ultima_actualizacion = db.Column(db.DateTime, default=get_chile_time, onupdate=get_chile_time)
     version = db.Column(db.Integer, default=1)
+
+    # ====== NUEVOS CAMPOS ======
+    # Contrastación
+    fecha_certificado_contrastacion = db.Column(db.Date, nullable=True)
+    nro_informe_contrastacion = db.Column(db.String(100), nullable=True)
+
+    # Mantención
+    fecha_certificado_mantencion = db.Column(db.Date, nullable=True)
+    nro_informe_mantencion = db.Column(db.String(100), nullable=True)
+
+    # Despacho general
+    fecha_despacho = db.Column(db.Date, nullable=True)
+
+    # Termómetros e Insumos
+    nro_certificado_termometro = db.Column(db.String(100), nullable=True)
+    fecha_contrastacion_termometro = db.Column(db.Date, nullable=True)
 
 class Archivo(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -238,16 +253,72 @@ def obtener_alerta(equipo):
     tipo = equipo.tipo_equipo
     hoy = get_chile_time().date()
 
-    # Si está en contrastación, no mostrar alerta
-    if equipo.estado == 'Contrastacion':
+    # ====== PRIORIDAD 1: EQUIPO EN CONTRASTACIÓN ======
+    if equipo.estado == 'Contrastacion' and equipo.fecha_envio_laboratorio:
+        dias = (hoy - equipo.fecha_envio_laboratorio).days
         return {
-            'texto': 'En contrastación',
-            'clase': '',
-            'icono': '🔬',
-            'dias_texto': ''
+            'texto': f'📊 En contrastación ({dias} días)',
+            'clase': 'alerta-contrastacion',
+            'icono': '📊',
+            'dias_texto': f'{dias}d'
         }
 
-    # Para equipos con contrastación
+    # ====== PRIORIDAD 1: EQUIPO EN MANTENCIÓN ======
+    if equipo.estado == 'Mantencion' and equipo.fecha_ultima_mantencion:
+        dias = (hoy - equipo.fecha_ultima_mantencion).days
+        return {
+            'texto': f'🔧 En mantención ({dias} días)',
+            'clase': 'alerta-mantencion',
+            'icono': '🔧',
+            'dias_texto': f'{dias}d'
+        }
+
+    # ====== PRIORIDAD 2: TERMÓMETRO PATRÓN - CONTRASTACIÓN (5 días) ======
+    if tipo == 'Termometro patron AS' and equipo.fecha_contrastacion_termometro:
+        fecha_venc = equipo.fecha_contrastacion_termometro + timedelta(days=30)
+        dias = (fecha_venc - hoy).days
+        if dias < 0:
+            return {
+                'texto': f'⚠️ VENCIDA contrastación termómetro (venció hace {abs(dias)} días)',
+                'clase': 'alerta-vencido',
+                'icono': '🔴',
+                'dias_texto': f'{abs(dias)}d'
+            }
+        elif dias <= 5:
+            return {
+                'texto': f'⚠️ Vence contrastación termómetro en {dias} días',
+                'clase': 'alerta-proximo',
+                'icono': '🟡',
+                'dias_texto': f'{dias}d'
+            }
+
+    # ====== PRIORIDAD 2: TERMÓMETRO PATRÓN - CERTIFICADO (30 días) ======
+    if tipo == 'Termometro patron AS' and equipo.fecha_certificado:
+        fecha_venc = calcular_vencimiento_insumo(equipo.fecha_certificado)
+        if fecha_venc:
+            dias = (fecha_venc - hoy).days
+            if dias < 0:
+                return {
+                    'texto': f'⚠️ VENCIDO certificado termómetro (venció hace {abs(dias)} días)',
+                    'clase': 'alerta-vencido',
+                    'icono': '🔴',
+                    'dias_texto': f'{abs(dias)}d'
+                }
+            elif dias <= 30:
+                return {
+                    'texto': f'⚠️ Vence certificado termómetro en {dias} días',
+                    'clase': 'alerta-proximo',
+                    'icono': '🟡',
+                    'dias_texto': f'{dias}d'
+                }
+            return {
+                'texto': f'Certificado termómetro: {formatear_fecha(fecha_venc)}',
+                'clase': '',
+                'icono': '✅',
+                'dias_texto': ''
+            }
+
+    # ====== PRIORIDAD 2: EQUIPOS CON CONTRASTACIÓN (Colorímetros, Pocket, Multiparamétro) ======
     if tipo in TIPOS_CON_CONTRASTACION and equipo.fecha_contrastacion:
         fecha_venc = calcular_vencimiento_contrastacion(equipo.fecha_contrastacion)
         if fecha_venc:
@@ -273,14 +344,9 @@ def obtener_alerta(equipo):
                 'dias_texto': ''
             }
 
-    # Para equipos con certificado/insumo
-    elif tipo in TIPOS_CON_CERTIFICADO:
-        fecha_venc = None
-        if equipo.fecha_vencimiento_insumo:
-            fecha_venc = equipo.fecha_vencimiento_insumo
-        elif tipo in TIPOS_CON_VENCIMIENTO_AUTOMATICO and equipo.fecha_certificado:
-            fecha_venc = calcular_vencimiento_insumo(equipo.fecha_certificado)
-
+    # ====== PRIORIDAD 2: EQUIPOS CON CERTIFICADO (Gelex, Stabcal) ======
+    if tipo in TIPOS_CON_CERTIFICADO and tipo != 'Termometro patron AS':
+        fecha_venc = equipo.fecha_vencimiento_insumo
         if fecha_venc:
             dias = (fecha_venc - hoy).days
             if dias < 0:
@@ -304,7 +370,7 @@ def obtener_alerta(equipo):
                 'dias_texto': ''
             }
 
-    # Sin fecha o sin alerta
+    # Sin alerta
     return {
         'texto': '',
         'clase': '',
@@ -490,22 +556,36 @@ def dashboard():
     proximos = 0
     for e in equipos:
         alerta = obtener_alerta(e)
-        if 'VENCIDO' in alerta['texto']:
+        if 'VENCIDO' in alerta['texto'] or 'VENCIDA' in alerta['texto']:
             vencidos += 1
-        elif 'VENCE EN' in alerta['texto']:
+        elif 'VENCE' in alerta['texto']:
             proximos += 1
+
+    responsables_unicos = Responsable.query.order_by(Responsable.nombre).all()
+
     return render_template('dashboard.html',
-                         equipos=equipos, total=total, operativo=operativo,
-                         mantencion=mantencion, contrastacion=contrastacion,
-                         prestado=prestado, volante=volante, fuera_servicio=fuera_servicio,
-                         vencidos=vencidos, proximos=proximos,
-                         formatear_fecha=formatear_fecha, obtener_alerta=obtener_alerta,
-                         LOCALIDADES=LOCALIDADES, TIPOS_EQUIPO=TIPOS_EQUIPO,
-                         SUBCATEGORIAS=SUBCATEGORIAS, ESTADOS=ESTADOS, AREAS=AREAS,
+                         equipos=equipos,
+                         total=total,
+                         operativo=operativo,
+                         mantencion=mantencion,
+                         contrastacion=contrastacion,
+                         prestado=prestado,
+                         volante=volante,
+                         fuera_servicio=fuera_servicio,
+                         vencidos=vencidos,
+                         proximos=proximos,
+                         formatear_fecha=formatear_fecha,
+                         obtener_alerta=obtener_alerta,
+                         LOCALIDADES=LOCALIDADES,
+                         TIPOS_EQUIPO=TIPOS_EQUIPO,
+                         SUBCATEGORIAS=SUBCATEGORIAS,
+                         ESTADOS=ESTADOS,
+                         AREAS=AREAS,
                          TIPOS_CON_PHMETRO=TIPOS_CON_PHMETRO,
                          TIPOS_CON_CERTIFICADO=TIPOS_CON_CERTIFICADO,
                          now=get_chile_time(),
-                         verificar_bloqueo=verificar_bloqueo)
+                         verificar_bloqueo=verificar_bloqueo,
+                         responsables_unicos=responsables_unicos)
 
 @app.route('/equipo/nuevo', methods=['GET', 'POST'])
 @login_required
@@ -525,8 +605,15 @@ def nuevo_equipo():
                 nro_serie_sonda=request.form.get('nro_serie_sonda', ''),
                 estado=request.form.get('estado', 'Operativo'),
                 servicio_tecnico=request.form.get('servicio_tecnico', ''),
-                nro_informe=request.form.get('nro_informe', ''),
-                observaciones=request.form.get('observaciones', '')
+                observaciones=request.form.get('observaciones', ''),
+                # Nuevos campos
+                nro_informe_contrastacion=request.form.get('nro_informe_contrastacion', ''),
+                nro_informe_mantencion=request.form.get('nro_informe_mantencion', ''),
+                nro_certificado_termometro=request.form.get('nro_certificado_termometro', ''),
+                fecha_certificado_contrastacion=datetime.strptime(request.form['fecha_certificado_contrastacion'], '%Y-%m-%d').date() if request.form.get('fecha_certificado_contrastacion') else None,
+                fecha_certificado_mantencion=datetime.strptime(request.form['fecha_certificado_mantencion'], '%Y-%m-%d').date() if request.form.get('fecha_certificado_mantencion') else None,
+                fecha_contrastacion_termometro=datetime.strptime(request.form['fecha_contrastacion_termometro'], '%Y-%m-%d').date() if request.form.get('fecha_contrastacion_termometro') else None,
+                fecha_despacho=datetime.strptime(request.form['fecha_despacho'], '%Y-%m-%d').date() if request.form.get('fecha_despacho') else None
             )
             if request.form.get('fecha_contrastacion'):
                 equipo.fecha_contrastacion = datetime.strptime(request.form['fecha_contrastacion'], '%Y-%m-%d').date()
@@ -538,6 +625,8 @@ def nuevo_equipo():
                 equipo.fecha_ultima_mantencion = datetime.strptime(request.form['fecha_ultima_mantencion'], '%Y-%m-%d').date()
             if request.form.get('fecha_retorno_mantencion'):
                 equipo.fecha_retorno_mantencion = datetime.strptime(request.form['fecha_retorno_mantencion'], '%Y-%m-%d').date()
+            if request.form.get('fecha_envio_laboratorio'):
+                equipo.fecha_envio_laboratorio = datetime.strptime(request.form['fecha_envio_laboratorio'], '%Y-%m-%d').date()
             if equipo.tipo_equipo in TIPOS_CON_VENCIMIENTO_AUTOMATICO and equipo.fecha_certificado:
                 equipo.fecha_vencimiento_insumo = calcular_vencimiento_insumo(equipo.fecha_certificado)
             db.session.add(equipo)
@@ -603,7 +692,6 @@ def editar_equipo(id):
             return redirect(url_for('dashboard'))
     if request.method == 'POST':
         try:
-            # Guardar valores anteriores
             estado_anterior = equipo.estado
             responsable_anterior = equipo.responsable
             modelo_sonda_anterior = equipo.modelo_sonda
@@ -612,10 +700,10 @@ def editar_equipo(id):
             observaciones_anteriores = equipo.observaciones
             fecha_contrastacion_anterior = equipo.fecha_contrastacion
             nro_informe_anterior = equipo.nro_informe
+            fecha_envio_laboratorio_anterior = equipo.fecha_envio_laboratorio
+            fecha_ultima_mantencion_anterior = equipo.fecha_ultima_mantencion
 
             nuevas_observaciones = request.form.get('observaciones', '')
-
-            # Actualizar campos
             equipo.nro_serie = request.form.get('nro_serie', '')
             equipo.area = request.form.get('area', '')
             equipo.localidad = request.form.get('localidad', '')
@@ -631,7 +719,15 @@ def editar_equipo(id):
             equipo.observaciones = nuevas_observaciones
             equipo.ultima_actualizacion = get_chile_time()
 
-            # Fechas
+            # Nuevos campos
+            equipo.nro_informe_contrastacion = request.form.get('nro_informe_contrastacion', '')
+            equipo.nro_informe_mantencion = request.form.get('nro_informe_mantencion', '')
+            equipo.nro_certificado_termometro = request.form.get('nro_certificado_termometro', '')
+            equipo.fecha_certificado_contrastacion = datetime.strptime(request.form['fecha_certificado_contrastacion'], '%Y-%m-%d').date() if request.form.get('fecha_certificado_contrastacion') else None
+            equipo.fecha_certificado_mantencion = datetime.strptime(request.form['fecha_certificado_mantencion'], '%Y-%m-%d').date() if request.form.get('fecha_certificado_mantencion') else None
+            equipo.fecha_contrastacion_termometro = datetime.strptime(request.form['fecha_contrastacion_termometro'], '%Y-%m-%d').date() if request.form.get('fecha_contrastacion_termometro') else None
+            equipo.fecha_despacho = datetime.strptime(request.form['fecha_despacho'], '%Y-%m-%d').date() if request.form.get('fecha_despacho') else None
+
             if request.form.get('fecha_contrastacion'):
                 equipo.fecha_contrastacion = datetime.strptime(request.form['fecha_contrastacion'], '%Y-%m-%d').date()
             if request.form.get('fecha_certificado'):
@@ -642,11 +738,12 @@ def editar_equipo(id):
                 equipo.fecha_ultima_mantencion = datetime.strptime(request.form['fecha_ultima_mantencion'], '%Y-%m-%d').date()
             if request.form.get('fecha_retorno_mantencion'):
                 equipo.fecha_retorno_mantencion = datetime.strptime(request.form['fecha_retorno_mantencion'], '%Y-%m-%d').date()
+            if request.form.get('fecha_envio_laboratorio'):
+                equipo.fecha_envio_laboratorio = datetime.strptime(request.form['fecha_envio_laboratorio'], '%Y-%m-%d').date()
 
             if equipo.tipo_equipo in TIPOS_CON_VENCIMIENTO_AUTOMATICO and equipo.fecha_certificado:
                 equipo.fecha_vencimiento_insumo = calcular_vencimiento_insumo(equipo.fecha_certificado)
 
-            # Archivos
             archivos = request.files.getlist('archivos')
             for archivo in archivos:
                 if archivo and archivo.filename and archivo_permitido(archivo.filename):
@@ -664,33 +761,63 @@ def editar_equipo(id):
                     )
                     db.session.add(archivo_db)
 
-            # ====== CONSTRUIR LISTA DE CAMBIOS AGRUPADOS ======
             cambios = []
-            historial_accion = 'CAMBIO'  # Por defecto
+            historial_accion = 'CAMBIO'
 
-            # 1. Cambio de estado
             if estado_anterior != equipo.estado:
                 cambios.append(f"Estado: {estado_anterior} → {equipo.estado}")
-
-            # 2. Cambio de responsable
             if responsable_anterior != equipo.responsable:
                 cambios.append(f"Responsable: {responsable_anterior or 'Ninguno'} → {equipo.responsable or 'Ninguno'}")
 
-            # 3. Cambio de fecha de contrastación
+            # Contrastación - cambio de fecha
             if fecha_contrastacion_anterior != equipo.fecha_contrastacion:
                 fecha_anterior = formatear_fecha(fecha_contrastacion_anterior) or 'Sin fecha'
                 fecha_nueva = formatear_fecha(equipo.fecha_contrastacion) or 'Sin fecha'
-                detalle_contrastacion = f"Contrastación: {fecha_anterior} → {fecha_nueva}"
-                if equipo.nro_informe:
-                    detalle_contrastacion += f" | Informe: {equipo.nro_informe}"
-                cambios.append(detalle_contrastacion)
-                historial_accion = 'CONTRASTACION'  # Si hay cambio de contrastación, usar esta acción
+                detalle = f"Contrastación: {fecha_anterior} → {fecha_nueva}"
+                if equipo.nro_informe_contrastacion:
+                    detalle += f" | Informe: {equipo.nro_informe_contrastacion}"
+                cambios.append(detalle)
+                historial_accion = 'CONTRASTACION'
 
-            # 4. Cambio de N° Informe (si no hubo cambio de contrastación)
-            if fecha_contrastacion_anterior == equipo.fecha_contrastacion and nro_informe_anterior != equipo.nro_informe:
-                cambios.append(f"N° Informe: {nro_informe_anterior or 'Ninguno'} → {equipo.nro_informe or 'Ninguno'}")
+            # Fecha envío laboratorio (contrastación)
+            if fecha_envio_laboratorio_anterior != equipo.fecha_envio_laboratorio:
+                fecha_anterior = formatear_fecha(fecha_envio_laboratorio_anterior) or 'Sin fecha'
+                fecha_nueva = formatear_fecha(equipo.fecha_envio_laboratorio) or 'Sin fecha'
+                cambios.append(f"Envío laboratorio: {fecha_anterior} → {fecha_nueva}")
 
-            # 5. Cambios de pHmetro (sonda)
+            # Mantención - fecha ingreso
+            if fecha_ultima_mantencion_anterior != equipo.fecha_ultima_mantencion:
+                fecha_anterior = formatear_fecha(fecha_ultima_mantencion_anterior) or 'Sin fecha'
+                fecha_nueva = formatear_fecha(equipo.fecha_ultima_mantencion) or 'Sin fecha'
+                detalle = f"Mantención: {fecha_anterior} → {fecha_nueva}"
+                if equipo.nro_informe_mantencion:
+                    detalle += f" | Informe: {equipo.nro_informe_mantencion}"
+                cambios.append(detalle)
+
+            # N° Informe contrastación (si cambió sin cambiar fecha)
+            if fecha_contrastacion_anterior == equipo.fecha_contrastacion:
+                nro_informe_anterior = request.form.get('nro_informe_contrastacion_anterior', '')
+                if nro_informe_anterior != equipo.nro_informe_contrastacion:
+                    cambios.append(f"N° Informe Contrastación: {nro_informe_anterior or 'Ninguno'} → {equipo.nro_informe_contrastacion or 'Ninguno'}")
+
+            # N° Informe mantención (si cambió sin cambiar fecha)
+            nro_informe_mantencion_anterior = request.form.get('nro_informe_mantencion_anterior', '')
+            if nro_informe_mantencion_anterior != equipo.nro_informe_mantencion:
+                cambios.append(f"N° Informe Mantención: {nro_informe_mantencion_anterior or 'Ninguno'} → {equipo.nro_informe_mantencion or 'Ninguno'}")
+
+            # Termómetro - fecha certificado
+            if equipo.tipo_equipo == 'Termometro patron AS':
+                if request.form.get('fecha_certificado_anterior', '') != str(equipo.fecha_certificado) if equipo.fecha_certificado else '':
+                    fecha_anterior = request.form.get('fecha_certificado_anterior', 'Sin fecha')
+                    fecha_nueva = formatear_fecha(equipo.fecha_certificado) or 'Sin fecha'
+                    cambios.append(f"Certificado termómetro: {fecha_anterior} → {fecha_nueva}")
+
+                if request.form.get('fecha_contrastacion_termometro_anterior', '') != str(equipo.fecha_contrastacion_termometro) if equipo.fecha_contrastacion_termometro else '':
+                    fecha_anterior = request.form.get('fecha_contrastacion_termometro_anterior', 'Sin fecha')
+                    fecha_nueva = formatear_fecha(equipo.fecha_contrastacion_termometro) or 'Sin fecha'
+                    cambios.append(f"Contrastación termómetro: {fecha_anterior} → {fecha_nueva}")
+
+            # pHmetro
             if equipo.tipo_equipo in TIPOS_CON_PHMETRO:
                 if modelo_sonda_anterior != equipo.modelo_sonda:
                     cambios.append(f"Modelo Sonda: {modelo_sonda_anterior or 'Ninguno'} → {equipo.modelo_sonda or 'Ninguno'}")
@@ -699,7 +826,6 @@ def editar_equipo(id):
                 if nro_serie_sonda_anterior != equipo.nro_serie_sonda:
                     cambios.append(f"Nro Serie Sonda: {nro_serie_sonda_anterior or 'Ninguno'} → {equipo.nro_serie_sonda or 'Ninguno'}")
 
-            # ====== GUARDAR UN SOLO REGISTRO DE HISTORIAL CON TODOS LOS CAMBIOS ======
             if cambios:
                 detalle_final = " | ".join(cambios)
                 historial = Historial(
@@ -711,7 +837,6 @@ def editar_equipo(id):
                 )
                 db.session.add(historial)
 
-            # ====== GUARDAR OBSERVACIÓN SOLO SI ES NUEVA ======
             if nuevas_observaciones and nuevas_observaciones != observaciones_anteriores:
                 historial_obs = Historial(
                     equipo_id=equipo.id,
@@ -786,7 +911,6 @@ def cambiar_estado(id):
     estado_anterior = equipo.estado
     responsable_anterior = equipo.responsable
 
-    # ========== VERIFICAR SI HAY CAMBIOS REALES ==========
     hay_cambios = False
     cambios = []
 
@@ -810,9 +934,7 @@ def cambiar_estado(id):
         hay_cambios = True
         cambios.append(f"Envío a laboratorio: {fecha_envio_laboratorio}")
 
-    # Si no hay cambios reales (solo observación o nada), guardar como OBSERVACION
-    if not hay_cambios and observacion:
-        # Guardar solo como observación
+    if observacion:
         ahora = get_chile_time()
         obs_formateada = f"[{ahora.strftime('%d/%m/%Y %H:%M')}] {current_user.nombre}: {observacion}"
         if equipo.observaciones:
@@ -820,6 +942,7 @@ def cambiar_estado(id):
         else:
             equipo.observaciones = obs_formateada
 
+    if not hay_cambios and observacion:
         historial = Historial(
             equipo_id=equipo.id,
             accion='OBSERVACION',
@@ -831,11 +954,9 @@ def cambiar_estado(id):
         db.session.commit()
         return jsonify({'success': True, 'nuevo_estado': nuevo_estado, 'mensaje': 'Observación guardada'})
 
-    # Si no hay cambios ni observación, no hacer nada
     if not hay_cambios and not observacion:
         return jsonify({'success': True, 'nuevo_estado': nuevo_estado, 'mensaje': 'Sin cambios'})
 
-    # ========== APLICAR CAMBIOS ==========
     equipo.estado = nuevo_estado
     equipo.ultima_actualizacion = get_chile_time()
 
@@ -853,19 +974,7 @@ def cambiar_estado(id):
     elif estado_anterior == 'Mantencion' and nuevo_estado != 'Mantencion':
         equipo.fecha_retorno_mantencion = get_chile_time().date()
 
-    # Si hay observación, agregarla al campo observaciones
-    if observacion:
-        ahora = get_chile_time()
-        obs_formateada = f"[{ahora.strftime('%d/%m/%Y %H:%M')}] {current_user.nombre}: {observacion}"
-        if equipo.observaciones:
-            equipo.observaciones = obs_formateada + "\n" + equipo.observaciones
-        else:
-            equipo.observaciones = obs_formateada
-        cambios.append(f"Observación: {observacion}")
-
-    # ========== GUARDAR UN SOLO REGISTRO DE HISTORIAL ==========
     detalle_final = " | ".join(cambios)
-
     historial = Historial(
         equipo_id=equipo.id,
         accion='CAMBIO_ESTADO',
@@ -931,11 +1040,13 @@ def ver_historial(id):
     equipo = Equipo.query.get_or_404(id)
     archivos_fotos = Archivo.query.filter_by(equipo_id=equipo.id, tipo='foto').all()
     archivos_docs = Archivo.query.filter_by(equipo_id=equipo.id, tipo='documento').all()
+    responsables_unicos = Responsable.query.order_by(Responsable.nombre).all()
     return render_template('historial.html',
                          equipo=equipo,
                          archivos_fotos=archivos_fotos,
                          archivos_docs=archivos_docs,
-                         formatear_fecha=formatear_fecha_hora)
+                         formatear_fecha=formatear_fecha_hora,
+                         responsables_unicos=responsables_unicos)
 
 @app.route('/equipo/subir_archivo/<int:id>', methods=['POST'])
 @login_required
@@ -1137,13 +1248,13 @@ def enviar_correo():
         if e.estado == 'Contrastacion':
             continue
         alerta = obtener_alerta(e)
-        if 'VENCIDO' in alerta['texto']:
+        if 'VENCIDO' in alerta['texto'] or 'VENCIDA' in alerta['texto']:
             vencidos.append(e)
             if e.responsable:
                 if e.responsable not in equipos_por_responsable:
                     equipos_por_responsable[e.responsable] = {'vencidos': [], 'proximos': []}
                 equipos_por_responsable[e.responsable]['vencidos'].append(e)
-        elif 'VENCE EN' in alerta['texto']:
+        elif 'VENCE' in alerta['texto']:
             proximos.append(e)
             if e.responsable:
                 if e.responsable not in equipos_por_responsable:
@@ -1188,9 +1299,9 @@ def exportar_pdf_alertas():
     proximos = []
     for e in equipos:
         alerta = obtener_alerta(e)
-        if 'VENCIDO' in alerta['texto']:
+        if 'VENCIDO' in alerta['texto'] or 'VENCIDA' in alerta['texto']:
             vencidos.append(e)
-        elif 'VENCE EN' in alerta['texto']:
+        elif 'VENCE' in alerta['texto']:
             proximos.append(e)
     if not vencidos and not proximos:
         flash('✅ No hay equipos vencidos o próximos a vencer', 'success')
@@ -1558,13 +1669,13 @@ def admin_correos_probar_envio():
         if e.estado == 'Contrastacion':
             continue
         alerta = obtener_alerta(e)
-        if 'VENCIDO' in alerta['texto']:
+        if 'VENCIDO' in alerta['texto'] or 'VENCIDA' in alerta['texto']:
             vencidos.append(e)
             if e.responsable:
                 if e.responsable not in equipos_por_responsable:
                     equipos_por_responsable[e.responsable] = {'vencidos': [], 'proximos': []}
                 equipos_por_responsable[e.responsable]['vencidos'].append(e)
-        elif 'VENCE EN' in alerta['texto']:
+        elif 'VENCE' in alerta['texto']:
             proximos.append(e)
             if e.responsable:
                 if e.responsable not in equipos_por_responsable:
@@ -2296,13 +2407,13 @@ def enviar_alertas_automatico():
         if e.estado == 'Contrastacion':
             continue
         alerta = obtener_alerta(e)
-        if 'VENCIDO' in alerta['texto']:
+        if 'VENCIDO' in alerta['texto'] or 'VENCIDA' in alerta['texto']:
             vencidos.append(e)
             if e.responsable:
                 if e.responsable not in equipos_por_responsable:
                     equipos_por_responsable[e.responsable] = {'vencidos': [], 'proximos': []}
                 equipos_por_responsable[e.responsable]['vencidos'].append(e)
-        elif 'VENCE EN' in alerta['texto']:
+        elif 'VENCE' in alerta['texto']:
             proximos.append(e)
             if e.responsable:
                 if e.responsable not in equipos_por_responsable:
@@ -2362,7 +2473,7 @@ def api_verificar_nro_int():
     if not nro_int:
         return jsonify({'existe': False})
     existe = Equipo.query.filter(Equipo.nro_int == nro_int).first() is not None
-    return jsonify({'existe': existe})
+    return jsonify({'existe': True})
 
 @app.route('/api/verificar_nro_serie')
 @login_required
@@ -2371,7 +2482,7 @@ def api_verificar_nro_serie():
     if not nro_serie:
         return jsonify({'existe': False})
     existe = Equipo.query.filter(Equipo.nro_serie == nro_serie).first() is not None
-    return jsonify({'existe': existe})
+    return jsonify({'existe': True})
 
 @app.route('/limpiar_flash', methods=['POST'])
 def limpiar_flash():

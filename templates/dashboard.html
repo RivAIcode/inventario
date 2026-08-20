@@ -159,6 +159,27 @@
             color: #999;
         }
         
+        /* ====== NUEVOS ESTILOS PARA ESTADOS ====== */
+        .alerta-contrastacion {
+            background-color: #e3f2fd !important;
+        }
+        .alerta-contrastacion td {
+            background-color: #e3f2fd !important;
+        }
+        .alerta-contrastacion .alerta-cell {
+            color: #0D47A1;
+        }
+        
+        .alerta-mantencion {
+            background-color: #fff3e0 !important;
+        }
+        .alerta-mantencion td {
+            background-color: #fff3e0 !important;
+        }
+        .alerta-mantencion .alerta-cell {
+            color: #E65100;
+        }
+        
         /* ====== TABLA ====== */
         .table-scroll-wrapper {
             overflow-x: auto;
@@ -192,17 +213,17 @@
             z-index: 10;
         }
         
-        /* ====== ANCHOS FIJOS (sin columna acciones) ====== */
-        #tablaEquipos th:nth-child(1), #tablaEquipos td:nth-child(1) { width: 30px; min-width: 25px; max-width: 35px; } /* Checkbox */
-        #tablaEquipos th:nth-child(2), #tablaEquipos td:nth-child(2) { width: 50px; min-width: 40px; max-width: 60px; } /* Nro Int */
-        #tablaEquipos th:nth-child(3), #tablaEquipos td:nth-child(3) { width: 70px; min-width: 55px; max-width: 85px; } /* Nro Serie */
-        #tablaEquipos th:nth-child(4), #tablaEquipos td:nth-child(4) { width: 35px; min-width: 28px; max-width: 45px; } /* Área */
-        #tablaEquipos th:nth-child(5), #tablaEquipos td:nth-child(5) { width: 85px; min-width: 65px; max-width: 100px; } /* Localidad */
-        #tablaEquipos th:nth-child(6), #tablaEquipos td:nth-child(6) { width: 85px; min-width: 65px; max-width: 100px; } /* Responsable */
-        #tablaEquipos th:nth-child(7), #tablaEquipos td:nth-child(7) { width: 100px; min-width: 75px; max-width: 120px; } /* Equipo */
-        #tablaEquipos th:nth-child(8), #tablaEquipos td:nth-child(8) { width: 75px; min-width: 60px; max-width: 90px; } /* Estado */
-        #tablaEquipos th:nth-child(9), #tablaEquipos td:nth-child(9) { width: 70px; min-width: 55px; max-width: 85px; } /* Contrastación */
-        #tablaEquipos th:nth-child(10), #tablaEquipos td:nth-child(10) { width: 50px; min-width: 40px; max-width: 60px; } /* Alerta */
+        /* ====== ANCHOS FIJOS ====== */
+        #tablaEquipos th:nth-child(1), #tablaEquipos td:nth-child(1) { width: 30px; min-width: 25px; max-width: 35px; }
+        #tablaEquipos th:nth-child(2), #tablaEquipos td:nth-child(2) { width: 50px; min-width: 40px; max-width: 60px; }
+        #tablaEquipos th:nth-child(3), #tablaEquipos td:nth-child(3) { width: 70px; min-width: 55px; max-width: 85px; }
+        #tablaEquipos th:nth-child(4), #tablaEquipos td:nth-child(4) { width: 35px; min-width: 28px; max-width: 45px; }
+        #tablaEquipos th:nth-child(5), #tablaEquipos td:nth-child(5) { width: 85px; min-width: 65px; max-width: 100px; }
+        #tablaEquipos th:nth-child(6), #tablaEquipos td:nth-child(6) { width: 85px; min-width: 65px; max-width: 100px; }
+        #tablaEquipos th:nth-child(7), #tablaEquipos td:nth-child(7) { width: 100px; min-width: 75px; max-width: 120px; }
+        #tablaEquipos th:nth-child(8), #tablaEquipos td:nth-child(8) { width: 75px; min-width: 60px; max-width: 90px; }
+        #tablaEquipos th:nth-child(9), #tablaEquipos td:nth-child(9) { width: 70px; min-width: 55px; max-width: 85px; }
+        #tablaEquipos th:nth-child(10), #tablaEquipos td:nth-child(10) { width: 50px; min-width: 40px; max-width: 60px; }
         
         /* ====== ACCIONES RÁPIDAS ====== */
         .acciones-rapidas {
@@ -245,16 +266,12 @@
         
         .acciones-rapidas .btn-primary { background: #1E88E5; color: white; }
         .acciones-rapidas .btn-primary:hover { background: #1565C0; }
-        
         .acciones-rapidas .btn-info { background: #e3f2fd; color: #0D47A1; }
         .acciones-rapidas .btn-info:hover { background: #bbdefb; }
-        
         .acciones-rapidas .btn-warning { background: #fff3e0; color: #E65100; }
         .acciones-rapidas .btn-warning:hover { background: #ffe0b2; }
-        
         .acciones-rapidas .btn-danger { background: #ffebee; color: #b71C1C; }
         .acciones-rapidas .btn-danger:hover { background: #ffcdd2; }
-        
         .acciones-rapidas .btn-success { background: #e8f5e9; color: #2E7D32; }
         .acciones-rapidas .btn-success:hover { background: #c8e6c9; }
         
@@ -364,7 +381,7 @@
         <div class="filtro-group"><button class="btn btn-secondary" onclick="limpiarFiltros()">🗑️ LIMPIAR</button></div>
     </div>
 
-    <!-- ====== BARRA DE ACCIONES PRINCIPAL (alineada con margen) ====== -->
+    <!-- ====== BARRA DE ACCIONES PRINCIPAL ====== -->
     <div class="actions-bar" style="padding-left: 12px;">
         <div class="btn-group">
             <button class="btn btn-primary" onclick="toggleMenuExportar()" style="display: flex; align-items: center; gap: 5px;">
@@ -840,7 +857,7 @@
                         const id = row.getAttribute('data-equipo-id');
                         if (!id || !data[id]) return;
                         const info = data[id];
-                        // Ya no hay botones en la tabla, solo mostramos estado
+                        // Ya no hay botones en la tabla
                     });
                 })
                 .catch(e => console.error('Error al actualizar bloqueos:', e));
@@ -867,7 +884,6 @@
             document.getElementById('menuExportar').style.display = 'none';
         });
         
-        // Cerrar modales al hacer clic fuera
         window.onclick = function(e) { 
             if (e.target === document.getElementById('modalCambioEstado')) cerrarModalEstado(); 
             if (e.target === document.getElementById('modalObservacion')) cerrarModalObservacion(); 
