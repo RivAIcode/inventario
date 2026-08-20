@@ -911,10 +911,14 @@
             document.getElementById('modal_div_sonda').style.display = TIPOS_CON_PHMETRO.includes(tipo) ? 'flex' : 'none';
             document.getElementById('modal_subcategoria').style.display = TIPOS_CON_SUBCATEGORIA.includes(tipo) ? 'block' : 'none';
             
+            // Contrastación: solo para Pocket, Colorímetro, Multiparamétro
             const showContrastacion = TIPOS_CON_CONTRASTACION.includes(tipo);
             document.getElementById('modal_seccion_contrastacion').style.display = showContrastacion ? 'block' : 'none';
+            
+            // Mantención: solo cuando estado es Mantencion o Fuera de Servicio
             document.getElementById('modal_seccion_mantencion').style.display = (estado === 'Mantencion' || estado === 'Fuera de Servicio') ? 'block' : 'none';
             
+            // Termómetros e Insumos
             const esTermometro = TIPOS_TERMOMETRO.includes(tipo);
             const esInsumo = TIPOS_INSUMO.includes(tipo);
             
@@ -967,7 +971,7 @@
                 const html = await resp.text();
                 
                 if (html.includes('alert-success') || html.includes('success')) {
-                    alert('✅ Equipo actualizado correctamente');
+                    // SIN ALERT - recarga directamente
                     location.reload();
                 } else if (html.includes('alert-error')) {
                     const errorMatch = html.match(/alert-error[^>]*>([^<]*)</);
@@ -976,7 +980,6 @@
                     try {
                         const data = JSON.parse(html);
                         if (data.success) {
-                            alert('✅ Equipo actualizado correctamente');
                             location.reload();
                         } else {
                             alert('❌ Error: ' + (data.mensaje || 'desconocido'));
