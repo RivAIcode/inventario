@@ -241,6 +241,36 @@ def verificar_bloqueo(equipo_id):
         return True, bloqueo.usuario_nombre, bloqueo.fecha_bloqueo
     return False, None, None
 
+def obtener_dias_restantes(equipo):
+    """Retorna los días restantes para el vencimiento de un equipo"""
+    from datetime import date
+    hoy = date.today()
+    tipo = equipo.tipo_equipo
+    
+    # Equipos con contrastación (Pocket, Colorímetro, Multiparamétro)
+    if tipo in TIPOS_CON_CONTRASTACION and equipo.fecha_certificado_contrastacion:
+        fecha_venc = calcular_vencimiento_contrastacion(equipo.fecha_certificado_contrastacion)
+        if fecha_venc:
+            return (fecha_venc - hoy).days
+    
+    # Termómetro - Contrastación (5 días)
+    if tipo == 'Termometro patron AS' and equipo.fecha_contrastacion_termometro:
+        fecha_venc = equipo.fecha_contrastacion_termometro + timedelta(days=30)
+        return (fecha_venc - hoy).days
+    
+    # Termómetro - Certificado (30 días)
+    if tipo == 'Termometro patron AS' and equipo.fecha_certificado:
+        fecha_venc = calcular_vencimiento_insumo(equipo.fecha_certificado)
+        if fecha_venc:
+            return (fecha_venc - hoy).days
+    
+    # Gelex, Stabcal (15 días)
+    if tipo in ['Gelex cloro', 'Stabcal']:
+        if equipo.fecha_vencimiento_insumo:
+            return (equipo.fecha_vencimiento_insumo - hoy).days
+    
+    return None
+
 def obtener_alerta(equipo):
     """Retorna un diccionario con la información de alerta para un equipo"""
     tipo = equipo.tipo_equipo
@@ -284,7 +314,6 @@ def obtener_alerta(equipo):
                 'icono': '🟡',
                 'dias_texto': f'{dias}d'
             }
-        # Si no está en plazo de alerta, mostrar la fecha normal
         return {
             'texto': f'Vence contrastación termómetro: {formatear_fecha(fecha_venc)}',
             'clase': '',
@@ -403,6 +432,22 @@ def enviar_correo_alertas_general(vencidos, proximos, destinatarios):
         return False
     if not vencidos and not proximos:
         return False
+    
+    # ====== FILTRAR PRÓXIMOS: SOLO LOS QUE VENCEN EN 15 DÍAS O MENOS ======
+    from datetime import date
+    hoy = date.today()
+    proximos_filtrados = []
+    
+    for e in proximos:
+        dias_restantes = obtener_dias_restantes(e)
+        if dias_restantes is not None and dias_restantes <= 15:
+            proximos_filtrados.append(e)
+        elif dias_restantes is None:
+            proximos_filtrados.append(e)
+    
+    if not vencidos and not proximos_filtrados:
+        return False
+    
     try:
         import yagmail
     except ImportError:
@@ -428,11 +473,11 @@ def enviar_correo_alertas_general(vencidos, proximos, destinatarios):
                 html += f'<tr><td style="padding:8px;">{e.nro_int}</td><td style="padding:8px;">{e.nro_serie or "-"}</td><td style="padding:8px;">{e.tipo_equipo or "-"}</td><td style="padding:8px;">{e.localidad or "-"}</td><td style="padding:8px;">{e.responsable or "-"}</td><td style="padding:8px; color:#c62828;">{alerta["texto"]}</td></tr>'
             html += '</table><br>'
 
-        if proximos:
-            html += '<h3 style="color:#f57c00;">⚠️ EQUIPOS PRÓXIMOS A VENCER</h3>'
+        if proximos_filtrados:
+            html += '<h3 style="color:#f57c00;">⚠️ EQUIPOS PRÓXIMOS A VENCER (15 días o menos)</h3>'
             html += '<table border="1" cellpadding="8" style="border-collapse:collapse; width:100%;">'
             html += '<tr style="background:#1E88E5; color:white;"><th>Nro Int</th><th>Nro Serie</th><th>Equipo</th><th>Localidad</th><th>Responsable</th><th>Alerta</th></tr>'
-            for e in proximos:
+            for e in proximos_filtrados:
                 alerta = obtener_alerta(e)
                 html += f'<tr><td style="padding:8px;">{e.nro_int}</td><td style="padding:8px;">{e.nro_serie or "-"}</td><td style="padding:8px;">{e.tipo_equipo or "-"}</td><td style="padding:8px;">{e.localidad or "-"}</td><td style="padding:8px;">{e.responsable or "-"}</td><td style="padding:8px; color:#f57c00;">{alerta["texto"]}</td></tr>'
             html += '</table><br>'
@@ -447,7 +492,6 @@ def enviar_correo_alertas_general(vencidos, proximos, destinatarios):
 
         yag = yagmail.SMTP(EMAIL_CONFIG["remitente"], EMAIL_CONFIG["password"])
         yag.send(to=destinatarios, subject=asunto, contents=html)
-        print(f"✅ Correo general enviado a: {', '.join(destinatarios)}")
         return True
     except Exception as e:
         print(f"❌ Error en correo general: {e}")
@@ -503,7 +547,6 @@ def enviar_correo_alertas_responsable(email_responsable, nombre_responsable, ven
 
         yag = yagmail.SMTP(EMAIL_CONFIG["remitente"], EMAIL_CONFIG["password"])
         yag.send(to=email_responsable, subject=asunto, contents=html)
-        print(f"✅ Correo enviado a {nombre_responsable} ({email_responsable})")
         return True
     except Exception as e:
         print(f"❌ Error al enviar a {email_responsable}: {e}")
@@ -1234,11 +1277,14 @@ def enviar_correo():
                     equipos_por_responsable[e.responsable] = {'vencidos': [], 'proximos': []}
                 equipos_por_responsable[e.responsable]['vencidos'].append(e)
         elif 'VENCE' in alerta_texto:
-            proximos.append(e)
-            if e.responsable:
-                if e.responsable not in equipos_por_responsable:
-                    equipos_por_responsable[e.responsable] = {'vencidos': [], 'proximos': []}
-                equipos_por_responsable[e.responsable]['proximos'].append(e)
+            # ====== FILTRO CRÍTICO: Solo agregar si vence en 15 días o menos ======
+            dias_restantes = obtener_dias_restantes(e)
+            if dias_restantes is not None and dias_restantes <= 15:
+                proximos.append(e)
+                if e.responsable:
+                    if e.responsable not in equipos_por_responsable:
+                        equipos_por_responsable[e.responsable] = {'vencidos': [], 'proximos': []}
+                    equipos_por_responsable[e.responsable]['proximos'].append(e)
 
     config = ConfiguracionCorreo.query.first()
     destinatarios_adicionales = []
@@ -1659,11 +1705,14 @@ def admin_correos_probar_envio():
                     equipos_por_responsable[e.responsable] = {'vencidos': [], 'proximos': []}
                 equipos_por_responsable[e.responsable]['vencidos'].append(e)
         elif 'VENCE' in alerta_texto:
-            proximos.append(e)
-            if e.responsable:
-                if e.responsable not in equipos_por_responsable:
-                    equipos_por_responsable[e.responsable] = {'vencidos': [], 'proximos': []}
-                equipos_por_responsable[e.responsable]['proximos'].append(e)
+            # ====== FILTRO CRÍTICO: Solo agregar si vence en 15 días o menos ======
+            dias_restantes = obtener_dias_restantes(e)
+            if dias_restantes is not None and dias_restantes <= 15:
+                proximos.append(e)
+                if e.responsable:
+                    if e.responsable not in equipos_por_responsable:
+                        equipos_por_responsable[e.responsable] = {'vencidos': [], 'proximos': []}
+                    equipos_por_responsable[e.responsable]['proximos'].append(e)
 
     config = ConfiguracionCorreo.query.first()
     destinatarios_adicionales = []
@@ -2400,11 +2449,14 @@ def enviar_alertas_automatico():
                     equipos_por_responsable[e.responsable] = {'vencidos': [], 'proximos': []}
                 equipos_por_responsable[e.responsable]['vencidos'].append(e)
         elif 'VENCE' in alerta_texto:
-            proximos.append(e)
-            if e.responsable:
-                if e.responsable not in equipos_por_responsable:
-                    equipos_por_responsable[e.responsable] = {'vencidos': [], 'proximos': []}
-                equipos_por_responsable[e.responsable]['proximos'].append(e)
+            # ====== FILTRO CRÍTICO: Solo agregar si vence en 15 días o menos ======
+            dias_restantes = obtener_dias_restantes(e)
+            if dias_restantes is not None and dias_restantes <= 15:
+                proximos.append(e)
+                if e.responsable:
+                    if e.responsable not in equipos_por_responsable:
+                        equipos_por_responsable[e.responsable] = {'vencidos': [], 'proximos': []}
+                    equipos_por_responsable[e.responsable]['proximos'].append(e)
 
     config = ConfiguracionCorreo.query.first()
     destinatarios_adicionales = []
