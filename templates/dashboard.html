@@ -5,20 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=yes">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     
-    <!-- ========== PWA (PROGRESSIVE WEB APP) ========== -->
+    <!-- PWA -->
     <link rel="manifest" href="/static/manifest.json">
     <meta name="theme-color" content="#1E88E5">
     <meta name="mobile-web-app-capable" content="yes">
     <link rel="apple-touch-icon" href="/static/icon-192.png">
-    <!-- ============================================== -->
     
     <style>
-        /* Estilos generales */
-        .btn-group {
-            position: relative;
-            display: inline-block;
-        }
-        
+        .btn-group { position: relative; display: inline-block; }
         .exportar-menu {
             position: absolute;
             top: 100%;
@@ -30,7 +24,6 @@
             z-index: 1000;
             overflow: hidden;
         }
-        
         .exportar-menu .menu-item {
             display: block;
             width: 100%;
@@ -44,23 +37,11 @@
             font-size: 14px;
             transition: 0.2s;
         }
+        .exportar-menu .menu-item:hover { background-color: #f0f4f8; }
         
-        .exportar-menu .menu-item:hover {
-            background-color: #f0f4f8;
-        }
-        
-        /* MÓVIL: menú centrado tipo modal */
         @media (max-width: 768px) {
-            .btn-group {
-                position: static;
-                width: 100%;
-            }
-            
-            .btn-group .btn-primary {
-                width: 100%;
-                justify-content: center;
-            }
-            
+            .btn-group { position: static; width: 100%; }
+            .btn-group .btn-primary { width: 100%; justify-content: center; }
             .exportar-menu {
                 position: fixed;
                 bottom: 20px;
@@ -73,41 +54,23 @@
                 box-shadow: 0 10px 30px rgba(0,0,0,0.3);
                 animation: slideUp 0.3s ease-out;
             }
-            
-            .exportar-menu .menu-item {
-                text-align: center;
-                padding: 14px;
-                font-size: 15px;
-            }
-            
-            .exportar-menu .menu-item:last-child {
-                border-bottom: none;
-            }
-            
+            .exportar-menu .menu-item { text-align: center; padding: 14px; font-size: 15px; }
+            .exportar-menu .menu-item:last-child { border-bottom: none; }
             @keyframes slideUp {
-                from {
-                    opacity: 0;
-                    transform: translateX(-50%) translateY(30px);
-                }
-                to {
-                    opacity: 1;
-                    transform: translateX(-50%) translateY(0);
-                }
+                from { opacity: 0; transform: translateX(-50%) translateY(30px); }
+                to { opacity: 1; transform: translateX(-50%) translateY(0); }
             }
+            .modal-content-campos { padding: 10px !important; }
+            .modal-content-campos .form-row { flex-direction: column !important; gap: 8px !important; }
+            .modal-content-campos .form-group { width: 100% !important; }
+            .modal-secciones { max-height: 70vh; overflow-y: auto; }
         }
         
         @keyframes modalEntrar {
-            from {
-                opacity: 0;
-                transform: translateY(-30px) scale(0.95);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0) scale(1);
-            }
+            from { opacity: 0; transform: translateY(-30px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
         }
         
-        /* ====== ESTADOS ====== */
         .estado {
             display: inline-block;
             padding: 2px 8px;
@@ -122,7 +85,6 @@
         .estado-volante { background: #9C27B0; color: white; }
         .estado-fuera-de-servicio { background: #f44336; color: white; }
         
-        /* ====== ALERTAS COMPACTAS ====== */
         .alerta-cell {
             text-align: center;
             font-weight: 700;
@@ -131,69 +93,29 @@
             min-width: 45px;
             max-width: 65px;
         }
+        .alerta-vencido { background-color: #ffebee !important; }
+        .alerta-vencido td { background-color: #ffebee !important; }
+        .alerta-vencido .alerta-cell { color: #c62828; }
+        .alerta-proximo { background-color: #fff8e1 !important; }
+        .alerta-proximo td { background-color: #fff8e1 !important; }
+        .alerta-proximo .alerta-cell { color: #e65100; }
+        .alerta-ok .alerta-cell { color: #2E7D32; }
+        .alerta-sin .alerta-cell { color: #999; }
+        .alerta-contrastacion { background-color: #e3f2fd !important; }
+        .alerta-contrastacion td { background-color: #e3f2fd !important; }
+        .alerta-contrastacion .alerta-cell { color: #0D47A1; }
+        .alerta-mantencion { background-color: #fff3e0 !important; }
+        .alerta-mantencion td { background-color: #fff3e0 !important; }
+        .alerta-mantencion .alerta-cell { color: #E65100; }
         
-        .alerta-vencido {
-            background-color: #ffebee !important;
-        }
-        .alerta-vencido td {
-            background-color: #ffebee !important;
-        }
-        .alerta-vencido .alerta-cell {
-            color: #c62828;
-        }
-        
-        .alerta-proximo {
-            background-color: #fff8e1 !important;
-        }
-        .alerta-proximo td {
-            background-color: #fff8e1 !important;
-        }
-        .alerta-proximo .alerta-cell {
-            color: #e65100;
-        }
-        
-        .alerta-ok .alerta-cell {
-            color: #2E7D32;
-        }
-        .alerta-sin .alerta-cell {
-            color: #999;
-        }
-        
-        /* ====== NUEVOS ESTILOS PARA ESTADOS ====== */
-        .alerta-contrastacion {
-            background-color: #e3f2fd !important;
-        }
-        .alerta-contrastacion td {
-            background-color: #e3f2fd !important;
-        }
-        .alerta-contrastacion .alerta-cell {
-            color: #0D47A1;
-        }
-        
-        .alerta-mantencion {
-            background-color: #fff3e0 !important;
-        }
-        .alerta-mantencion td {
-            background-color: #fff3e0 !important;
-        }
-        .alerta-mantencion .alerta-cell {
-            color: #E65100;
-        }
-        
-        /* ====== TABLA ====== */
-        .table-scroll-wrapper {
-            overflow-x: auto;
-        }
-        
+        .table-scroll-wrapper { overflow-x: auto; }
         #tablaEquipos {
             width: 100%;
             border-collapse: collapse;
             table-layout: fixed;
             min-width: 700px;
         }
-        
-        #tablaEquipos th,
-        #tablaEquipos td {
+        #tablaEquipos th, #tablaEquipos td {
             padding: 6px 8px;
             text-align: center;
             border: 1px solid #ddd;
@@ -202,7 +124,6 @@
             text-overflow: ellipsis;
             white-space: nowrap;
         }
-        
         #tablaEquipos th {
             background: #1E88E5;
             color: white;
@@ -212,8 +133,6 @@
             top: 0;
             z-index: 10;
         }
-        
-        /* ====== ANCHOS FIJOS ====== */
         #tablaEquipos th:nth-child(1), #tablaEquipos td:nth-child(1) { width: 30px; min-width: 25px; max-width: 35px; }
         #tablaEquipos th:nth-child(2), #tablaEquipos td:nth-child(2) { width: 50px; min-width: 40px; max-width: 60px; }
         #tablaEquipos th:nth-child(3), #tablaEquipos td:nth-child(3) { width: 70px; min-width: 55px; max-width: 85px; }
@@ -225,7 +144,6 @@
         #tablaEquipos th:nth-child(9), #tablaEquipos td:nth-child(9) { width: 70px; min-width: 55px; max-width: 85px; }
         #tablaEquipos th:nth-child(10), #tablaEquipos td:nth-child(10) { width: 50px; min-width: 40px; max-width: 60px; }
         
-        /* ====== ACCIONES RÁPIDAS ====== */
         .acciones-rapidas {
             display: flex;
             flex-wrap: wrap;
@@ -237,14 +155,12 @@
             margin: 10px 0;
             border: 1px solid #e0e0e0;
         }
-        
         .acciones-rapidas .label {
             font-weight: 600;
             color: #555;
             font-size: 13px;
             margin-right: 4px;
         }
-        
         .acciones-rapidas .btn {
             padding: 5px 12px;
             font-size: 12px;
@@ -258,12 +174,10 @@
             align-items: center;
             gap: 4px;
         }
-        
         .acciones-rapidas .btn:hover {
             transform: translateY(-1px);
             box-shadow: 0 2px 8px rgba(0,0,0,0.15);
         }
-        
         .acciones-rapidas .btn-primary { background: #1E88E5; color: white; }
         .acciones-rapidas .btn-primary:hover { background: #1565C0; }
         .acciones-rapidas .btn-info { background: #e3f2fd; color: #0D47A1; }
@@ -275,7 +189,6 @@
         .acciones-rapidas .btn-success { background: #e8f5e9; color: #2E7D32; }
         .acciones-rapidas .btn-success:hover { background: #c8e6c9; }
         
-        /* ====== BARRA DE ACCIONES PRINCIPAL ====== */
         .actions-bar {
             display: flex;
             flex-wrap: wrap;
@@ -287,7 +200,6 @@
             border-radius: 8px;
             border: none;
         }
-        
         .actions-bar .btn {
             padding: 6px 14px;
             font-size: 12px;
@@ -301,12 +213,10 @@
             align-items: center;
             gap: 4px;
         }
-        
         .actions-bar .btn:hover {
             transform: translateY(-1px);
             box-shadow: 0 2px 8px rgba(0,0,0,0.15);
         }
-        
         .actions-bar .btn-primary { background: #1E88E5; color: white; }
         .actions-bar .btn-primary:hover { background: #1565C0; }
         .actions-bar .btn-danger { background: #d32f2f; color: white; }
@@ -319,35 +229,111 @@
         .actions-bar .btn-secondary:hover { background: #d0d0d0; }
         
         @media (max-width: 768px) {
-            .acciones-rapidas .btn {
-                padding: 4px 8px;
-                font-size: 10px;
-            }
-            .acciones-rapidas .label {
-                font-size: 11px;
-            }
-            .actions-bar .btn {
-                padding: 4px 10px;
-                font-size: 10px;
-            }
-            #tablaEquipos {
-                min-width: 600px;
-            }
-            #tablaEquipos th, #tablaEquipos td {
-                font-size: 10px;
-                padding: 4px 5px;
-            }
+            .acciones-rapidas .btn { padding: 4px 8px; font-size: 10px; }
+            .acciones-rapidas .label { font-size: 11px; }
+            .actions-bar .btn { padding: 4px 10px; font-size: 10px; }
+            #tablaEquipos { min-width: 600px; }
+            #tablaEquipos th, #tablaEquipos td { font-size: 10px; padding: 4px 5px; }
+        }
+        @media (max-width: 480px) {
+            #tablaEquipos { min-width: 500px; }
+            #tablaEquipos th, #tablaEquipos td { font-size: 9px; padding: 3px 4px; }
         }
         
-        @media (max-width: 480px) {
-            #tablaEquipos {
-                min-width: 500px;
-            }
-            #tablaEquipos th, #tablaEquipos td {
-                font-size: 9px;
-                padding: 3px 4px;
-            }
+        /* ====== ESTILOS DEL MODAL ====== */
+        .modal-content-campos {
+            padding: 16px 18px;
         }
+        .modal-content-campos .form-row {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 8px;
+            flex-wrap: wrap;
+        }
+        .modal-content-campos .form-group {
+            flex: 1;
+            min-width: 140px;
+        }
+        .modal-content-campos .form-group label {
+            display: block;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 3px;
+            font-size: 11px;
+        }
+        .modal-content-campos .form-group input,
+        .modal-content-campos .form-group select,
+        .modal-content-campos .form-group textarea {
+            width: 100%;
+            padding: 6px 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 12px;
+            background: white;
+            font-family: inherit;
+        }
+        .modal-content-campos .form-group input:focus,
+        .modal-content-campos .form-group select:focus,
+        .modal-content-campos .form-group textarea:focus {
+            outline: none;
+            border-color: #1E88E5;
+        }
+        .modal-content-campos .form-group textarea {
+            resize: vertical;
+            min-height: 40px;
+        }
+        .modal-content-campos .seccion-modal {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 10px 14px;
+            margin: 8px 0;
+            border-left: 3px solid #1E88E5;
+        }
+        .modal-content-campos .seccion-modal h5 {
+            margin: 0 0 8px 0;
+            color: #1E88E5;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .modal-content-campos .seccion-modal .form-row {
+            margin-bottom: 4px;
+        }
+        .modal-content-campos .seccion-modal .form-row:last-child {
+            margin-bottom: 0;
+        }
+        .modal-content-campos .texto-obligatorio {
+            color: #d32f2f;
+            font-size: 10px;
+        }
+        .modal-content-campos .campo-ayuda {
+            font-size: 10px;
+            color: #666;
+            margin-top: 2px;
+        }
+        
+        /* ====== MODAL HISTORIAL ====== */
+        .historial-tabla {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+        .historial-tabla th, .historial-tabla td {
+            padding: 5px 8px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+        .historial-tabla th {
+            background: #1E88E5;
+            color: white;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        .historial-tabla tr:hover { background: #f5f5f5; }
+        .modal-historial-body { max-height: 400px; overflow-y: auto; }
     </style>
 </head>
 <body>
@@ -381,7 +367,6 @@
         <div class="filtro-group"><button class="btn btn-secondary" onclick="limpiarFiltros()">🗑️ LIMPIAR</button></div>
     </div>
 
-    <!-- ====== BARRA DE ACCIONES PRINCIPAL ====== -->
     <div class="actions-bar" style="padding-left: 12px;">
         <div class="btn-group">
             <button class="btn btn-primary" onclick="toggleMenuExportar()" style="display: flex; align-items: center; gap: 5px;">
@@ -393,26 +378,22 @@
                 <button onclick="exportarFiltrados()" class="menu-item">🔍 Equipos filtrados actualmente</button>
             </div>
         </div>
-        
         <a href="{{ url_for('exportar_pdf_alertas') }}" class="btn btn-danger">📄 PDF ALERTAS</a>
         <a href="{{ url_for('enviar_correo') }}" class="btn btn-warning">📧 ENVIAR ALERTAS</a>
-        
         {% if current_user.es_admin %}
         <a href="{{ url_for('admin_usuarios') }}" class="btn btn-secondary">👥 USUARIOS</a>
         <a href="{{ url_for('listar_backups') }}" class="btn btn-secondary">💾 RESPALDOS</a>
         <a href="{{ url_for('admin_correos') }}" class="btn btn-secondary">⚙️ CORREOS</a>
         {% endif %}
-        
         <a href="{{ url_for('perfil') }}" class="btn btn-info">🔐 MI PERFIL</a>
         <button onclick="location.reload()" class="btn btn-info">🔄 ACTUALIZAR</button>
     </div>
 
-    <!-- ====== ACCIONES RÁPIDAS SOBRE LA TABLA ====== -->
     <div class="acciones-rapidas">
         <span class="label">⚡ Acciones:</span>
         <a href="{{ url_for('nuevo_equipo') }}" class="btn btn-primary">➕ Nuevo</a>
-        <button onclick="accionRapida('historial')" class="btn btn-info" title="Ver historial del equipo seleccionado">📋 Historial</button>
         <button onclick="accionRapida('editar')" class="btn btn-warning" title="Editar equipo seleccionado">✏️ Editar</button>
+        <button onclick="accionRapida('historial')" class="btn btn-info" title="Ver historial del equipo seleccionado">📋 Historial</button>
         <button onclick="accionRapida('observacion')" class="btn btn-success" title="Agregar observación al equipo seleccionado">💬 Observación</button>
         <button onclick="accionRapida('eliminar')" class="btn btn-danger" title="Eliminar equipo seleccionado">🗑️ Eliminar</button>
         <span style="font-size: 11px; color: #999; margin-left: 5px;">(selecciona un equipo con ☑)</span>
@@ -445,7 +426,25 @@
                     {% set alerta = obtener_alerta(eq) %}
                     {% set bloqueado, bloqueado_por, fecha_bloqueo = verificar_bloqueo(eq.id) %}
                     
-                    <tr class="{{ alerta.clase }}" data-equipo-id="{{ eq.id }}">
+                    <tr class="{{ alerta.clase }}" data-equipo-id="{{ eq.id }}" 
+                        data-nro-int="{{ eq.nro_int }}" data-nro-serie="{{ eq.nro_serie or '' }}" 
+                        data-area="{{ eq.area or '' }}" data-localidad="{{ eq.localidad or '' }}" 
+                        data-responsable="{{ eq.responsable or '' }}" data-tipo="{{ eq.tipo_equipo or '' }}" 
+                        data-subcategoria="{{ eq.subcategoria or '' }}" data-modelo-equipo="{{ eq.modelo_equipo or '' }}" 
+                        data-modelo-sonda="{{ eq.modelo_sonda or '' }}" data-nro-serie-sonda="{{ eq.nro_serie_sonda or '' }}" 
+                        data-servicio-tecnico="{{ eq.servicio_tecnico or '' }}" data-observaciones="{{ eq.observaciones or '' }}" 
+                        data-fecha-certificado-contrastacion="{{ eq.fecha_certificado_contrastacion.strftime('%Y-%m-%d') if eq.fecha_certificado_contrastacion else '' }}" 
+                        data-nro-informe-contrastacion="{{ eq.nro_informe_contrastacion or '' }}" 
+                        data-fecha-envio-laboratorio="{{ eq.fecha_envio_laboratorio.strftime('%Y-%m-%d') if eq.fecha_envio_laboratorio else '' }}" 
+                        data-fecha-despacho="{{ eq.fecha_despacho.strftime('%Y-%m-%d') if eq.fecha_despacho else '' }}" 
+                        data-fecha-certificado-mantencion="{{ eq.fecha_certificado_mantencion.strftime('%Y-%m-%d') if eq.fecha_certificado_mantencion else '' }}" 
+                        data-nro-informe-mantencion="{{ eq.nro_informe_mantencion or '' }}" 
+                        data-fecha-ultima-mantencion="{{ eq.fecha_ultima_mantencion.strftime('%Y-%m-%d') if eq.fecha_ultima_mantencion else '' }}" 
+                        data-fecha-certificado="{{ eq.fecha_certificado.strftime('%Y-%m-%d') if eq.fecha_certificado else '' }}" 
+                        data-nro-certificado-termometro="{{ eq.nro_certificado_termometro or '' }}" 
+                        data-fecha-contrastacion-termometro="{{ eq.fecha_contrastacion_termometro.strftime('%Y-%m-%d') if eq.fecha_contrastacion_termometro else '' }}" 
+                        data-fecha-vencimiento-insumo="{{ eq.fecha_vencimiento_insumo.strftime('%Y-%m-%d') if eq.fecha_vencimiento_insumo else '' }}"
+                        data-estado="{{ eq.estado }}">
                         <td><input type="checkbox" class="select-equipo" value="{{ eq.id }}"></td>
                         <td title="{{ eq.nro_int }}">{{ eq.nro_int }}</td>
                         <td title="{{ eq.nro_serie or '-' }}">{{ eq.nro_serie or '-' }}</td>
@@ -454,7 +453,15 @@
                         <td title="{{ eq.responsable or '-' }}">{{ eq.responsable or '-' }}</td>
                         <td title="{{ eq.tipo_equipo or '-' }}">{{ eq.tipo_equipo or '-' }}</td>
                         <td><span class="estado estado-{{ eq.estado.lower().replace(' ', '-') }}">{{ eq.estado }}</span></td>
-                        <td>{{ formatear_fecha(eq.fecha_contrastacion) }}</td>
+                        <td>
+                            {% if eq.estado == 'Contrastacion' and eq.fecha_envio_laboratorio %}
+                                📤 {{ formatear_fecha(eq.fecha_envio_laboratorio) }}
+                            {% elif eq.estado == 'Mantencion' and eq.fecha_ultima_mantencion %}
+                                📥 {{ formatear_fecha(eq.fecha_ultima_mantencion) }}
+                            {% else %}
+                                {{ formatear_fecha(eq.fecha_certificado_contrastacion or eq.fecha_contrastacion) }}
+                            {% endif %}
+                        </td>
                         <td class="alerta-cell" title="{{ alerta.texto }}">
                             {{ alerta.icono }}{% if alerta.dias_texto %} {{ alerta.dias_texto }}{% endif %}
                         </td>
@@ -468,83 +475,285 @@
 
     <div class="contador" id="contador"></div>
 
-    <!-- MODAL CAMBIO DE ESTADO - MODERNO -->
-    <div id="modalCambioEstado" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); backdrop-filter:blur(4px); z-index:10000; align-items:center; justify-content:center;">
-        <div style="background:white; border-radius:20px; max-width:420px; width:90%; margin:auto; box-shadow:0 20px 40px rgba(0,0,0,0.3); overflow:hidden; animation:modalEntrar 0.3s ease-out;">
+    <!-- ====== MODAL DE EDICIÓN COMPLETO ====== -->
+    <div id="modalEditarEquipo" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); backdrop-filter:blur(4px); z-index:10000; align-items:center; justify-content:center;">
+        <div style="background:white; border-radius:20px; max-width:750px; width:95%; margin:auto; box-shadow:0 20px 40px rgba(0,0,0,0.3); overflow:hidden; animation:modalEntrar 0.3s ease-out; max-height:95vh;">
             
-            <div style="background:linear-gradient(135deg, #1E88E5 0%, #1565C0 100%); padding:12px 18px; color:white; display:flex; justify-content:space-between; align-items:center;">
+            <div style="background:linear-gradient(135deg, #1E88E5 0%, #1565C0 100%); padding:12px 18px; color:white; display:flex; justify-content:space-between; align-items:center; position:sticky; top:0; z-index:10;">
                 <div style="display:flex; align-items:center; gap:8px;">
-                    <span style="font-size:20px;">🔄</span>
-                    <h3 style="margin:0; font-size:16px; font-weight:600;">Cambiar Estado</h3>
+                    <span style="font-size:20px;">✏️</span>
+                    <h3 style="margin:0; font-size:16px; font-weight:600;" id="modalEditarTitulo">EDITAR EQUIPO</h3>
                 </div>
-                <button onclick="cerrarModalEstado()" style="background:rgba(255,255,255,0.2); border:none; color:white; font-size:18px; cursor:pointer; width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center;">&times;</button>
+                <button onclick="cerrarModalEditar()" style="background:rgba(255,255,255,0.2); border:none; color:white; font-size:18px; cursor:pointer; width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center;">&times;</button>
             </div>
             
-            <div style="padding:16px 18px;">
-                <div style="background:#f0f4f8; border-radius:12px; padding:10px 12px; margin-bottom:16px; display:flex; align-items:center; gap:10px;">
-                    <span style="font-size:20px;">📌</span>
-                    <div>
-                        <div style="font-size:10px; color:#666; text-transform:uppercase;">Estado Actual</div>
-                        <span id="estado_actual_texto" style="display:inline-block; padding:3px 10px; border-radius:20px; color:white; font-size:12px; margin-top:3px;"></span>
+            <div style="padding:8px 12px; background:#f0f4f8; display:flex; flex-wrap:wrap; gap:8px; align-items:center; border-bottom:1px solid #e0e0e0;">
+                <span style="font-size:12px; color:#666;">📌</span>
+                <span id="modalEditarInfo" style="font-weight:600; font-size:13px; background:white; padding:2px 10px; border-radius:4px;">Editando equipo</span>
+                <span id="modalEditarIdDisplay" style="font-size:12px; color:#999; margin-left:auto;">ID: -</span>
+            </div>
+            
+            <form id="formEditarModal" class="modal-content-campos" style="overflow-y:auto; max-height:calc(95vh - 120px); padding:12px 16px;">
+                <input type="hidden" id="editar_equipo_id" name="equipo_id">
+                <input type="hidden" name="accion" id="accion_editar" value="editar">
+                
+                <!-- ====== DATOS GENERALES ====== -->
+                <div class="seccion-modal" style="border-left-color:#333;">
+                    <h5>📋 DATOS GENERALES</h5>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Número Interno *</label>
+                            <input type="text" id="modal_nro_int" name="nro_int" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Número de Serie</label>
+                            <input type="text" id="modal_nro_serie" name="nro_serie" placeholder="Ej: 12345ABC">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Área</label>
+                            <select id="modal_area" name="area">
+                                <option value="">Seleccionar...</option>
+                                {% for area in AREAS %}
+                                <option value="{{ area }}">{{ area }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Localidad</label>
+                            <input type="text" id="modal_localidad" name="localidad" list="modal_lista_localidades" placeholder="Escribe o selecciona..." autocomplete="off">
+                            <datalist id="modal_lista_localidades">
+                                {% for loc in LOCALIDADES %}
+                                <option value="{{ loc }}">{{ loc }}</option>
+                                {% endfor %}
+                            </datalist>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Responsable</label>
+                            <input type="text" id="modal_responsable" name="responsable" list="modal_lista_responsables" placeholder="Escribe o selecciona..." autocomplete="off">
+                            <datalist id="modal_lista_responsables">
+                                <option value="">-- Escribe o selecciona --</option>
+                                {% for resp in responsables_unicos %}
+                                <option value="{{ resp.nombre }}">{{ resp.nombre }} {% if resp.email %}({{ resp.email }}){% endif %}</option>
+                                {% endfor %}
+                            </datalist>
+                        </div>
+                        <div class="form-group">
+                            <label>Tipo de Equipo</label>
+                            <select id="modal_tipo_equipo" name="tipo_equipo">
+                                <option value="">Seleccionar...</option>
+                                {% for tipo in TIPOS_EQUIPO %}
+                                <option value="{{ tipo }}">{{ tipo }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Modelo del Equipo *</label>
+                            <input type="text" id="modal_modelo_equipo" name="modelo_equipo" placeholder="Ej: Hanna HI98128, Hach DR900" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Subcategoría</label>
+                            <select id="modal_subcategoria" name="subcategoria">
+                                <option value="">Seleccionar...</option>
+                                {% for sub in SUBCATEGORIAS %}
+                                <option value="{{ sub }}">{{ sub }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row" id="modal_div_sonda" style="display:none;">
+                        <div class="form-group">
+                            <label>Modelo Sonda</label>
+                            <input type="text" id="modal_modelo_sonda" name="modelo_sonda" placeholder="Ej: HI1230B">
+                        </div>
+                        <div class="form-group">
+                            <label>Nro Serie Sonda</label>
+                            <input type="text" id="modal_nro_serie_sonda" name="nro_serie_sonda">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Estado *</label>
+                            <select id="modal_estado" name="estado" required>
+                                <option value="">Seleccionar...</option>
+                                <option value="Operativo">🟢 Operativo</option>
+                                <option value="Volante">🚗 Volante</option>
+                                <option value="Mantencion">🔧 Mantención</option>
+                                <option value="Contrastacion">📊 Contrastación</option>
+                                <option value="Prestado">🔄 Prestado</option>
+                                <option value="Fuera de Servicio">⚠️ Fuera de Servicio</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Servicio Técnico / Laboratorio</label>
+                            <input type="text" id="modal_servicio_tecnico" name="servicio_tecnico" placeholder="Ej: Taller Central">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group" style="flex:2;">
+                            <label>Observaciones</label>
+                            <textarea id="modal_observaciones" name="observaciones" rows="2" placeholder="Notas generales del equipo..." style="min-height:40px;"></textarea>
+                        </div>
                     </div>
                 </div>
                 
-                <form id="formCambioEstadoModal">
-                    <input type="hidden" id="cambio_equipo_id_modal">
-                    
-                    <div style="margin-bottom:14px;">
-                        <label style="display:block; font-weight:600; color:#333; margin-bottom:5px; font-size:12px;">✨ Nuevo Estado</label>
-                        <select id="cambio_nuevo_estado_modal" required style="width:100%; padding:8px 12px; border:2px solid #e0e0e0; border-radius:10px; font-size:13px; background:white;">
-                            <option value="">Seleccionar...</option>
-                            <option value="Operativo">🟢 Operativo</option>
-                            <option value="Volante">🚗 Volante</option>
-                            <option value="Mantencion">🔧 Mantención</option>
-                            <option value="Contrastacion">📊 Contrastación</option>
-                            <option value="Prestado">🔄 Prestado</option>
-                            <option value="Fuera de Servicio">⚠️ Fuera de Servicio</option>
-                        </select>
+                <!-- ====== SECCIÓN CONTRASTACIÓN ====== -->
+                <div class="seccion-modal" id="modal_seccion_contrastacion" style="border-left-color:#4CAF50; display:none;">
+                    <h5>📊 CONTRASTACIÓN</h5>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Fecha Certificado Contrastación</label>
+                            <input type="date" id="modal_fecha_certificado_contrastacion" name="fecha_certificado_contrastacion">
+                            <div class="campo-ayuda">📄 Fecha del certificado</div>
+                        </div>
+                        <div class="form-group">
+                            <label>N° Informe Contrastación</label>
+                            <input type="text" id="modal_nro_informe_contrastacion" name="nro_informe_contrastacion" placeholder="Ej: INF-C-2024-001">
+                        </div>
                     </div>
-                    
-                    <div id="div_responsable_cambio_modal" style="display:none; margin-bottom:14px;">
-                        <label style="display:block; font-weight:600; color:#333; margin-bottom:5px; font-size:12px;">👤 Responsable</label>
-                        <input type="text" id="cambio_responsable_modal" list="lista_responsables_cambio" placeholder="Nombre del responsable" style="width:100%; padding:8px 12px; border:2px solid #e0e0e0; border-radius:10px; font-size:13px;">
-                        <datalist id="lista_responsables_cambio">
-                            {% for resp in responsables_unicos %}
-                            <option value="{{ resp.nombre }}">{{ resp.nombre }} {% if resp.email %}({{ resp.email }}){% endif %}</option>
-                            {% endfor %}
-                        </datalist>
+                    <div class="form-row">
+                        <div class="form-group" style="border-left:3px solid #d32f2f; padding-left:8px;">
+                            <label>📤 Fecha Ingreso Laboratorio <span class="texto-obligatorio">*</span></label>
+                            <input type="date" id="modal_fecha_envio_laboratorio" name="fecha_envio_laboratorio">
+                            <div class="campo-ayuda">📌 Obligatorio para Contrastación</div>
+                        </div>
+                        <div class="form-group">
+                            <label>📦 Fecha Despacho Localidad</label>
+                            <input type="date" id="modal_fecha_despacho" name="fecha_despacho">
+                            <div class="campo-ayuda">Fecha en que vuelve a la localidad</div>
+                        </div>
                     </div>
-                    
-                    <div id="div_servicio_tecnico_modal" style="display:none; margin-bottom:14px;">
-                        <label style="display:block; font-weight:600; color:#333; margin-bottom:5px; font-size:12px;">🔧 Servicio Técnico</label>
-                        <input type="text" id="cambio_servicio_tecnico_modal" placeholder="Nombre del servicio técnico" style="width:100%; padding:8px 12px; border:2px solid #e0e0e0; border-radius:10px; font-size:13px;">
+                </div>
+                
+                <!-- ====== SECCIÓN MANTENCIÓN ====== -->
+                <div class="seccion-modal" id="modal_seccion_mantencion" style="border-left-color:#FF9800; display:none;">
+                    <h5>🔧 MANTENCIÓN</h5>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Fecha Certificado Mantención</label>
+                            <input type="date" id="modal_fecha_certificado_mantencion" name="fecha_certificado_mantencion">
+                            <div class="campo-ayuda">📄 Fecha del certificado</div>
+                        </div>
+                        <div class="form-group">
+                            <label>N° Informe Mantención</label>
+                            <input type="text" id="modal_nro_informe_mantencion" name="nro_informe_mantencion" placeholder="Ej: INF-M-2024-001">
+                        </div>
                     </div>
-                    
-                    <div id="div_fecha_contrastacion_modal" style="display:none; margin-bottom:14px;">
-                        <label style="display:block; font-weight:600; color:#333; margin-bottom:5px; font-size:12px;">📅 Fecha Contrastación</label>
-                        <input type="date" id="cambio_fecha_contrastacion_modal" style="width:100%; padding:8px 12px; border:2px solid #e0e0e0; border-radius:10px; font-size:13px;">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>📥 Fecha Ingreso Mantención</label>
+                            <input type="date" id="modal_fecha_ultima_mantencion" name="fecha_ultima_mantencion">
+                            <div class="campo-ayuda">Fecha en que ingresó a mantención</div>
+                        </div>
+                        <div class="form-group">
+                            <label>📦 Fecha Despacho Localidad</label>
+                            <input type="date" id="modal_fecha_despacho_mantencion" name="fecha_despacho" style="background:#f5f5f5;">
+                            <div class="campo-ayuda">Se usa la misma fecha de Despacho</div>
+                        </div>
                     </div>
-                    
-                    <div id="div_fecha_envio_modal" style="display:none; margin-bottom:14px;">
-                        <label style="display:block; font-weight:600; color:#333; margin-bottom:5px; font-size:12px;">📤 Fecha envío laboratorio</label>
-                        <input type="date" id="cambio_fecha_envio_modal" style="width:100%; padding:8px 12px; border:2px solid #e0e0e0; border-radius:10px; font-size:13px;">
+                </div>
+                
+                <!-- ====== SECCIÓN TERMÓMETROS E INSUMOS ====== -->
+                <div class="seccion-modal" id="modal_seccion_termometros" style="border-left-color:#9C27B0; display:none;">
+                    <h5>🌡️ TERMÓMETROS E INSUMOS</h5>
+                    <div id="modal_campos_termometro" style="display:none;">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>📅 Fecha Certificado Termómetro</label>
+                                <input type="date" id="modal_fecha_certificado" name="fecha_certificado">
+                                <div class="campo-ayuda">⚠️ Alerta 30 días antes del vencimiento</div>
+                            </div>
+                            <div class="form-group">
+                                <label>📄 N° Certificado Termómetro</label>
+                                <input type="text" id="modal_nro_certificado_termometro" name="nro_certificado_termometro" placeholder="Ej: CERT-2024-001">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>📅 Fecha Contrastación Termómetro</label>
+                                <input type="date" id="modal_fecha_contrastacion_termometro" name="fecha_contrastacion_termometro">
+                                <div class="campo-ayuda">⚠️ Alerta 5 días antes del vencimiento (cada 30 días)</div>
+                            </div>
+                            <div class="form-group"></div>
+                        </div>
                     </div>
-                    
-                    <div id="div_observacion_estado_modal" style="display:none; margin-bottom:16px;">
-                        <label style="display:block; font-weight:600; color:#333; margin-bottom:5px; font-size:12px;">💬 Observación</label>
-                        <textarea id="cambio_observacion_estado_modal" rows="2" placeholder="Nota sobre este cambio..." style="width:100%; padding:8px 12px; border:2px solid #e0e0e0; border-radius:10px; font-size:13px; resize:vertical; font-family:inherit;"></textarea>
+                    <div id="modal_div_vencimiento_insumo" style="display:none;">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>📅 Fecha Vencimiento Insumo</label>
+                                <input type="date" id="modal_fecha_vencimiento_insumo" name="fecha_vencimiento_insumo">
+                                <div class="campo-ayuda">📌 Solo para insumos</div>
+                            </div>
+                            <div class="form-group"></div>
+                        </div>
                     </div>
-                    
-                    <div style="display:flex; gap:10px; margin-top:8px;">
-                        <button type="button" onclick="cerrarModalEstado()" style="flex:1; padding:8px; border:2px solid #e0e0e0; background:white; border-radius:10px; font-size:13px; font-weight:500; cursor:pointer;">Cancelar</button>
-                        <button type="submit" id="btnCambiarEstado" style="flex:2; padding:8px; background:linear-gradient(135deg, #1E88E5 0%, #1565C0 100%); border:none; border-radius:10px; color:white; font-size:13px; font-weight:600; cursor:pointer;">✅ Guardar</button>
+                    <div id="modal_msg_insumos" style="display:none; color:#666; font-size:12px; padding:8px; background:#f0f0f0; border-radius:6px;">
+                        💡 Para <strong>Gelex cloro</strong> y <strong>Stabcal</strong>, solo se requiere la <strong>Fecha de Vencimiento Insumo</strong>.
                     </div>
-                </form>
+                </div>
+                
+                <!-- ====== ARCHIVOS ====== -->
+                <div class="seccion-modal" style="border-left-color:#795548;">
+                    <h5>📎 ARCHIVOS</h5>
+                    <div class="form-row">
+                        <div class="form-group" style="flex:2;">
+                            <label>Archivos (imágenes, PDF, Word)</label>
+                            <input type="file" id="modal_archivos" name="archivos" multiple accept="image/*,.pdf,.doc,.docx">
+                            <div class="campo-ayuda">Máximo 3 imágenes y 3 documentos</div>
+                        </div>
+                    </div>
+                    <div id="modal_archivos_actuales" style="display:none;">
+                        <div class="campo-ayuda">Archivos actuales:</div>
+                        <ul id="modal_lista_archivos" style="font-size:12px; margin:4px 0; padding-left:20px;"></ul>
+                    </div>
+                </div>
+                
+                <!-- ====== BOTONES ====== -->
+                <div style="display:flex; gap:10px; margin-top:12px; padding-top:12px; border-top:2px solid #e0e0e0; flex-wrap:wrap;">
+                    <button type="button" onclick="cerrarModalEditar()" style="flex:1; padding:10px; border:2px solid #e0e0e0; background:white; border-radius:10px; font-size:14px; font-weight:500; cursor:pointer;">Cancelar</button>
+                    <button type="submit" id="btnGuardarEditar" style="flex:2; padding:10px; background:linear-gradient(135deg, #1E88E5 0%, #1565C0 100%); border:none; border-radius:10px; color:white; font-size:14px; font-weight:600; cursor:pointer;">💾 Actualizar Equipo</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ====== MODAL HISTORIAL ====== -->
+    <div id="modalHistorial" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); backdrop-filter:blur(4px); z-index:10000; align-items:center; justify-content:center;">
+        <div style="background:white; border-radius:20px; max-width:750px; width:95%; margin:auto; box-shadow:0 20px 40px rgba(0,0,0,0.3); overflow:hidden; animation:modalEntrar 0.3s ease-out; max-height:90vh;">
+            <div style="background:linear-gradient(135deg, #6A1B9A 0%, #4A148C 100%); padding:12px 18px; color:white; display:flex; justify-content:space-between; align-items:center; position:sticky; top:0; z-index:10;">
+                <div style="display:flex; align-items:center; gap:8px;">
+                    <span style="font-size:20px;">📋</span>
+                    <h3 style="margin:0; font-size:16px; font-weight:600;">HISTORIAL DEL EQUIPO</h3>
+                </div>
+                <button onclick="cerrarModalHistorial()" style="background:rgba(255,255,255,0.2); border:none; color:white; font-size:18px; cursor:pointer; width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center;">&times;</button>
+            </div>
+            <div style="padding:12px 16px;">
+                <div id="historialInfoEquipo" style="background:#f0f4f8; padding:8px 12px; border-radius:8px; margin-bottom:12px; font-size:13px;"></div>
+                <div class="modal-historial-body">
+                    <table class="historial-tabla" id="tablaHistorial">
+                        <thead>
+                            <tr>
+                                <th>Fecha/Hora</th>
+                                <th>Acción</th>
+                                <th>Detalle</th>
+                                <th>Usuario</th>
+                            </tr>
+                        </thead>
+                        <tbody id="historialBody">
+                            <tr><td colspan="4" style="text-align:center; color:#999;">Cargando historial...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- MODAL OBSERVACIÓN -->
+    <!-- ====== MODAL OBSERVACIÓN ====== -->
     <div id="modalObservacion" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1001; align-items:center; justify-content:center;">
         <div style="background:white; border-radius:20px; max-width:400px; width:90%; margin:auto; padding:20px; box-shadow:0 20px 40px rgba(0,0,0,0.3);">
             <h3 style="margin:0 0 15px 0; font-size:18px;">💬 Agregar Observación</h3>
@@ -564,23 +773,29 @@
 
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
     <script>
-        // ========== REGISTRAR SERVICE WORKER PARA PWA ==========
+        // ========== CONFIGURACIÓN ==========
+        const TIPOS_CON_PHMETRO = {{ TIPOS_CON_PHMETRO|tojson }};
+        const TIPOS_CON_SUBCATEGORIA = {{ TIPOS_CON_CONTRASTACION|tojson }};
+        const TIPOS_CON_CONTRASTACION = {{ TIPOS_CON_CONTRASTACION|tojson }};
+        const TIPOS_TERMOMETRO = {{ TIPOS_CON_CERTIFICADO|tojson }};
+        const TIPOS_INSUMO = {{ TIPOS_CON_VENCIMIENTO_MANUAL|tojson }};
+
+        let equipoIdActual = null;
+
+        // ========== PWA ==========
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('/static/sw.js')
                 .then(reg => console.log('✅ Service Worker registrado:', reg))
                 .catch(err => console.log('❌ Error al registrar Service Worker:', err));
         }
         
-        // ========== INSTALACIÓN MANUAL DE PWA ==========
         let deferredPrompt;
         const btnInstalar = document.getElementById('btnInstalarApp');
-
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
             deferredPrompt = e;
             btnInstalar.style.display = 'flex';
         });
-
         btnInstalar.addEventListener('click', async () => {
             if (!deferredPrompt) return;
             deferredPrompt.prompt();
@@ -589,14 +804,12 @@
             btnInstalar.style.display = 'none';
             deferredPrompt = null;
         });
-
         window.addEventListener('appinstalled', () => {
             btnInstalar.style.display = 'none';
             deferredPrompt = null;
             console.log('App instalada correctamente');
         });
-        // ======================================================
-        
+
         // ========== FUNCIONES DE OBSERVACIÓN ==========
         function abrirModalObservacion(equipoId) {
             document.getElementById('observacion_equipo_id').value = equipoId;
@@ -638,110 +851,238 @@
             });
         }
 
-        // ========== FUNCIONES DE CAMBIO DE ESTADO ==========
-        window.equipoIdActual = null;
-        function cambiarEstadoCompleto(equipoId, estadoActual) {
-            window.equipoIdActual = equipoId;
-            document.getElementById('cambio_equipo_id_modal').value = equipoId;
-            document.getElementById('cambio_nuevo_estado_modal').value = '';
-            document.getElementById('cambio_responsable_modal').value = '';
-            document.getElementById('cambio_servicio_tecnico_modal').value = '';
-            document.getElementById('cambio_fecha_contrastacion_modal').value = '';
-            document.getElementById('cambio_fecha_envio_modal').value = '';
-            document.getElementById('cambio_observacion_estado_modal').value = '';
-            document.getElementById('div_responsable_cambio_modal').style.display = 'none';
-            document.getElementById('div_servicio_tecnico_modal').style.display = 'none';
-            document.getElementById('div_fecha_contrastacion_modal').style.display = 'none';
-            document.getElementById('div_fecha_envio_modal').style.display = 'none';
-            document.getElementById('div_observacion_estado_modal').style.display = 'none';
-            const span = document.getElementById('estado_actual_texto');
-            span.textContent = estadoActual;
-            const colores = { 'Operativo':'#4CAF50', 'Mantencion':'#FF9800', 'Prestado':'#2196F3', 'Volante':'#9C27B0', 'Contrastacion':'#00BCD4', 'Fuera de Servicio':'#f44336' };
-            span.style.backgroundColor = colores[estadoActual] || '#666';
-            document.getElementById('modalCambioEstado').style.display = 'flex';
-        }
-        
-        function cerrarModalEstado() { 
-            document.getElementById('modalCambioEstado').style.display = 'none'; 
+        // ========== ABRIR MODAL DE EDICIÓN ==========
+        function abrirModalEditar(equipoId) {
+            const row = document.querySelector(`tr[data-equipo-id="${equipoId}"]`);
+            if (!row) {
+                alert('⚠️ No se encontraron datos del equipo');
+                return;
+            }
+            
+            equipoIdActual = equipoId;
+            const dataset = row.dataset;
+            
+            document.getElementById('modalEditarInfo').textContent = `Editando: ${dataset.nroInt || '-'}`;
+            document.getElementById('modalEditarIdDisplay').textContent = `ID: ${equipoId}`;
+            document.getElementById('editar_equipo_id').value = equipoId;
+            document.getElementById('btnGuardarEditar').textContent = '💾 Actualizar Equipo';
+            
+            // Llenar campos
+            document.getElementById('modal_nro_int').value = dataset.nroInt || '';
+            document.getElementById('modal_nro_serie').value = dataset.nroSerie || '';
+            document.getElementById('modal_area').value = dataset.area || '';
+            document.getElementById('modal_localidad').value = dataset.localidad || '';
+            document.getElementById('modal_responsable').value = dataset.responsable || '';
+            document.getElementById('modal_tipo_equipo').value = dataset.tipo || '';
+            document.getElementById('modal_subcategoria').value = dataset.subcategoria || '';
+            document.getElementById('modal_modelo_equipo').value = dataset.modeloEquipo || '';
+            document.getElementById('modal_modelo_sonda').value = dataset.modeloSonda || '';
+            document.getElementById('modal_nro_serie_sonda').value = dataset.nroSerieSonda || '';
+            document.getElementById('modal_servicio_tecnico').value = dataset.servicioTecnico || '';
+            document.getElementById('modal_estado').value = dataset.estado || '';
+            document.getElementById('modal_observaciones').value = dataset.observaciones || '';
+            document.getElementById('modal_fecha_certificado_contrastacion').value = dataset.fechaCertificadoContrastacion || '';
+            document.getElementById('modal_nro_informe_contrastacion').value = dataset.nroInformeContrastacion || '';
+            document.getElementById('modal_fecha_envio_laboratorio').value = dataset.fechaEnvioLaboratorio || '';
+            document.getElementById('modal_fecha_despacho').value = dataset.fechaDespacho || '';
+            document.getElementById('modal_fecha_certificado_mantencion').value = dataset.fechaCertificadoMantencion || '';
+            document.getElementById('modal_nro_informe_mantencion').value = dataset.nroInformeMantencion || '';
+            document.getElementById('modal_fecha_ultima_mantencion').value = dataset.fechaUltimaMantencion || '';
+            document.getElementById('modal_fecha_certificado').value = dataset.fechaCertificado || '';
+            document.getElementById('modal_nro_certificado_termometro').value = dataset.nroCertificadoTermometro || '';
+            document.getElementById('modal_fecha_contrastacion_termometro').value = dataset.fechaContrastacionTermometro || '';
+            document.getElementById('modal_fecha_vencimiento_insumo').value = dataset.fechaVencimientoInsumo || '';
+            
+            document.getElementById('modal_archivos_actuales').style.display = 'none';
+            
+            actualizarCamposModal();
+            document.getElementById('modalEditarEquipo').style.display = 'flex';
         }
 
-        // ========== EVENTOS DEL MODAL DE CAMBIO DE ESTADO ==========
-        document.getElementById('cambio_nuevo_estado_modal').addEventListener('change', function() {
-            const e = this.value;
-            document.getElementById('div_responsable_cambio_modal').style.display = (e === 'Prestado' || e === 'Volante' || e === 'Fuera de Servicio' || e === 'Mantencion') ? 'block' : 'none';
-            document.getElementById('div_servicio_tecnico_modal').style.display = e === 'Mantencion' ? 'block' : 'none';
-            document.getElementById('div_fecha_contrastacion_modal').style.display = e === 'Contrastacion' ? 'block' : 'none';
-            document.getElementById('div_fecha_envio_modal').style.display = e === 'Contrastacion' ? 'block' : 'none';
-            document.getElementById('div_observacion_estado_modal').style.display = e ? 'block' : 'none';
-        });
+        function cerrarModalEditar() {
+            document.getElementById('modalEditarEquipo').style.display = 'none';
+        }
 
-        // ========== UN SOLO EVENT LISTENER ==========
-        document.getElementById('formCambioEstadoModal').addEventListener('submit', async function(e) {
+        // ========== ACTUALIZAR CAMPOS DEL MODAL ==========
+        function actualizarCamposModal() {
+            const tipo = document.getElementById('modal_tipo_equipo').value;
+            const estado = document.getElementById('modal_estado').value;
+            
+            document.getElementById('modal_div_sonda').style.display = TIPOS_CON_PHMETRO.includes(tipo) ? 'flex' : 'none';
+            document.getElementById('modal_subcategoria').style.display = TIPOS_CON_SUBCATEGORIA.includes(tipo) ? 'block' : 'none';
+            
+            const showContrastacion = TIPOS_CON_CONTRASTACION.includes(tipo);
+            document.getElementById('modal_seccion_contrastacion').style.display = showContrastacion ? 'block' : 'none';
+            document.getElementById('modal_seccion_mantencion').style.display = (estado === 'Mantencion' || estado === 'Fuera de Servicio') ? 'block' : 'none';
+            
+            const esTermometro = TIPOS_TERMOMETRO.includes(tipo);
+            const esInsumo = TIPOS_INSUMO.includes(tipo);
+            
+            if (esTermometro || esInsumo) {
+                document.getElementById('modal_seccion_termometros').style.display = 'block';
+                if (tipo === 'Termometro patron AS') {
+                    document.getElementById('modal_campos_termometro').style.display = 'block';
+                    document.getElementById('modal_div_vencimiento_insumo').style.display = 'none';
+                    document.getElementById('modal_msg_insumos').style.display = 'none';
+                } else if (esInsumo) {
+                    document.getElementById('modal_campos_termometro').style.display = 'none';
+                    document.getElementById('modal_div_vencimiento_insumo').style.display = 'block';
+                    document.getElementById('modal_msg_insumos').style.display = 'block';
+                }
+            } else {
+                document.getElementById('modal_seccion_termometros').style.display = 'none';
+                document.getElementById('modal_campos_termometro').style.display = 'none';
+                document.getElementById('modal_div_vencimiento_insumo').style.display = 'none';
+                document.getElementById('modal_msg_insumos').style.display = 'none';
+            }
+        }
+
+        // ========== ENVIAR FORMULARIO DEL MODAL ==========
+        document.getElementById('formEditarModal').addEventListener('submit', async function(e) {
             e.preventDefault();
             
-            const btn = document.getElementById('btnCambiarEstado');
+            const btn = document.getElementById('btnGuardarEditar');
             btn.disabled = true;
             btn.textContent = '⏳ Guardando...';
-            btn.style.opacity = '0.7';
             
-            const nuevoEstado = document.getElementById('cambio_nuevo_estado_modal').value;
-            const nuevoResponsable = document.getElementById('cambio_responsable_modal').value;
-            const servicioTecnico = document.getElementById('cambio_servicio_tecnico_modal').value;
-            const fechaContrastacion = document.getElementById('cambio_fecha_contrastacion_modal').value;
-            const fechaEnvio = document.getElementById('cambio_fecha_envio_modal').value;
-            const observacion = document.getElementById('cambio_observacion_estado_modal').value;
+            const equipoId = document.getElementById('editar_equipo_id').value;
+            const estado = document.getElementById('modal_estado').value;
+            const fechaEnvio = document.getElementById('modal_fecha_envio_laboratorio').value;
             
-            const restaurarBoton = () => {
+            // Validaciones
+            if (estado === 'Contrastacion' && !fechaEnvio) {
+                alert('⚠️ Para "Contrastación" debes ingresar la "Fecha Ingreso Laboratorio".');
                 btn.disabled = false;
-                btn.textContent = '✅ Guardar';
-                btn.style.opacity = '1';
-            };
-            
-            if (!nuevoEstado) { 
-                alert('Seleccione un estado'); 
-                restaurarBoton(); 
-                return; 
-            }
-            if ((nuevoEstado === 'Prestado' || nuevoEstado === 'Volante' || nuevoEstado === 'Fuera de Servicio' || nuevoEstado === 'Mantencion') && !nuevoResponsable) { 
-                alert('Debe ingresar el responsable'); 
-                restaurarBoton(); 
-                return; 
-            }
-            if (nuevoEstado === 'Mantencion' && !servicioTecnico) { 
-                alert('Debe ingresar el servicio técnico'); 
-                restaurarBoton(); 
-                return; 
-            }
-            if (nuevoEstado === 'Contrastacion' && !fechaEnvio) { 
-                alert('Debe ingresar la fecha de envío'); 
-                restaurarBoton(); 
-                return; 
+                btn.textContent = '💾 Actualizar Equipo';
+                return;
             }
             
-            const fd = new FormData();
-            fd.append('estado', nuevoEstado);
-            if (nuevoResponsable) fd.append('nuevo_responsable', nuevoResponsable);
-            if (servicioTecnico) fd.append('servicio_tecnico', servicioTecnico);
-            if (fechaContrastacion) fd.append('fecha_contrastacion', fechaContrastacion);
-            if (fechaEnvio) fd.append('fecha_envio_laboratorio', fechaEnvio);
-            if (observacion) fd.append('observacion', observacion);
+            const fd = new FormData(this);
+            fd.append('modelo_equipo', document.getElementById('modal_modelo_equipo').value);
+            fd.append('modelo_sonda', document.getElementById('modal_modelo_sonda').value);
+            fd.append('nro_serie_sonda', document.getElementById('modal_nro_serie_sonda').value);
             
             try {
-                const resp = await fetch(`/equipo/cambiar_estado/${window.equipoIdActual}`, { method: 'POST', body: fd });
-                const data = await resp.json();
-                if (data.success) {
+                const resp = await fetch(`/equipo/editar/${equipoId}`, { method: 'POST', body: fd });
+                const html = await resp.text();
+                
+                if (html.includes('alert-success') || html.includes('success')) {
+                    alert('✅ Equipo actualizado correctamente');
                     location.reload();
+                } else if (html.includes('alert-error')) {
+                    const errorMatch = html.match(/alert-error[^>]*>([^<]*)</);
+                    alert('❌ Error: ' + (errorMatch ? errorMatch[1] : 'desconocido'));
                 } else {
-                    alert('Error al cambiar estado');
-                    restaurarBoton();
+                    try {
+                        const data = JSON.parse(html);
+                        if (data.success) {
+                            alert('✅ Equipo actualizado correctamente');
+                            location.reload();
+                        } else {
+                            alert('❌ Error: ' + (data.mensaje || 'desconocido'));
+                        }
+                    } catch {
+                        alert('❌ Error al guardar. Revisa los logs.');
+                    }
                 }
-            } catch(e) { 
-                alert('Error de conexión'); 
-                restaurarBoton();
+            } catch(e) {
+                console.error('Error:', e);
+                alert('❌ Error de conexión: ' + e.message);
             }
+            
+            btn.disabled = false;
+            btn.textContent = '💾 Actualizar Equipo';
         });
 
-        // ========== FUNCIONES DE FILTROS Y ORDENAMIENTO ==========
+        // ========== MODAL HISTORIAL ==========
+        function abrirModalHistorial(equipoId) {
+            const row = document.querySelector(`tr[data-equipo-id="${equipoId}"]`);
+            if (!row) {
+                alert('⚠️ No se encontraron datos del equipo');
+                return;
+            }
+            
+            const dataset = row.dataset;
+            document.getElementById('historialInfoEquipo').innerHTML = `
+                <strong>Nro Int:</strong> ${dataset.nroInt || '-'} | 
+                <strong>Equipo:</strong> ${dataset.tipo || '-'} | 
+                <strong>Estado:</strong> <span class="estado estado-${(dataset.estado || 'Operativo').toLowerCase().replace(' ', '-')}">${dataset.estado || 'Operativo'}</span>
+            `;
+            document.getElementById('historialBody').innerHTML = '<tr><td colspan="4" style="text-align:center; color:#999;">Cargando historial...</td></tr>';
+            document.getElementById('modalHistorial').style.display = 'flex';
+            
+            fetch(`/equipo/historial/${equipoId}`)
+                .then(r => r.text())
+                .then(html => {
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, 'text/html');
+                    const tabla = doc.querySelector('.historial-tabla tbody');
+                    if (tabla && tabla.innerHTML) {
+                        document.getElementById('historialBody').innerHTML = tabla.innerHTML;
+                    } else {
+                        document.getElementById('historialBody').innerHTML = '<tr><td colspan="4" style="text-align:center; color:#999;">No hay historial registrado</td></tr>';
+                    }
+                })
+                .catch(() => {
+                    document.getElementById('historialBody').innerHTML = '<tr><td colspan="4" style="text-align:center; color:#c62828;">Error al cargar el historial</td></tr>';
+                });
+        }
+
+        function cerrarModalHistorial() {
+            document.getElementById('modalHistorial').style.display = 'none';
+        }
+
+        // ========== EVENTOS DEL MODAL ==========
+        document.getElementById('modal_tipo_equipo').addEventListener('change', actualizarCamposModal);
+        document.getElementById('modal_estado').addEventListener('change', actualizarCamposModal);
+        document.getElementById('modal_fecha_despacho').addEventListener('change', function() {
+            document.getElementById('modal_fecha_despacho_mantencion').value = this.value;
+        });
+
+        // ========== ACCIONES RÁPIDAS ==========
+        function accionRapida(tipo) {
+            const checked = document.querySelector('.select-equipo:checked');
+            let equipoId = null;
+            
+            if (checked) {
+                equipoId = checked.value;
+            } else {
+                const firstRow = document.querySelector('#tablaEquipos tbody tr:not([style*="display: none"])');
+                if (firstRow) {
+                    const cb = firstRow.querySelector('.select-equipo');
+                    if (cb) equipoId = cb.value;
+                }
+            }
+            
+            if (!equipoId) {
+                alert('⚠️ No hay equipos disponibles. Selecciona uno.');
+                return;
+            }
+            
+            switch(tipo) {
+                case 'editar':
+                    abrirModalEditar(equipoId);
+                    break;
+                case 'historial':
+                    abrirModalHistorial(equipoId);
+                    break;
+                case 'observacion':
+                    abrirModalObservacion(equipoId);
+                    break;
+                case 'eliminar':
+                    const row = document.querySelector(`input[value="${equipoId}"]`).closest('tr');
+                    const nroCell = row ? row.querySelector('td:nth-child(2)') : null;
+                    const nroInt = nroCell ? nroCell.textContent.trim() : equipoId;
+                    if (confirm(`¿Eliminar el equipo ${nroInt}?`)) {
+                        window.location.href = `/equipo/eliminar/${equipoId}`;
+                    }
+                    break;
+                default:
+                    alert('Acción no reconocida');
+            }
+        }
+
+        // ========== FILTROS Y ORDENAMIENTO ==========
         let sortDirection = {};
         function sortTable(n) {
             const table = document.getElementById('tablaEquipos');
@@ -780,7 +1121,7 @@
             });
             document.getElementById('contador').innerHTML = `📋 Mostrando ${visible} de ${rows.length} equipos`;
         }
-        
+
         function limpiarFiltros() {
             document.getElementById('filtro_nro_int').value = '';
             document.getElementById('filtro_nro_serie').value = '';
@@ -790,18 +1131,14 @@
             document.getElementById('filtro_tipo').value = '';
             aplicarFiltros();
         }
-        
+
         function toggleMenuExportar() {
             const menu = document.getElementById('menuExportar');
-            const esMovil = window.innerWidth <= 768;
-            
             if (menu.style.display === 'block') {
                 menu.style.display = 'none';
                 return;
             }
-            
             menu.style.display = 'block';
-            
             const cerrarMenu = function(e) {
                 const btnGroup = document.querySelector('.btn-group');
                 if (btnGroup && !btnGroup.contains(e.target)) {
@@ -810,13 +1147,12 @@
                     document.removeEventListener('touchstart', cerrarMenu);
                 }
             };
-            
             setTimeout(() => {
                 document.addEventListener('click', cerrarMenu);
                 document.addEventListener('touchstart', cerrarMenu);
             }, 10);
         }
-        
+
         function exportarSeleccionados() {
             const ids = Array.from(document.querySelectorAll('.select-equipo:checked')).map(cb => cb.value);
             if (!ids.length) { alert('No hay equipos seleccionados'); return; }
@@ -824,7 +1160,7 @@
             ids.forEach(id => { const i = document.createElement('input'); i.type = 'hidden'; i.name = 'ids'; i.value = id; f.appendChild(i); });
             document.body.appendChild(f); f.submit(); document.body.removeChild(f);
         }
-        
+
         function exportarFiltrados() {
             const ids = [];
             document.querySelectorAll('#tablaEquipos tbody tr').forEach(row => {
@@ -835,20 +1171,20 @@
             ids.forEach(id => { const i = document.createElement('input'); i.type = 'hidden'; i.name = 'ids'; i.value = id; f.appendChild(i); });
             document.body.appendChild(f); f.submit(); document.body.removeChild(f);
         }
-        
+
         function actualizarContadorExportar() {
             const c = document.querySelectorAll('.select-equipo:checked').length;
             const btn = document.getElementById('btnExportarSeleccionadosMenu');
             if (btn) btn.innerHTML = `☑️ Equipos seleccionados (${c})`;
         }
-        
+
         function seleccionarTodos() {
             const cbs = document.querySelectorAll('.select-equipo');
             const sel = document.getElementById('seleccionar-todos').checked;
             cbs.forEach(cb => cb.checked = sel);
             actualizarContadorExportar();
         }
-        
+
         function actualizarBloqueos() {
             fetch('/api/verificar_bloqueos')
                 .then(r => r.json())
@@ -856,8 +1192,6 @@
                     document.querySelectorAll('#tablaEquipos tbody tr').forEach(row => {
                         const id = row.getAttribute('data-equipo-id');
                         if (!id || !data[id]) return;
-                        const info = data[id];
-                        // Ya no hay botones en la tabla
                     });
                 })
                 .catch(e => console.error('Error al actualizar bloqueos:', e));
@@ -874,157 +1208,71 @@
             });
             document.getElementById('contador').innerHTML = term === '' ? `📋 Total: ${rows.length} equipos` : `🔍 Mostrando ${visible} de ${rows.length} equipos`;
         });
-        
+
         document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('contador').innerHTML = `📋 Total: ${document.querySelectorAll('#tablaEquipos tbody tr').length} equipos`;
             actualizarContadorExportar();
             document.querySelectorAll('.select-equipo').forEach(cb => cb.addEventListener('change', actualizarContadorExportar));
-            document.getElementById('modalCambioEstado').style.display = 'none';
+            document.getElementById('modalEditarEquipo').style.display = 'none';
+            document.getElementById('modalHistorial').style.display = 'none';
             document.getElementById('modalObservacion').style.display = 'none';
             document.getElementById('menuExportar').style.display = 'none';
         });
-        
-        window.onclick = function(e) { 
-            if (e.target === document.getElementById('modalCambioEstado')) cerrarModalEstado(); 
-            if (e.target === document.getElementById('modalObservacion')) cerrarModalObservacion(); 
+
+        window.onclick = function(e) {
+            if (e.target === document.getElementById('modalEditarEquipo')) cerrarModalEditar();
+            if (e.target === document.getElementById('modalHistorial')) cerrarModalHistorial();
+            if (e.target === document.getElementById('modalObservacion')) cerrarModalObservacion();
         };
-        
+
         setInterval(actualizarBloqueos, 5000);
 
-        // ========== TECLAS DE ACCESO RÁPIDO (Alt + Shift) ==========
+        // ========== TECLAS DE ACCESO RÁPIDO ==========
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
-                cerrarModalEstado();
+                cerrarModalEditar();
+                cerrarModalHistorial();
                 cerrarModalObservacion();
                 return;
             }
 
             const tag = e.target.tagName.toLowerCase();
             const type = e.target.type ? e.target.type.toLowerCase() : '';
-            
             if (tag === 'textarea' || tag === 'select' || 
                 (tag === 'input' && (type === 'text' || type === 'password' || type === 'email' || type === 'number' || type === 'date' || type === 'time'))) {
                 return;
             }
 
-            // ====== Alt + Shift + N = Nuevo Equipo ======
             if (e.altKey && e.shiftKey && (e.key === 'n' || e.key === 'N')) {
                 e.preventDefault();
                 window.location.href = "{{ url_for('nuevo_equipo') }}";
                 return;
             }
 
-            // ====== Alt + Shift + E = Editar Equipo ======
             if (e.altKey && e.shiftKey && (e.key === 'e' || e.key === 'E')) {
                 e.preventDefault();
                 accionRapida('editar');
                 return;
             }
 
-            // ====== Alt + Shift + O = Agregar Observación ======
             if (e.altKey && e.shiftKey && (e.key === 'o' || e.key === 'O')) {
                 e.preventDefault();
                 accionRapida('observacion');
                 return;
             }
 
-            // ====== Alt + Shift + H = Ver Historial ======
             if (e.altKey && e.shiftKey && (e.key === 'h' || e.key === 'H')) {
                 e.preventDefault();
                 accionRapida('historial');
                 return;
             }
 
-            // ====== Alt + Shift + C = Cambiar Estado ======
-            if (e.altKey && e.shiftKey && (e.key === 'c' || e.key === 'C')) {
-                e.preventDefault();
-                let checked = document.querySelector('.select-equipo:checked');
-                let equipoId = null;
-                let equipoEstado = null;
-
-                if (checked) {
-                    equipoId = checked.value;
-                    const row = checked.closest('tr');
-                    if (row) {
-                        const estadoCell = row.querySelector('.estado');
-                        if (estadoCell) {
-                            equipoEstado = estadoCell.textContent.trim();
-                        }
-                    }
-                } else {
-                    const firstRow = document.querySelector('#tablaEquipos tbody tr:not([style*="display: none"])');
-                    if (firstRow) {
-                        const cb = firstRow.querySelector('.select-equipo');
-                        if (cb) {
-                            equipoId = cb.value;
-                            const estadoCell = firstRow.querySelector('.estado');
-                            if (estadoCell) {
-                                equipoEstado = estadoCell.textContent.trim();
-                            }
-                        }
-                    }
-                }
-
-                if (equipoId && equipoEstado) {
-                    cambiarEstadoCompleto(parseInt(equipoId), equipoEstado);
-                } else {
-                    alert('No hay equipos disponibles');
-                }
-                return;
-            }
-
-            // ====== Alt + Shift + D = Eliminar Equipo ======
             if (e.altKey && e.shiftKey && (e.key === 'd' || e.key === 'D')) {
                 e.preventDefault();
                 accionRapida('eliminar');
                 return;
             }
         });
-
-        // ========== ACCIONES RÁPIDAS ==========
-        function accionRapida(tipo) {
-            const checked = document.querySelector('.select-equipo:checked');
-            let equipoId = null;
-            
-            if (checked) {
-                equipoId = checked.value;
-            } else {
-                const firstRow = document.querySelector('#tablaEquipos tbody tr:not([style*="display: none"])');
-                if (firstRow) {
-                    const cb = firstRow.querySelector('.select-equipo');
-                    if (cb) {
-                        equipoId = cb.value;
-                    }
-                }
-            }
-            
-            if (!equipoId) {
-                alert('⚠️ No hay equipos disponibles. Selecciona uno o asegúrate de que haya equipos en la tabla.');
-                return;
-            }
-            
-            switch(tipo) {
-                case 'historial':
-                    window.location.href = `/equipo/historial/${equipoId}`;
-                    break;
-                case 'editar':
-                    window.location.href = `/equipo/editar/${equipoId}`;
-                    break;
-                case 'observacion':
-                    abrirModalObservacion(equipoId);
-                    break;
-                case 'eliminar':
-                    const row = document.querySelector(`input[value="${equipoId}"]`).closest('tr');
-                    const nroCell = row ? row.querySelector('td:nth-child(2)') : null;
-                    const nroInt = nroCell ? nroCell.textContent.trim() : equipoId;
-                    if (confirm(`¿Eliminar el equipo ${nroInt}?`)) {
-                        window.location.href = `/equipo/eliminar/${equipoId}`;
-                    }
-                    break;
-                default:
-                    alert('Acción no reconocida');
-            }
-        }
     </script>
 </body>
 </html>

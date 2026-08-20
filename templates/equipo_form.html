@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>{% if equipo %}Editar{% else %}Nuevo{% endif %} Equipo</title>
+    <title>Nuevo Equipo</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=yes">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <style>
@@ -30,8 +30,6 @@
         .input-success {
             border: 2px solid #4caf50 !important;
         }
-        
-        /* ====== SECCIONES DEL FORMULARIO ====== */
         .seccion-formulario {
             background: #f8f9fa;
             border-radius: 10px;
@@ -56,8 +54,6 @@
         .seccion-formulario .form-group label {
             font-size: 12px;
         }
-        
-        /* ====== BOTONES VOLVER ====== */
         .volver-top {
             display: flex;
             justify-content: space-between;
@@ -74,22 +70,16 @@
             gap: 10px;
             flex-wrap: wrap;
         }
-        
         .alert-info-campo {
             font-size: 11px;
             color: #666;
             margin-top: 3px;
         }
-        .alert-info-campo .tooltip {
-            color: #1E88E5;
-            cursor: help;
-            border-bottom: 1px dashed #1E88E5;
-        }
     </style>
 </head>
 <body>
     <div class="header">
-        <h1>{% if equipo %}✏️ EDITAR EQUIPO{% else %}➕ NUEVO EQUIPO{% endif %}</h1>
+        <h1>➕ NUEVO EQUIPO</h1>
         <div>
             <span>👤 {{ current_user.nombre }}</span>
             <a href="{{ url_for('logout') }}">Salir</a>
@@ -97,25 +87,25 @@
     </div>
 
     <div class="container">
-        <!-- ====== BOTÓN VOLVER ARRIBA ====== -->
         <div class="volver-top">
             <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">← Volver al Dashboard</a>
             <span style="font-size: 13px; color: #999;">💡 También puedes usar <kbd>Esc</kbd> para volver</span>
         </div>
         
-        <form method="POST" enctype="multipart/form-data" id="equipoForm">
+        <form method="POST" enctype="multipart/form-data" id="equipoForm" action="{{ url_for('nuevo_equipo') }}">
+            
             <!-- ====== DATOS GENERALES ====== -->
             <div class="seccion-formulario" style="border-left-color: #333;">
                 <h4>📋 DATOS GENERALES</h4>
                 <div class="form-row">
                     <div class="form-group">
                         <label>Número Interno *</label>
-                        <input type="text" name="nro_int" id="nro_int" value="{{ equipo.nro_int if equipo else '' }}" required>
+                        <input type="text" name="nro_int" id="nro_int" value="" required>
                         <div id="nro_int_error" class="error-nro-int"></div>
                     </div>
                     <div class="form-group">
                         <label>Número de Serie</label>
-                        <input type="text" name="nro_serie" id="nro_serie" value="{{ equipo.nro_serie if equipo else '' }}" placeholder="Ej: 12345ABC">
+                        <input type="text" name="nro_serie" id="nro_serie" value="" placeholder="Ej: 12345ABC">
                         <div id="nro_serie_error" class="error-nro-serie"></div>
                     </div>
                 </div>
@@ -125,14 +115,14 @@
                         <select name="area">
                             <option value="">Seleccionar...</option>
                             {% for area in AREAS %}
-                            <option value="{{ area }}" {% if equipo and equipo.area == area %}selected{% endif %}>{{ area }}</option>
+                            <option value="{{ area }}">{{ area }}</option>
                             {% endfor %}
                         </select>
                     </div>
                     <div class="form-group">
                         <label>Localidad</label>
                         <input type="text" id="localidad" name="localidad" list="lista_localidades"
-                               value="{{ equipo.localidad if equipo else '' }}"
+                               value=""
                                placeholder="Escribe o selecciona..." autocomplete="off"
                                style="width:100%; padding:8px; border:1px solid #ddd; border-radius:5px; font-size:16px;">
                         <datalist id="lista_localidades">
@@ -146,7 +136,7 @@
                     <div class="form-group">
                         <label>Responsable</label>
                         <input type="text" id="responsable" name="responsable" list="lista_responsables"
-                               value="{{ equipo.responsable if equipo else '' }}"
+                               value=""
                                placeholder="Escribe o selecciona..." autocomplete="off"
                                style="width:100%; padding:8px; border:1px solid #ddd; border-radius:5px; font-size:16px;">
                         <datalist id="lista_responsables">
@@ -162,7 +152,7 @@
                         <select name="tipo_equipo" id="tipo_equipo">
                             <option value="">Seleccionar...</option>
                             {% for tipo in TIPOS_EQUIPO %}
-                            <option value="{{ tipo }}" {% if equipo and equipo.tipo_equipo == tipo %}selected{% endif %}>{{ tipo }}</option>
+                            <option value="{{ tipo }}">{{ tipo }}</option>
                             {% endfor %}
                         </select>
                     </div>
@@ -170,7 +160,7 @@
                 <div class="form-row">
                     <div class="form-group" style="flex: 2;">
                         <label>Modelo del Equipo *</label>
-                        <input type="text" name="modelo_equipo" id="modelo_equipo" value="{{ equipo.modelo_equipo if equipo else '' }}"
+                        <input type="text" name="modelo_equipo" id="modelo_equipo" value=""
                                placeholder="Ej: Hanna HI98128, Hach DR900" required>
                         <small>Modelo específico del equipo (obligatorio)</small>
                     </div>
@@ -180,159 +170,27 @@
                     <select name="subcategoria">
                         <option value="">Seleccionar...</option>
                         {% for sub in SUBCATEGORIAS %}
-                        <option value="{{ sub }}" {% if equipo and equipo.subcategoria == sub %}selected{% endif %}>{{ sub }}</option>
+                        <option value="{{ sub }}">{{ sub }}</option>
                         {% endfor %}
                     </select>
                 </div>
                 <div class="form-row" id="div_sonda" style="display:none;">
                     <div class="form-group">
                         <label>Modelo Sonda</label>
-                        <input type="text" name="modelo_sonda" value="{{ equipo.modelo_sonda if equipo else '' }}" placeholder="Ej: HI1230B">
+                        <input type="text" name="modelo_sonda" value="" placeholder="Ej: HI1230B">
                     </div>
                     <div class="form-group">
                         <label>Nro Serie Sonda</label>
-                        <input type="text" name="nro_serie_sonda" value="{{ equipo.nro_serie_sonda if equipo else '' }}">
+                        <input type="text" name="nro_serie_sonda" value="">
                     </div>
                 </div>
-                <div class="form-group">
-                    <label>Estado</label>
-                    <select name="estado">
-                        {% for estado in ESTADOS %}
-                        <option value="{{ estado }}" {% if equipo and equipo.estado == estado %}selected{% endif %}>{{ estado }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
                 
-                <!-- ====== SERVICIO TÉCNICO / LABORATORIO ====== -->
-                <div class="form-group">
-                    <label>Servicio Técnico / Laboratorio</label>
-                    <input type="text" name="servicio_tecnico" value="{{ equipo.servicio_tecnico if equipo else '' }}" placeholder="Ej: Taller Central, Laboratorio XYZ">
-                    <div class="alert-info-campo">📌 Empresa o taller que realizó el servicio (aplica a mantención y contrastación)</div>
-                </div>
+                <!-- ====== ESTADO OCULTO: SIEMPRE OPERATIVO ====== -->
+                <input type="hidden" name="estado" value="Operativo">
                 
                 <div class="form-group">
                     <label>Observaciones</label>
-                    <textarea name="observaciones" rows="2" placeholder="Notas generales del equipo...">{{ equipo.observaciones if equipo else '' }}</textarea>
-                </div>
-            </div>
-            
-            <!-- ====== SECCIÓN CONTRASTACIÓN ====== -->
-            <div class="seccion-formulario" id="seccion_contrastacion" style="border-left-color: #4CAF50;">
-                <h4>📊 CONTRASTACIÓN (Colorímetros, Pocket, Multiparamétro)</h4>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Fecha Certificado Contrastación</label>
-                        <input type="date" name="fecha_certificado_contrastacion" 
-                               value="{{ equipo.fecha_certificado_contrastacion if equipo else '' }}">
-                        <div class="alert-info-campo">📄 Fecha del certificado de contrastación</div>
-                    </div>
-                    <div class="form-group">
-                        <label>N° Informe Contrastación</label>
-                        <input type="text" name="nro_informe_contrastacion" 
-                               placeholder="Ej: INF-C-2024-001" 
-                               value="{{ equipo.nro_informe_contrastacion if equipo else '' }}">
-                        <div class="alert-info-campo">📄 Número de informe de contrastación</div>
-                    </div>
-                </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>📤 Fecha Ingreso Laboratorio</label>
-                        <input type="date" name="fecha_envio_laboratorio" 
-                               value="{{ equipo.fecha_envio_laboratorio if equipo else '' }}">
-                        <div class="alert-info-campo">Fecha en que se envió al laboratorio</div>
-                    </div>
-                    <div class="form-group">
-                        <label>📦 Fecha Despacho Localidad</label>
-                        <input type="date" name="fecha_despacho" 
-                               value="{{ equipo.fecha_despacho if equipo else '' }}">
-                        <div class="alert-info-campo">Fecha en que el equipo vuelve a la localidad</div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- ====== SECCIÓN MANTENCIÓN ====== -->
-            <div class="seccion-formulario" id="seccion_mantencion" style="border-left-color: #FF9800;">
-                <h4>🔧 MANTENCIÓN (Todos los equipos)</h4>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Fecha Certificado Mantención</label>
-                        <input type="date" name="fecha_certificado_mantencion" 
-                               value="{{ equipo.fecha_certificado_mantencion if equipo else '' }}">
-                        <div class="alert-info-campo">📄 Fecha del certificado de mantención</div>
-                    </div>
-                    <div class="form-group">
-                        <label>N° Informe Mantención</label>
-                        <input type="text" name="nro_informe_mantencion" 
-                               placeholder="Ej: INF-M-2024-001" 
-                               value="{{ equipo.nro_informe_mantencion if equipo else '' }}">
-                        <div class="alert-info-campo">📄 Número de informe de mantención</div>
-                    </div>
-                </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>📥 Fecha Ingreso Mantención</label>
-                        <input type="date" name="fecha_ultima_mantencion" 
-                               value="{{ equipo.fecha_ultima_mantencion if equipo else '' }}">
-                        <div class="alert-info-campo">Fecha en que ingresó a mantención</div>
-                    </div>
-                    <div class="form-group">
-                        <label>📦 Fecha Despacho Localidad</label>
-                        <input type="date" name="fecha_despacho" 
-                               value="{{ equipo.fecha_despacho if equipo else '' }}">
-                        <div class="alert-info-campo">📌 Misma fecha de despacho de la sección anterior</div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- ====== SECCIÓN TERMÓMETROS E INSUMOS ====== -->
-            <div class="seccion-formulario" id="seccion_termometros" style="border-left-color: #9C27B0;">
-                <h4>🌡️ TERMÓMETROS E INSUMOS (Gelex, Stabcal, Termómetro Patrón)</h4>
-                <div id="campos_termometro" style="display:none;">
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>📅 Fecha Certificado Termómetro</label>
-                            <input type="date" name="fecha_certificado" 
-                                   value="{{ equipo.fecha_certificado if equipo else '' }}">
-                            <div class="alert-info-campo">⚠️ Alerta <strong>30 días</strong> antes del vencimiento</div>
-                        </div>
-                        <div class="form-group">
-                            <label>📄 N° Certificado Termómetro</label>
-                            <input type="text" name="nro_certificado_termometro" 
-                                   placeholder="Ej: CERT-2024-001" 
-                                   value="{{ equipo.nro_certificado_termometro if equipo else '' }}">
-                            <div class="alert-info-campo">Número de certificado del termómetro</div>
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>📅 Fecha Contrastación Termómetro</label>
-                            <input type="date" name="fecha_contrastacion_termometro" 
-                                   value="{{ equipo.fecha_contrastacion_termometro if equipo else '' }}">
-                            <div class="alert-info-campo">⚠️ Alerta <strong>5 días</strong> antes del vencimiento (cada 30 días)</div>
-                        </div>
-                        <div class="form-group">
-                            <!-- Espacio vacío para alinear -->
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- ====== FECHA VENCIMIENTO INSUMO (SIEMPRE VISIBLE PARA INSUMOS) ====== -->
-                <div id="div_vencimiento_insumo" style="display:none;">
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>📅 Fecha Vencimiento Insumo</label>
-                            <input type="date" name="fecha_vencimiento_insumo" 
-                                   value="{{ equipo.fecha_vencimiento_insumo if equipo else '' }}">
-                            <div class="alert-info-campo">📌 Solo para <span class="tooltip" title="Gelex cloro y Stabcal">insumos</span></div>
-                        </div>
-                        <div class="form-group">
-                            <!-- Espacio vacío para alinear -->
-                        </div>
-                    </div>
-                </div>
-                
-                <div id="msg_insumos" style="display:none; color: #666; font-size: 13px; padding: 10px; background: #f0f0f0; border-radius: 6px;">
-                    💡 Para <strong>Gelex cloro</strong> y <strong>Stabcal</strong>, solo se requiere la <strong>Fecha de Vencimiento Insumo</strong>.
+                    <textarea name="observaciones" rows="2" placeholder="Notas generales del equipo..."></textarea>
                 </div>
             </div>
             
@@ -343,31 +201,12 @@
                 <small>Máximo 3 imágenes y 3 documentos</small>
             </div>
             
-            {% if equipo and (archivos_fotos or archivos_docs) %}
-            <div class="form-group">
-                <label>Archivos actuales</label>
-                <ul>
-                    {% for archivo in archivos_fotos %}
-                    <li>🖼️ {{ archivo.nombre_original }}
-                        <a href="{{ url_for('eliminar_archivo', archivo_id=archivo.id) }}" onclick="return confirm('¿Eliminar?')">🗑️</a>
-                    </li>
-                    {% endfor %}
-                    {% for archivo in archivos_docs %}
-                    <li>📄 {{ archivo.nombre_original }}
-                        <a href="{{ url_for('eliminar_archivo', archivo_id=archivo.id) }}" onclick="return confirm('¿Eliminar?')">🗑️</a>
-                    </li>
-                    {% endfor %}
-                </ul>
-            </div>
-            {% endif %}
-            
             <!-- ====== BOTONES ====== -->
             <div style="display: flex; gap: 10px; flex-wrap: wrap;">
                 <button type="submit" class="btn btn-primary" style="flex: 1;" id="btnGuardar">💾 Guardar Equipo</button>
                 <a href="{{ url_for('dashboard') }}" class="btn btn-secondary" style="flex: 1; text-align: center;">Cancelar</a>
             </div>
             
-            <!-- ====== BOTÓN VOLVER ABAJO ====== -->
             <div class="volver-bottom">
                 <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">← Volver al Dashboard</a>
                 <span style="font-size: 12px; color: #999; margin-left: auto;">💡 También puedes usar <kbd>Esc</kbd> para volver</span>
@@ -383,36 +222,12 @@
         const nroSerieInput = document.getElementById('nro_serie');
         const nroSerieError = document.getElementById('nro_serie_error');
 
-        // Obtener valores originales (para edición)
-        const nroIntOriginal = '{{ equipo.nro_int if equipo else '' }}';
-        const nroSerieOriginal = '{{ equipo.nro_serie if equipo else '' }}';
-
-        // Depuración
-        console.log('Original Nro Int:', nroIntOriginal);
-        console.log('Original Nro Serie:', nroSerieOriginal);
-
         let timeoutInt = null;
         let timeoutSerie = null;
 
         // ========== VALIDACIÓN EN TIEMPO REAL ==========
         function verificarNroInt() {
             const nroInt = nroIntInput.value.trim();
-
-            // Si el campo está vacío
-            if (nroInt === '') {
-                nroIntError.style.display = 'none';
-                nroIntInput.classList.remove('input-error');
-                nroIntInput.classList.remove('input-success');
-                return;
-            }
-
-            // Si es el mismo número que tenía originalmente (edición), no mostrar error
-            if (nroIntOriginal && nroInt === nroIntOriginal) {
-                nroIntError.style.display = 'none';
-                nroIntInput.classList.remove('input-error');
-                nroIntInput.classList.add('input-success');
-                return;
-            }
 
             if (nroInt.length < 2) {
                 nroIntError.style.display = 'none';
@@ -441,19 +256,10 @@
         function verificarNroSerie() {
             const nroSerie = nroSerieInput.value.trim();
 
-            // Si el campo está vacío
-            if (nroSerie === '') {
+            if (!nroSerie) {
                 nroSerieError.style.display = 'none';
                 nroSerieInput.classList.remove('input-error');
                 nroSerieInput.classList.remove('input-success');
-                return;
-            }
-
-            // Si es el mismo número de serie que tenía originalmente (edición), no mostrar error
-            if (nroSerieOriginal && nroSerie === nroSerieOriginal) {
-                nroSerieError.style.display = 'none';
-                nroSerieInput.classList.remove('input-error');
-                nroSerieInput.classList.add('input-success');
                 return;
             }
 
@@ -487,114 +293,53 @@
         });
         nroSerieInput.addEventListener('blur', verificarNroSerie);
 
-        // Inicializar estados en edición
-        if (nroIntOriginal) {
-            nroIntInput.classList.add('input-success');
-        }
-        if (nroSerieOriginal) {
-            nroSerieInput.classList.add('input-success');
-        }
-
-        // ========== VALIDACIÓN AL ENVIAR ==========
+        // ========== VALIDACIÓN AL ENVIAR (SOLO NÚMERO INTERNO) ==========
         document.getElementById('equipoForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
             const nroInt = nroIntInput.value.trim();
-            const nroSerie = nroSerieInput.value.trim();
 
-            // Validar que el número interno no esté vacío
+            // Validar número interno
             if (!nroInt) {
                 alert('❌ El número interno es obligatorio.');
+                e.preventDefault();
                 nroIntInput.focus();
                 return;
             }
 
-            // PRIMERO: Verificar número interno
+            // Verificar duplicado de número interno
+            e.preventDefault(); // Prevenir el envío hasta que verifiquemos
+            
             fetch(`/api/verificar_nro_int?nro_int=${encodeURIComponent(nroInt)}`)
                 .then(response => response.json())
                 .then(data => {
-                    // Si existe y es diferente al original (edición)
-                    if (data.existe && nroInt !== nroIntOriginal) {
+                    if (data.existe) {
                         alert(`❌ El número interno "${nroInt}" ya está en uso.`);
                         nroIntInput.focus();
                         return;
                     }
-
-                    // SEGUNDO: Si hay número de serie, verificarlo
-                    if (nroSerie) {
-                        return fetch(`/api/verificar_nro_serie?nro_serie=${encodeURIComponent(nroSerie)}`)
-                            .then(response => response.json())
-                            .then(data => {
-                                if (data.existe && nroSerie !== nroSerieOriginal) {
-                                    alert(`❌ El número de serie "${nroSerie}" ya está en uso.`);
-                                    nroSerieInput.focus();
-                                    return;
-                                }
-                                // Todo válido: enviar formulario
-                                document.getElementById('equipoForm').submit();
-                            });
-                    }
-
-                    // Si no hay número de serie, enviar directamente
+                    // Si todo está bien, enviar el formulario
                     document.getElementById('equipoForm').submit();
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    alert('❌ Error al validar. Intenta nuevamente.');
+                    // Si hay error, igual permitir el envío
+                    document.getElementById('equipoForm').submit();
                 });
         });
 
         // ========== MOSTRAR/OCULTAR CAMPOS SEGÚN TIPO ==========
         const tiposConSonda = {{ TIPOS_CON_PHMETRO|tojson }};
         const tiposConSubcategoria = {{ TIPOS_CON_CONTRASTACION|tojson }};
-        const tiposConContrastacion = {{ TIPOS_CON_CONTRASTACION|tojson }};
-        const tiposTermometro = {{ TIPOS_CON_CERTIFICADO|tojson }};
-        const tiposInsumo = {{ TIPOS_CON_VENCIMIENTO_MANUAL|tojson }};
 
         function actualizarCampos() {
             const tipo = document.getElementById('tipo_equipo').value;
-            const divSonda = document.getElementById('div_sonda');
-            const divSubcategoria = document.getElementById('div_subcategoria');
-            const seccionContrastacion = document.getElementById('seccion_contrastacion');
-            const seccionTermometros = document.getElementById('seccion_termometros');
-            const camposTermometro = document.getElementById('campos_termometro');
-            const divVencimientoInsumo = document.getElementById('div_vencimiento_insumo');
-            const msgInsumos = document.getElementById('msg_insumos');
-
-            // Sonda
-            divSonda.style.display = tiposConSonda.includes(tipo) ? 'flex' : 'none';
-            
-            // Subcategoría
-            divSubcategoria.style.display = tiposConSubcategoria.includes(tipo) ? 'block' : 'none';
-            
-            // Sección Contrastación (solo para colorímetros, pocket, multiparamétro)
-            seccionContrastacion.style.display = tiposConContrastacion.includes(tipo) ? 'block' : 'none';
-            
-            // Sección Termómetros e Insumos
-            if (tiposTermometro.includes(tipo) || tiposInsumo.includes(tipo)) {
-                seccionTermometros.style.display = 'block';
-                
-                if (tipo === 'Termometro patron AS') {
-                    camposTermometro.style.display = 'block';
-                    divVencimientoInsumo.style.display = 'none';
-                    msgInsumos.style.display = 'none';
-                } else if (tiposInsumo.includes(tipo)) {
-                    camposTermometro.style.display = 'none';
-                    divVencimientoInsumo.style.display = 'block';
-                    msgInsumos.style.display = 'block';
-                }
-            } else {
-                seccionTermometros.style.display = 'none';
-                camposTermometro.style.display = 'none';
-                divVencimientoInsumo.style.display = 'none';
-                msgInsumos.style.display = 'none';
-            }
+            document.getElementById('div_sonda').style.display = tiposConSonda.includes(tipo) ? 'flex' : 'none';
+            document.getElementById('div_subcategoria').style.display = tiposConSubcategoria.includes(tipo) ? 'block' : 'none';
         }
 
         document.getElementById('tipo_equipo').addEventListener('change', actualizarCampos);
         actualizarCampos();
 
-        // ========== ESCAPE PARA VOLVER AL DASHBOARD ==========
+        // ========== ESCAPE ==========
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
                 window.location.href = "{{ url_for('dashboard') }}";

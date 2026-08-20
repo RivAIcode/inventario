@@ -583,6 +583,9 @@ def dashboard():
                          AREAS=AREAS,
                          TIPOS_CON_PHMETRO=TIPOS_CON_PHMETRO,
                          TIPOS_CON_CERTIFICADO=TIPOS_CON_CERTIFICADO,
+                         TIPOS_CON_CONTRASTACION=TIPOS_CON_CONTRASTACION,
+                         TIPOS_CON_VENCIMIENTO_MANUAL=TIPOS_CON_VENCIMIENTO_MANUAL,
+                         TIPOS_CON_VENCIMIENTO_AUTOMATICO=TIPOS_CON_VENCIMIENTO_AUTOMATICO,
                          now=get_chile_time(),
                          verificar_bloqueo=verificar_bloqueo,
                          responsables_unicos=responsables_unicos)
@@ -681,6 +684,18 @@ def nuevo_equipo():
 @login_required
 def editar_equipo(id):
     equipo = Equipo.query.get_or_404(id)
+
+    # ====== LOGS DE DEPURACIÓN ======
+    if request.method == 'POST':
+        print("=" * 60)
+        print("📥 EDITAR_EQUIPO - DATOS RECIBIDOS:")
+        print(f"  ID del equipo: {id}")
+        for key, value in request.form.items():
+            print(f"  {key} = '{value}'")
+        print("=" * 60)
+        print(f"📌 estado recibido: '{request.form.get('estado', 'NO ENVIADO')}'")
+        print("=" * 60)
+
     if request.method == 'GET':
         bloqueado, nombre_usuario, fecha_bloqueo = verificar_bloqueo(id)
         if bloqueado and nombre_usuario != current_user.nombre:
@@ -690,6 +705,7 @@ def editar_equipo(id):
         if not exito:
             flash(f'⚠️ El equipo está siendo editado por {nombre_existente}. Intenta más tarde.', 'error')
             return redirect(url_for('dashboard'))
+
     if request.method == 'POST':
         try:
             estado_anterior = equipo.estado
@@ -699,11 +715,12 @@ def editar_equipo(id):
             nro_serie_sonda_anterior = equipo.nro_serie_sonda
             observaciones_anteriores = equipo.observaciones
             fecha_contrastacion_anterior = equipo.fecha_contrastacion
-            nro_informe_anterior = equipo.nro_informe
             fecha_envio_laboratorio_anterior = equipo.fecha_envio_laboratorio
             fecha_ultima_mantencion_anterior = equipo.fecha_ultima_mantencion
 
             nuevas_observaciones = request.form.get('observaciones', '')
+
+            # ====== ACTUALIZAR TODOS LOS CAMPOS ======
             equipo.nro_serie = request.form.get('nro_serie', '')
             equipo.area = request.form.get('area', '')
             equipo.localidad = request.form.get('localidad', '')
@@ -713,9 +730,11 @@ def editar_equipo(id):
             equipo.modelo_sonda = request.form.get('modelo_sonda', '')
             equipo.modelo_equipo = request.form.get('modelo_equipo', '')
             equipo.nro_serie_sonda = request.form.get('nro_serie_sonda', '')
+
+            # ====== ESTA ES LA LÍNEA IMPORTANTE ======
             equipo.estado = request.form.get('estado', 'Operativo')
+
             equipo.servicio_tecnico = request.form.get('servicio_tecnico', '')
-            equipo.nro_informe = request.form.get('nro_informe', '')
             equipo.observaciones = nuevas_observaciones
             equipo.ultima_actualizacion = get_chile_time()
 
@@ -723,6 +742,7 @@ def editar_equipo(id):
             equipo.nro_informe_contrastacion = request.form.get('nro_informe_contrastacion', '')
             equipo.nro_informe_mantencion = request.form.get('nro_informe_mantencion', '')
             equipo.nro_certificado_termometro = request.form.get('nro_certificado_termometro', '')
+
             equipo.fecha_certificado_contrastacion = datetime.strptime(request.form['fecha_certificado_contrastacion'], '%Y-%m-%d').date() if request.form.get('fecha_certificado_contrastacion') else None
             equipo.fecha_certificado_mantencion = datetime.strptime(request.form['fecha_certificado_mantencion'], '%Y-%m-%d').date() if request.form.get('fecha_certificado_mantencion') else None
             equipo.fecha_contrastacion_termometro = datetime.strptime(request.form['fecha_contrastacion_termometro'], '%Y-%m-%d').date() if request.form.get('fecha_contrastacion_termometro') else None
@@ -744,6 +764,7 @@ def editar_equipo(id):
             if equipo.tipo_equipo in TIPOS_CON_VENCIMIENTO_AUTOMATICO and equipo.fecha_certificado:
                 equipo.fecha_vencimiento_insumo = calcular_vencimiento_insumo(equipo.fecha_certificado)
 
+            # Archivos
             archivos = request.files.getlist('archivos')
             for archivo in archivos:
                 if archivo and archivo.filename and archivo_permitido(archivo.filename):
@@ -761,6 +782,7 @@ def editar_equipo(id):
                     )
                     db.session.add(archivo_db)
 
+            # Historial
             cambios = []
             historial_accion = 'CAMBIO'
 
@@ -769,7 +791,6 @@ def editar_equipo(id):
             if responsable_anterior != equipo.responsable:
                 cambios.append(f"Responsable: {responsable_anterior or 'Ninguno'} → {equipo.responsable or 'Ninguno'}")
 
-            # Contrastación - cambio de fecha
             if fecha_contrastacion_anterior != equipo.fecha_contrastacion:
                 fecha_anterior = formatear_fecha(fecha_contrastacion_anterior) or 'Sin fecha'
                 fecha_nueva = formatear_fecha(equipo.fecha_contrastacion) or 'Sin fecha'
@@ -779,13 +800,11 @@ def editar_equipo(id):
                 cambios.append(detalle)
                 historial_accion = 'CONTRASTACION'
 
-            # Fecha envío laboratorio (contrastación)
             if fecha_envio_laboratorio_anterior != equipo.fecha_envio_laboratorio:
                 fecha_anterior = formatear_fecha(fecha_envio_laboratorio_anterior) or 'Sin fecha'
                 fecha_nueva = formatear_fecha(equipo.fecha_envio_laboratorio) or 'Sin fecha'
                 cambios.append(f"Envío laboratorio: {fecha_anterior} → {fecha_nueva}")
 
-            # Mantención - fecha ingreso
             if fecha_ultima_mantencion_anterior != equipo.fecha_ultima_mantencion:
                 fecha_anterior = formatear_fecha(fecha_ultima_mantencion_anterior) or 'Sin fecha'
                 fecha_nueva = formatear_fecha(equipo.fecha_ultima_mantencion) or 'Sin fecha'
@@ -794,30 +813,6 @@ def editar_equipo(id):
                     detalle += f" | Informe: {equipo.nro_informe_mantencion}"
                 cambios.append(detalle)
 
-            # N° Informe contrastación (si cambió sin cambiar fecha)
-            if fecha_contrastacion_anterior == equipo.fecha_contrastacion:
-                nro_informe_anterior = request.form.get('nro_informe_contrastacion_anterior', '')
-                if nro_informe_anterior != equipo.nro_informe_contrastacion:
-                    cambios.append(f"N° Informe Contrastación: {nro_informe_anterior or 'Ninguno'} → {equipo.nro_informe_contrastacion or 'Ninguno'}")
-
-            # N° Informe mantención (si cambió sin cambiar fecha)
-            nro_informe_mantencion_anterior = request.form.get('nro_informe_mantencion_anterior', '')
-            if nro_informe_mantencion_anterior != equipo.nro_informe_mantencion:
-                cambios.append(f"N° Informe Mantención: {nro_informe_mantencion_anterior or 'Ninguno'} → {equipo.nro_informe_mantencion or 'Ninguno'}")
-
-            # Termómetro - fecha certificado
-            if equipo.tipo_equipo == 'Termometro patron AS':
-                if request.form.get('fecha_certificado_anterior', '') != str(equipo.fecha_certificado) if equipo.fecha_certificado else '':
-                    fecha_anterior = request.form.get('fecha_certificado_anterior', 'Sin fecha')
-                    fecha_nueva = formatear_fecha(equipo.fecha_certificado) or 'Sin fecha'
-                    cambios.append(f"Certificado termómetro: {fecha_anterior} → {fecha_nueva}")
-
-                if request.form.get('fecha_contrastacion_termometro_anterior', '') != str(equipo.fecha_contrastacion_termometro) if equipo.fecha_contrastacion_termometro else '':
-                    fecha_anterior = request.form.get('fecha_contrastacion_termometro_anterior', 'Sin fecha')
-                    fecha_nueva = formatear_fecha(equipo.fecha_contrastacion_termometro) or 'Sin fecha'
-                    cambios.append(f"Contrastación termómetro: {fecha_anterior} → {fecha_nueva}")
-
-            # pHmetro
             if equipo.tipo_equipo in TIPOS_CON_PHMETRO:
                 if modelo_sonda_anterior != equipo.modelo_sonda:
                     cambios.append(f"Modelo Sonda: {modelo_sonda_anterior or 'Ninguno'} → {equipo.modelo_sonda or 'Ninguno'}")
@@ -856,6 +851,7 @@ def editar_equipo(id):
             db.session.rollback()
             flash(f'Error: {str(e)}', 'error')
             liberar_bloqueo(id)
+
     archivos_fotos = Archivo.query.filter_by(equipo_id=equipo.id, tipo='foto').all()
     archivos_docs = Archivo.query.filter_by(equipo_id=equipo.id, tipo='documento').all()
     responsables_unicos = Responsable.query.order_by(Responsable.nombre).all()
