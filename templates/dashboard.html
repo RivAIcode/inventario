@@ -459,6 +459,28 @@
             color: white;
         }
         
+        /* ====== HISTORIAL MODAL - TÍTULOS VISIBLES ====== */
+        #modalHistorial table thead tr {
+            background: #0d47a1 !important;
+            color: #ffffff !important;
+        }
+
+        #modalHistorial table thead th {
+            background: #0d47a1 !important;
+            color: #ffffff !important;
+            font-weight: bold;
+            padding: 8px 10px;
+            text-align: left;
+            border-bottom: 2px solid #1565C0;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        #modalHistorial table thead th:hover {
+            background: #1565C0 !important;
+        }
+        
         @media (max-width: 768px) {
             .acciones-rapidas .btn {
                 padding: 4px 8px;
@@ -575,10 +597,10 @@
         <span class="contador-filtro" id="contadorFiltro">Mostrando: todos</span>
     </div>
 
-    <!-- ====== BÚSQUEDA RÁPIDA (VERSÁTIL) ====== -->
+    <!-- ====== BÚSQUEDA RÁPIDA (EN VIVO) ====== -->
     <div class="search-bar">
         <input type="text" id="search" placeholder="🔍 Buscar en toda la tabla... (Nro, Serie, Localidad, Responsable, etc.)">
-        <span class="search-hint">💡 Escribe cualquier texto para buscar en todas las columnas</span>
+        <span class="search-hint">💡 La búsqueda filtra en vivo mientras escribes</span>
     </div>
 
     <!-- ====== TABLA DE EQUIPOS ====== -->
@@ -901,7 +923,7 @@
         </div>
     </div>
 
-    <!-- ====== MODAL HISTORIAL ====== -->
+    <!-- ====== MODAL HISTORIAL (CON TÍTULOS VISIBLES) ====== -->
     <div id="modalHistorial" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); backdrop-filter:blur(4px); z-index:10000; align-items:center; justify-content:center;">
         <div style="background:white; border-radius:20px; max-width:850px; width:95%; margin:auto; box-shadow:0 20px 40px rgba(0,0,0,0.3); overflow:hidden; animation:modalEntrar 0.3s ease-out; max-height:95vh;">
             
@@ -935,12 +957,12 @@
             <div style="padding:10px 16px; overflow-y:auto; max-height:calc(90vh - 240px);">
                 <table style="width:100%; border-collapse:collapse; font-size:12px;">
                     <thead>
-                        <tr style="background:#1E88E5; color:white; position:sticky; top:0; z-index:10;">
-                            <th style="padding:6px 8px; text-align:left; min-width:80px; cursor:pointer;" onclick="ordenarHistorialModal(0)">Fecha/Hora ↕</th>
-                            <th style="padding:6px 8px; text-align:left; min-width:70px; cursor:pointer;" onclick="ordenarHistorialModal(1)">Acción ↕</th>
-                            <th style="padding:6px 8px; text-align:left; min-width:150px; cursor:pointer;" onclick="ordenarHistorialModal(2)">Detalle ↕</th>
-                            <th style="padding:6px 8px; text-align:left; min-width:60px; cursor:pointer;" onclick="ordenarHistorialModal(3)">Usuario ↕</th>
-                            <th style="padding:6px 8px; text-align:left; min-width:80px; cursor:pointer;" onclick="ordenarHistorialModal(4)">Responsable ↕</th>
+                        <tr style="background:#0d47a1; color:white; position:sticky; top:0; z-index:10;">
+                            <th style="padding:6px 8px; text-align:left; min-width:80px; cursor:pointer; color:white; background:#0d47a1;" onclick="ordenarHistorialModal(0)">Fecha/Hora ↕</th>
+                            <th style="padding:6px 8px; text-align:left; min-width:70px; cursor:pointer; color:white; background:#0d47a1;" onclick="ordenarHistorialModal(1)">Acción ↕</th>
+                            <th style="padding:6px 8px; text-align:left; min-width:150px; cursor:pointer; color:white; background:#0d47a1;" onclick="ordenarHistorialModal(2)">Detalle ↕</th>
+                            <th style="padding:6px 8px; text-align:left; min-width:60px; cursor:pointer; color:white; background:#0d47a1;" onclick="ordenarHistorialModal(3)">Usuario ↕</th>
+                            <th style="padding:6px 8px; text-align:left; min-width:80px; cursor:pointer; color:white; background:#0d47a1;" onclick="ordenarHistorialModal(4)">Responsable ↕</th>
                         </tr>
                     </thead>
                     <tbody id="historialBodyModal">
@@ -1545,83 +1567,8 @@
                 });
             }
             
-            const rows = document.querySelectorAll('#tablaEquipos tbody tr');
-            let contador = 0;
-            
-            rows.forEach(row => {
-                const alertaCell = row.querySelector('.alerta-cell');
-                const estadoCell = row.querySelector('.estado');
-                const alertaClase = row.dataset.alertaClase || '';
-                let mostrar = false;
-                
-                if (!alertaCell) {
-                    row.style.display = 'none';
-                    return;
-                }
-                
-                const alertaTexto = alertaCell.textContent || '';
-                const estadoTexto = estadoCell ? estadoCell.textContent.trim() : '';
-                
-                // También considerar la búsqueda rápida
-                const searchTerm = document.getElementById('search').value.toLowerCase().trim();
-                const rowText = row.innerText.toLowerCase();
-                const coincideBusqueda = searchTerm === '' || rowText.includes(searchTerm);
-                
-                switch(tipo) {
-                    case 'todos':
-                        mostrar = true;
-                        break;
-                    case 'vencidos':
-                        mostrar = alertaClase === 'alerta-vencido' || 
-                                 alertaTexto.includes('🔴') || 
-                                 alertaTexto.includes('VENCIDO') || 
-                                 alertaTexto.includes('VENCIDA');
-                        break;
-                    case 'proximos':
-                        mostrar = alertaClase === 'alerta-proximo' ||
-                                 alertaTexto.includes('🟡') || 
-                                 alertaTexto.includes('VENCE') || 
-                                 alertaTexto.includes('Vence');
-                        break;
-                    case 'ok':
-                        mostrar = alertaClase === 'alerta-ok' || 
-                                 alertaClase === '' || 
-                                 alertaTexto === '➖' || 
-                                 alertaTexto === '' || 
-                                 alertaTexto.includes('✅');
-                        break;
-                    case 'contrastacion':
-                        mostrar = alertaClase === 'alerta-contrastacion' || 
-                                 estadoTexto === 'Contrastacion' ||
-                                 alertaTexto.includes('📊');
-                        break;
-                    case 'mantencion':
-                        mostrar = alertaClase === 'alerta-mantencion' || 
-                                 estadoTexto === 'Mantencion' ||
-                                 alertaTexto.includes('🔧');
-                        break;
-                    case 'fuera_servicio':
-                        mostrar = estadoTexto === 'Fuera de Servicio';
-                        break;
-                    default:
-                        mostrar = true;
-                }
-                
-                // Aplicar ambos filtros (alerta + búsqueda)
-                row.style.display = (mostrar && coincideBusqueda) ? '' : 'none';
-                if (mostrar && coincideBusqueda) contador++;
-            });
-            
-            const nombres = {
-                'todos': 'todos',
-                'vencidos': '🔴 vencidos',
-                'proximos': '🟡 próximos a vencer',
-                'ok': '🟢 OK',
-                'contrastacion': '📊 en contrastación',
-                'mantencion': '🔧 en mantención',
-                'fuera_servicio': '⚠️ fuera de servicio'
-            };
-            document.getElementById('contadorFiltro').textContent = `Mostrando: ${contador} equipos (${nombres[tipo] || tipo})`;
+            // Aplicar filtro + búsqueda en vivo
+            aplicarFiltrosYBusqueda();
         }
 
         // ========== LIMPIAR FILTROS RÁPIDOS ==========
@@ -1634,19 +1581,31 @@
                 }
             });
             
-            // Resetear búsqueda
-            document.getElementById('search').value = '';
+            // Resetear filtro actual a 'todos'
+            filtroActual = 'todos';
             
-            // Mostrar todos
+            // Resetear búsqueda
+            const searchInput = document.getElementById('search');
+            searchInput.value = '';
+            
+            // Mostrar todos los equipos (sin filtros)
             const rows = document.querySelectorAll('#tablaEquipos tbody tr');
             rows.forEach(row => row.style.display = '');
-            document.getElementById('contadorFiltro').textContent = `Mostrando: ${rows.length} equipos (todos)`;
-            document.getElementById('contador').innerHTML = `📋 Total: ${rows.length} equipos`;
+            
+            // Actualizar contadores
+            const total = rows.length;
+            document.getElementById('contadorFiltro').textContent = `Mostrando: ${total} equipos (todos)`;
+            document.getElementById('contador').innerHTML = `📋 Total: ${total} equipos`;
+            
+            // ====== FORZAR BÚSQUEDA EN VIVO ======
+            // Esto ejecuta la búsqueda con el valor actual (vacío) para resetear el estado
+            const event = new Event('input', { bubbles: true, cancelable: true });
+            searchInput.dispatchEvent(event);
         }
 
-        // ========== BÚSQUEDA RÁPIDA ==========
-        document.getElementById('search').addEventListener('keyup', function() {
-            const term = this.value.toLowerCase().trim();
+        // ========== APLICAR FILTRO + BÚSQUEDA EN VIVO ==========
+        function aplicarFiltrosYBusqueda() {
+            const term = document.getElementById('search').value.toLowerCase().trim();
             const rows = document.querySelectorAll('#tablaEquipos tbody tr');
             let visible = 0;
             
@@ -1709,6 +1668,11 @@
                 'fuera_servicio': '⚠️ fuera de servicio'
             };
             document.getElementById('contadorFiltro').textContent = `Mostrando: ${visible} equipos (${nombres[filtroActual] || filtroActual})`;
+        }
+
+        // ========== BÚSQUEDA RÁPIDA (EN VIVO) ==========
+        document.getElementById('search').addEventListener('input', function() {
+            aplicarFiltrosYBusqueda();
         });
 
         document.addEventListener('DOMContentLoaded', function() {
