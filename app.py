@@ -246,29 +246,29 @@ def obtener_dias_restantes(equipo):
     from datetime import date
     hoy = date.today()
     tipo = equipo.tipo_equipo
-    
+
     # Equipos con contrastación (Pocket, Colorímetro, Multiparamétro)
     if tipo in TIPOS_CON_CONTRASTACION and equipo.fecha_certificado_contrastacion:
         fecha_venc = calcular_vencimiento_contrastacion(equipo.fecha_certificado_contrastacion)
         if fecha_venc:
             return (fecha_venc - hoy).days
-    
+
     # Termómetro - Contrastación (5 días)
     if tipo == 'Termometro patron AS' and equipo.fecha_contrastacion_termometro:
         fecha_venc = equipo.fecha_contrastacion_termometro + timedelta(days=30)
         return (fecha_venc - hoy).days
-    
+
     # Termómetro - Certificado (30 días)
     if tipo == 'Termometro patron AS' and equipo.fecha_certificado:
         fecha_venc = calcular_vencimiento_insumo(equipo.fecha_certificado)
         if fecha_venc:
             return (fecha_venc - hoy).days
-    
+
     # Gelex, Stabcal (15 días)
     if tipo in ['Gelex cloro', 'Stabcal']:
         if equipo.fecha_vencimiento_insumo:
             return (equipo.fecha_vencimiento_insumo - hoy).days
-    
+
     return None
 
 def obtener_alerta(equipo):
@@ -432,12 +432,12 @@ def enviar_correo_alertas_general(vencidos, proximos, destinatarios):
         return False
     if not vencidos and not proximos:
         return False
-    
+
     # ====== FILTRAR PRÓXIMOS: SOLO LOS QUE VENCEN EN 15 DÍAS O MENOS ======
     from datetime import date
     hoy = date.today()
     proximos_filtrados = []
-    
+
     print("=" * 60)
     print("📧 ENVIANDO CORREO GENERAL")
     print("=" * 60)
@@ -445,23 +445,23 @@ def enviar_correo_alertas_general(vencidos, proximos, destinatarios):
     for e in vencidos:
         alerta = obtener_alerta(e)
         print(f"   - {e.nro_int}: {alerta['texto']}")
-    
+
     for e in proximos:
         dias_restantes = obtener_dias_restantes(e)
         if dias_restantes is not None and dias_restantes <= 15:
             proximos_filtrados.append(e)
         elif dias_restantes is None:
             proximos_filtrados.append(e)
-    
+
     print(f"🟡 PRÓXIMOS FILTRADOS: {len(proximos_filtrados)}")
     for e in proximos_filtrados:
         alerta = obtener_alerta(e)
         print(f"   - {e.nro_int}: {alerta['texto']}")
     print("=" * 60)
-    
+
     if not vencidos and not proximos_filtrados:
         return False
-    
+
     try:
         import yagmail
     except ImportError:
@@ -608,15 +608,34 @@ def dashboard():
     prestado = sum(1 for e in equipos if e.estado == 'Prestado')
     volante = sum(1 for e in equipos if e.estado == 'Volante')
     fuera_servicio = sum(1 for e in equipos if e.estado == 'Fuera de Servicio')
+
+    # ====== CORREGIDO: Usar la misma lógica que el correo ======
     vencidos = 0
     proximos = 0
     for e in equipos:
+        # Saltar equipos en Contrastación o Mantención
+        if e.estado == 'Contrastacion':
+            continue
+        if e.estado == 'Mantencion':
+            continue
+
         alerta = obtener_alerta(e)
         alerta_texto = alerta['texto'].upper()
-        if 'VENCIDO' in alerta_texto or 'VENCIDA' in alerta_texto:
+
+        # Detectar vencidos
+        es_vencido = (
+            'VENCIDO' in alerta_texto or
+            'VENCIDA' in alerta_texto or
+            'VENCIMIENTO' in alerta_texto
+        )
+
+        if es_vencido:
             vencidos += 1
         elif 'VENCE' in alerta_texto:
-            proximos += 1
+            # Solo contar si vence en 15 días o menos (misma lógica que el correo)
+            dias_restantes = obtener_dias_restantes(e)
+            if dias_restantes is not None and dias_restantes <= 15:
+                proximos += 1
 
     responsables_unicos = Responsable.query.order_by(Responsable.nombre).all()
 
@@ -740,7 +759,7 @@ def nuevo_equipo():
 @login_required
 def editar_equipo(id):
     equipo = Equipo.query.get_or_404(id)
-    
+
     if request.method == 'GET':
         bloqueado, nombre_usuario, fecha_bloqueo = verificar_bloqueo(id)
         if bloqueado and nombre_usuario != current_user.nombre:
@@ -750,7 +769,7 @@ def editar_equipo(id):
         if not exito:
             flash(f'⚠️ El equipo está siendo editado por {nombre_existente}. Intenta más tarde.', 'error')
             return redirect(url_for('dashboard'))
-    
+
     if request.method == 'POST':
         try:
             estado_anterior = equipo.estado
@@ -764,7 +783,7 @@ def editar_equipo(id):
             fecha_ultima_mantencion_anterior = equipo.fecha_ultima_mantencion
 
             nuevas_observaciones = request.form.get('observaciones', '')
-            
+
             equipo.nro_serie = request.form.get('nro_serie', '')
             equipo.area = request.form.get('area', '')
             equipo.localidad = request.form.get('localidad', '')
@@ -888,7 +907,7 @@ def editar_equipo(id):
             db.session.rollback()
             flash(f'Error: {str(e)}', 'error')
             liberar_bloqueo(id)
-    
+
     archivos_fotos = Archivo.query.filter_by(equipo_id=equipo.id, tipo='foto').all()
     archivos_docs = Archivo.query.filter_by(equipo_id=equipo.id, tipo='documento').all()
     responsables_unicos = Responsable.query.order_by(Responsable.nombre).all()
@@ -1275,7 +1294,7 @@ def enviar_correo():
     if not EMAIL_CONFIG.get("activado", False):
         flash('📧 El envío de correos está desactivado.', 'warning')
         return redirect(url_for('dashboard'))
-    
+
     equipos = Equipo.query.all()
     vencidos = []
     proximos = []
@@ -1291,18 +1310,18 @@ def enviar_correo():
             continue
         if e.estado == 'Mantencion':
             continue
-        
+
         alerta = obtener_alerta(e)
         alerta_texto = alerta['texto'].upper()
-        
+
         # ====== DETECTAR VENCIDOS ======
         # Buscar cualquier indicador de vencido en el texto
         es_vencido = (
-            'VENCIDO' in alerta_texto or 
+            'VENCIDO' in alerta_texto or
             'VENCIDA' in alerta_texto or
             'VENCIMIENTO' in alerta_texto  # Por si acaso
         )
-        
+
         if es_vencido:
             vencidos.append(e)
             print(f"🔴 VENCIDO: {e.nro_int} | {e.tipo_equipo} | {alerta['texto']}")
@@ -1310,7 +1329,7 @@ def enviar_correo():
                 if e.responsable not in equipos_por_responsable:
                     equipos_por_responsable[e.responsable] = {'vencidos': [], 'proximos': []}
                 equipos_por_responsable[e.responsable]['vencidos'].append(e)
-        
+
         # ====== DETECTAR PRÓXIMOS ======
         elif 'VENCE' in alerta_texto:
             dias_restantes = obtener_dias_restantes(e)
@@ -1363,7 +1382,7 @@ def admin_correos_probar_envio():
     if not current_user.es_admin:
         flash('No tienes permiso', 'error')
         return redirect(url_for('dashboard'))
-    
+
     equipos = Equipo.query.all()
     vencidos = []
     proximos = []
@@ -1378,17 +1397,17 @@ def admin_correos_probar_envio():
             continue
         if e.estado == 'Mantencion':
             continue
-        
+
         alerta = obtener_alerta(e)
         alerta_texto = alerta['texto'].upper()
-        
+
         # ====== DETECTAR VENCIDOS ======
         es_vencido = (
-            'VENCIDO' in alerta_texto or 
+            'VENCIDO' in alerta_texto or
             'VENCIDA' in alerta_texto or
             'VENCIMIENTO' in alerta_texto
         )
-        
+
         if es_vencido:
             vencidos.append(e)
             print(f"🔴 VENCIDO: {e.nro_int} | {alerta['texto']}")
@@ -1396,7 +1415,7 @@ def admin_correos_probar_envio():
                 if e.responsable not in equipos_por_responsable:
                     equipos_por_responsable[e.responsable] = {'vencidos': [], 'proximos': []}
                 equipos_por_responsable[e.responsable]['vencidos'].append(e)
-        
+
         elif 'VENCE' in alerta_texto:
             dias_restantes = obtener_dias_restantes(e)
             if dias_restantes is not None and dias_restantes <= 15:
@@ -1453,16 +1472,16 @@ def enviar_alertas_automatico():
             continue
         if e.estado == 'Mantencion':
             continue
-        
+
         alerta = obtener_alerta(e)
         alerta_texto = alerta['texto'].upper()
-        
+
         es_vencido = (
-            'VENCIDO' in alerta_texto or 
+            'VENCIDO' in alerta_texto or
             'VENCIDA' in alerta_texto or
             'VENCIMIENTO' in alerta_texto
         )
-        
+
         if es_vencido:
             vencidos.append(e)
             print(f"🔴 VENCIDO: {e.nro_int} | {alerta['texto']}")
@@ -1470,7 +1489,7 @@ def enviar_alertas_automatico():
                 if e.responsable not in equipos_por_responsable:
                     equipos_por_responsable[e.responsable] = {'vencidos': [], 'proximos': []}
                 equipos_por_responsable[e.responsable]['vencidos'].append(e)
-        
+
         elif 'VENCE' in alerta_texto:
             dias_restantes = obtener_dias_restantes(e)
             if dias_restantes is not None and dias_restantes <= 15:

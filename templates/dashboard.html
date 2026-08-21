@@ -318,6 +318,147 @@
         .actions-bar .btn-secondary { background: #e0e0e0; color: #333; }
         .actions-bar .btn-secondary:hover { background: #d0d0d0; }
         
+        /* ====== BÚSQUEDA RÁPIDA ====== */
+        .search-bar {
+            margin: 10px 0;
+            padding: 0 12px;
+        }
+        
+        .search-bar input {
+            width: 100%;
+            max-width: 400px;
+            padding: 10px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 25px;
+            font-size: 14px;
+            transition: border-color 0.3s, box-shadow 0.3s;
+            outline: none;
+            background: white;
+        }
+        
+        .search-bar input:focus {
+            border-color: #1E88E5;
+            box-shadow: 0 0 0 4px rgba(30, 136, 229, 0.15);
+        }
+        
+        .search-bar input::placeholder {
+            color: #aaa;
+        }
+        
+        .search-bar .search-hint {
+            display: block;
+            color: #888;
+            font-size: 12px;
+            margin-top: 4px;
+            padding-left: 4px;
+        }
+        
+        /* ====== FILTROS RÁPIDOS ====== */
+        .filtros-rapidos {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            align-items: center;
+            padding: 8px 12px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin: 10px 0;
+            border: 1px solid #e0e0e0;
+        }
+        
+        .filtros-rapidos .label {
+            font-weight: 600;
+            color: #555;
+            font-size: 13px;
+            margin-right: 4px;
+        }
+        
+        .filtros-rapidos .btn-filtro {
+            padding: 4px 14px;
+            font-size: 12px;
+            border-radius: 20px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            border: 2px solid #ddd;
+            cursor: pointer;
+            background: white;
+            color: #333;
+        }
+        
+        .filtros-rapidos .btn-filtro:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .filtros-rapidos .btn-filtro.active-todos {
+            background: #1E88E5;
+            color: white;
+            border-color: #1E88E5;
+        }
+        
+        .filtros-rapidos .btn-filtro.active-vencidos {
+            background: #dc3545;
+            color: white;
+            border-color: #dc3545;
+        }
+        
+        .filtros-rapidos .btn-filtro.active-proximos {
+            background: #f57c00;
+            color: white;
+            border-color: #f57c00;
+        }
+        
+        .filtros-rapidos .btn-filtro.active-ok {
+            background: #28a745;
+            color: white;
+            border-color: #28a745;
+        }
+        
+        .filtros-rapidos .btn-filtro.active-contrastacion {
+            background: #17a2b8;
+            color: white;
+            border-color: #17a2b8;
+        }
+        
+        .filtros-rapidos .btn-filtro.active-mantencion {
+            background: #6c757d;
+            color: white;
+            border-color: #6c757d;
+        }
+        
+        .filtros-rapidos .btn-filtro.active-fuera {
+            background: #dc3545;
+            color: white;
+            border-color: #dc3545;
+        }
+        
+        .filtros-rapidos .contador-filtro {
+            font-size: 12px;
+            color: #666;
+            margin-left: 8px;
+            padding: 4px 10px;
+            background: white;
+            border-radius: 12px;
+            border: 1px solid #ddd;
+        }
+        
+        .filtros-rapidos .btn-limpiar-filtros {
+            padding: 4px 14px;
+            font-size: 12px;
+            border-radius: 20px;
+            font-weight: 600;
+            border: 2px solid #dc3545;
+            cursor: pointer;
+            background: white;
+            color: #dc3545;
+            transition: all 0.2s ease;
+        }
+        
+        .filtros-rapidos .btn-limpiar-filtros:hover {
+            background: #dc3545;
+            color: white;
+        }
+        
         @media (max-width: 768px) {
             .acciones-rapidas .btn {
                 padding: 4px 8px;
@@ -329,6 +470,17 @@
             .actions-bar .btn {
                 padding: 4px 10px;
                 font-size: 10px;
+            }
+            .filtros-rapidos .btn-filtro {
+                padding: 3px 10px;
+                font-size: 10px;
+            }
+            .filtros-rapidos .label {
+                font-size: 11px;
+            }
+            .search-bar input {
+                font-size: 13px;
+                padding: 8px 14px;
             }
             #tablaEquipos {
                 min-width: 600px;
@@ -359,6 +511,7 @@
         </div>
     </div>
 
+    <!-- ====== ESTADÍSTICAS ====== -->
     <div class="stats">
         <div class="stat-card"><div class="stat-number">{{ total }}</div><div class="stat-label">📊 Total</div></div>
         <div class="stat-card"><div class="stat-number">{{ operativo }}</div><div class="stat-label">🟢 Operativo</div></div>
@@ -371,18 +524,8 @@
         <div class="stat-card"><div class="stat-number" style="color: #f57c00;">{{ proximos }}</div><div class="stat-label">🟡 PRÓXIMOS</div></div>
     </div>
 
-    <div class="filtros">
-        <div class="filtro-group"><label>Nro Int</label><input type="text" id="filtro_nro_int" placeholder="Buscar..." onkeyup="aplicarFiltros()"></div>
-        <div class="filtro-group"><label>Nro Serie</label><input type="text" id="filtro_nro_serie" placeholder="Buscar..." onkeyup="aplicarFiltros()"></div>
-        <div class="filtro-group"><label>Área</label><select id="filtro_area" onchange="aplicarFiltros()"><option value="">Todas</option><option value="AP">AP</option><option value="AS">AS</option></select></div>
-        <div class="filtro-group"><label>Estado</label><select id="filtro_estado" onchange="aplicarFiltros()"><option value="">Todos</option><option value="Operativo">Operativo</option><option value="Mantencion">Mantención</option><option value="Contrastacion">Contrastación</option><option value="Prestado">Prestado</option><option value="Volante">Volante</option><option value="Fuera de Servicio">Fuera de Servicio</option></select></div>
-        <div class="filtro-group"><label>Localidad</label><input type="text" id="filtro_localidad" list="lista_localidades" placeholder="Escribe..." onkeyup="aplicarFiltros()" autocomplete="off"><datalist id="lista_localidades">{% for loc in LOCALIDADES %}<option value="{{ loc }}">{{ loc }}</option>{% endfor %}</datalist></div>
-        <div class="filtro-group"><label>Tipo</label><select id="filtro_tipo" onchange="aplicarFiltros()"><option value="">Todos</option>{% for tipo in TIPOS_EQUIPO %}<option value="{{ tipo }}">{{ tipo }}</option>{% endfor %}</select></div>
-        <div class="filtro-group"><button class="btn btn-secondary" onclick="limpiarFiltros()">🗑️ LIMPIAR</button></div>
-    </div>
-
     <!-- ====== BARRA DE ACCIONES PRINCIPAL ====== -->
-    <div class="actions-bar" style="padding-left: 12px;">
+    <div class="actions-bar">
         <div class="btn-group">
             <button class="btn btn-primary" onclick="toggleMenuExportar()" style="display: flex; align-items: center; gap: 5px;">
                 📊 EXPORTAR EXCEL ▼
@@ -418,23 +561,27 @@
         <span style="font-size: 11px; color: #999; margin-left: 5px;">(selecciona un equipo con ☑)</span>
     </div>
 
-    <!-- ====== FILTROS RÁPIDOS DE ALERTAS ====== -->
-    <div style="display:flex; gap:6px; flex-wrap:wrap; margin:8px 0; padding:6px 10px; background:#f8f9fa; border-radius:8px; align-items:center; border:1px solid #e0e0e0;">
-        <span style="font-weight:600; color:#555; font-size:12px;">🔍 Alertas:</span>
-        <button onclick="filtrarAlertas('todos')" class="btn btn-secondary" style="padding:3px 10px; font-size:11px;">📊 Todos</button>
-        <button onclick="filtrarAlertas('vencidos')" class="btn btn-danger" style="padding:3px 10px; font-size:11px;">🔴 Vencidos</button>
-        <button onclick="filtrarAlertas('proximos')" class="btn btn-warning" style="padding:3px 10px; font-size:11px;">🟡 Próximos</button>
-        <button onclick="filtrarAlertas('ok')" class="btn btn-success" style="padding:3px 10px; font-size:11px;">🟢 OK</button>
-        <button onclick="filtrarAlertas('contrastacion')" class="btn btn-info" style="padding:3px 10px; font-size:11px;">📊 Contrastación</button>
-        <button onclick="filtrarAlertas('mantencion')" class="btn btn-warning" style="padding:3px 10px; font-size:11px;">🔧 Mantención</button>
-        <span id="contadorFiltro" style="font-size:11px; color:#666; margin-left:5px;">Mostrando: todos</span>
+    <!-- ====== FILTROS RÁPIDOS ====== -->
+    <div class="filtros-rapidos">
+        <span class="label">🔍 Filtros Rápidos:</span>
+        <button class="btn-filtro active-todos" data-filtro="todos" onclick="filtrarAlertas('todos', this)">📊 Todos</button>
+        <button class="btn-filtro" data-filtro="vencidos" onclick="filtrarAlertas('vencidos', this)">🔴 Vencidos</button>
+        <button class="btn-filtro" data-filtro="proximos" onclick="filtrarAlertas('proximos', this)">🟡 Próximos</button>
+        <button class="btn-filtro" data-filtro="ok" onclick="filtrarAlertas('ok', this)">🟢 OK</button>
+        <button class="btn-filtro" data-filtro="contrastacion" onclick="filtrarAlertas('contrastacion', this)">📊 Contrastación</button>
+        <button class="btn-filtro" data-filtro="mantencion" onclick="filtrarAlertas('mantencion', this)">🔧 Mantención</button>
+        <button class="btn-filtro" data-filtro="fuera_servicio" onclick="filtrarAlertas('fuera_servicio', this)">⚠️ Fuera Servicio</button>
+        <button class="btn-limpiar-filtros" onclick="limpiarFiltrosRapidos()">✖ Limpiar</button>
+        <span class="contador-filtro" id="contadorFiltro">Mostrando: todos</span>
     </div>
 
+    <!-- ====== BÚSQUEDA RÁPIDA (VERSÁTIL) ====== -->
     <div class="search-bar">
-        <input type="text" id="search" placeholder="🔍 Búsqueda rápida">
-        <small style="display:block; color:#666; margin-top:5px;">💡 Escribe para filtrar equipos</small>
+        <input type="text" id="search" placeholder="🔍 Buscar en toda la tabla... (Nro, Serie, Localidad, Responsable, etc.)">
+        <span class="search-hint">💡 Escribe cualquier texto para buscar en todas las columnas</span>
     </div>
 
+    <!-- ====== TABLA DE EQUIPOS ====== -->
     <div class="table-container">
         <div class="table-scroll-wrapper">
             <table id="tablaEquipos">
@@ -475,7 +622,8 @@
                         data-nro-certificado-termometro="{{ eq.nro_certificado_termometro or '' }}" 
                         data-fecha-contrastacion-termometro="{{ eq.fecha_contrastacion_termometro.strftime('%Y-%m-%d') if eq.fecha_contrastacion_termometro else '' }}" 
                         data-fecha-vencimiento-insumo="{{ eq.fecha_vencimiento_insumo.strftime('%Y-%m-%d') if eq.fecha_vencimiento_insumo else '' }}"
-                        data-estado="{{ eq.estado }}">
+                        data-estado="{{ eq.estado }}"
+                        data-alerta-clase="{{ alerta.clase }}">
                         <td><input type="checkbox" class="select-equipo" value="{{ eq.id }}"></td>
                         <td title="{{ eq.nro_int }}">{{ eq.nro_int }}</td>
                         <td title="{{ eq.nro_serie or '-' }}">{{ eq.nro_serie or '-' }}</td>
@@ -834,6 +982,7 @@
         let historialData = [];
         let historialFiltrado = [];
         let historialOrden = { columna: -1, ascendente: true };
+        let filtroActual = 'todos';
 
         // ========== PWA ==========
         if ('serviceWorker' in navigator) {
@@ -1297,7 +1446,7 @@
             }
         }
 
-        // ========== FILTROS Y ORDENAMIENTO ==========
+        // ========== ORDENAMIENTO ==========
         let sortDirection = {};
         function sortTable(n) {
             const table = document.getElementById('tablaEquipos');
@@ -1311,40 +1460,6 @@
                 return dir === 'asc' ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
             });
             rows.forEach(row => tbody.appendChild(row));
-        }
-
-        function aplicarFiltros() {
-            const nroInt = document.getElementById('filtro_nro_int').value.toLowerCase();
-            const nroSerie = document.getElementById('filtro_nro_serie').value.toLowerCase();
-            const area = document.getElementById('filtro_area').value;
-            const estado = document.getElementById('filtro_estado').value;
-            const localidad = document.getElementById('filtro_localidad').value.toLowerCase();
-            const tipo = document.getElementById('filtro_tipo').value;
-            const rows = document.querySelectorAll('#tablaEquipos tbody tr');
-            let visible = 0;
-            rows.forEach(row => {
-                const c = row.cells;
-                let ok = true;
-                if (nroInt && !c[1].innerText.toLowerCase().includes(nroInt)) ok = false;
-                if (nroSerie && !c[2].innerText.toLowerCase().includes(nroSerie)) ok = false;
-                if (area && c[3].innerText !== area) ok = false;
-                if (estado && !c[7].innerText.includes(estado)) ok = false;
-                if (localidad && !c[4].innerText.toLowerCase().includes(localidad)) ok = false;
-                if (tipo && c[6].innerText !== tipo) ok = false;
-                row.style.display = ok ? '' : 'none';
-                if (ok) visible++;
-            });
-            document.getElementById('contador').innerHTML = `📋 Mostrando ${visible} de ${rows.length} equipos`;
-        }
-
-        function limpiarFiltros() {
-            document.getElementById('filtro_nro_int').value = '';
-            document.getElementById('filtro_nro_serie').value = '';
-            document.getElementById('filtro_area').value = '';
-            document.getElementById('filtro_estado').value = '';
-            document.getElementById('filtro_localidad').value = '';
-            document.getElementById('filtro_tipo').value = '';
-            aplicarFiltros();
         }
 
         function toggleMenuExportar() {
@@ -1412,26 +1527,31 @@
                 .catch(e => console.error('Error al actualizar bloqueos:', e));
         }
 
-        document.getElementById('search').addEventListener('keyup', function() {
-            const term = this.value.toLowerCase();
-            const rows = document.querySelectorAll('#tablaEquipos tbody tr');
-            let visible = 0;
-            rows.forEach(row => {
-                const match = term === '' || row.innerText.toLowerCase().includes(term);
-                row.style.display = match ? '' : 'none';
-                if (match) visible++;
-            });
-            document.getElementById('contador').innerHTML = term === '' ? `📋 Total: ${rows.length} equipos` : `🔍 Mostrando ${visible} de ${rows.length} equipos`;
-        });
-
         // ========== FILTRO DE ALERTAS ==========
-        function filtrarAlertas(tipo) {
+        function filtrarAlertas(tipo, boton) {
+            filtroActual = tipo;
+            
+            // Actualizar botones activos
+            document.querySelectorAll('.btn-filtro').forEach(btn => {
+                btn.className = 'btn-filtro';
+            });
+            if (boton) {
+                boton.className = 'btn-filtro active-' + tipo;
+            } else {
+                document.querySelectorAll('.btn-filtro').forEach(btn => {
+                    if (btn.dataset.filtro === tipo) {
+                        btn.className = 'btn-filtro active-' + tipo;
+                    }
+                });
+            }
+            
             const rows = document.querySelectorAll('#tablaEquipos tbody tr');
             let contador = 0;
             
             rows.forEach(row => {
                 const alertaCell = row.querySelector('.alerta-cell');
                 const estadoCell = row.querySelector('.estado');
+                const alertaClase = row.dataset.alertaClase || '';
                 let mostrar = false;
                 
                 if (!alertaCell) {
@@ -1442,31 +1562,54 @@
                 const alertaTexto = alertaCell.textContent || '';
                 const estadoTexto = estadoCell ? estadoCell.textContent.trim() : '';
                 
+                // También considerar la búsqueda rápida
+                const searchTerm = document.getElementById('search').value.toLowerCase().trim();
+                const rowText = row.innerText.toLowerCase();
+                const coincideBusqueda = searchTerm === '' || rowText.includes(searchTerm);
+                
                 switch(tipo) {
                     case 'todos':
                         mostrar = true;
                         break;
                     case 'vencidos':
-                        mostrar = alertaTexto.includes('🔴') || alertaTexto.includes('VENCIDO') || alertaTexto.includes('VENCIDA');
+                        mostrar = alertaClase === 'alerta-vencido' || 
+                                 alertaTexto.includes('🔴') || 
+                                 alertaTexto.includes('VENCIDO') || 
+                                 alertaTexto.includes('VENCIDA');
                         break;
                     case 'proximos':
-                        mostrar = alertaTexto.includes('🟡') || alertaTexto.includes('VENCE') || alertaTexto.includes('Vence');
+                        mostrar = alertaClase === 'alerta-proximo' ||
+                                 alertaTexto.includes('🟡') || 
+                                 alertaTexto.includes('VENCE') || 
+                                 alertaTexto.includes('Vence');
                         break;
                     case 'ok':
-                        mostrar = alertaTexto.includes('✅') || alertaTexto === '➖' || alertaTexto === '';
+                        mostrar = alertaClase === 'alerta-ok' || 
+                                 alertaClase === '' || 
+                                 alertaTexto === '➖' || 
+                                 alertaTexto === '' || 
+                                 alertaTexto.includes('✅');
                         break;
                     case 'contrastacion':
-                        mostrar = alertaTexto.includes('📊') || estadoTexto === 'Contrastacion';
+                        mostrar = alertaClase === 'alerta-contrastacion' || 
+                                 estadoTexto === 'Contrastacion' ||
+                                 alertaTexto.includes('📊');
                         break;
                     case 'mantencion':
-                        mostrar = alertaTexto.includes('🔧') || estadoTexto === 'Mantencion';
+                        mostrar = alertaClase === 'alerta-mantencion' || 
+                                 estadoTexto === 'Mantencion' ||
+                                 alertaTexto.includes('🔧');
+                        break;
+                    case 'fuera_servicio':
+                        mostrar = estadoTexto === 'Fuera de Servicio';
                         break;
                     default:
                         mostrar = true;
                 }
                 
-                row.style.display = mostrar ? '' : 'none';
-                if (mostrar) contador++;
+                // Aplicar ambos filtros (alerta + búsqueda)
+                row.style.display = (mostrar && coincideBusqueda) ? '' : 'none';
+                if (mostrar && coincideBusqueda) contador++;
             });
             
             const nombres = {
@@ -1475,13 +1618,102 @@
                 'proximos': '🟡 próximos a vencer',
                 'ok': '🟢 OK',
                 'contrastacion': '📊 en contrastación',
-                'mantencion': '🔧 en mantención'
+                'mantencion': '🔧 en mantención',
+                'fuera_servicio': '⚠️ fuera de servicio'
             };
             document.getElementById('contadorFiltro').textContent = `Mostrando: ${contador} equipos (${nombres[tipo] || tipo})`;
         }
 
+        // ========== LIMPIAR FILTROS RÁPIDOS ==========
+        function limpiarFiltrosRapidos() {
+            // Resetear botones
+            document.querySelectorAll('.btn-filtro').forEach(btn => {
+                btn.className = 'btn-filtro';
+                if (btn.dataset.filtro === 'todos') {
+                    btn.className = 'btn-filtro active-todos';
+                }
+            });
+            
+            // Resetear búsqueda
+            document.getElementById('search').value = '';
+            
+            // Mostrar todos
+            const rows = document.querySelectorAll('#tablaEquipos tbody tr');
+            rows.forEach(row => row.style.display = '');
+            document.getElementById('contadorFiltro').textContent = `Mostrando: ${rows.length} equipos (todos)`;
+            document.getElementById('contador').innerHTML = `📋 Total: ${rows.length} equipos`;
+        }
+
+        // ========== BÚSQUEDA RÁPIDA ==========
+        document.getElementById('search').addEventListener('keyup', function() {
+            const term = this.value.toLowerCase().trim();
+            const rows = document.querySelectorAll('#tablaEquipos tbody tr');
+            let visible = 0;
+            
+            rows.forEach(row => {
+                // Primero verificar si pasa el filtro de alertas
+                const alertaCell = row.querySelector('.alerta-cell');
+                const estadoCell = row.querySelector('.estado');
+                const alertaClase = row.dataset.alertaClase || '';
+                const alertaTexto = alertaCell ? alertaCell.textContent || '' : '';
+                const estadoTexto = estadoCell ? estadoCell.textContent.trim() : '';
+                
+                let pasaFiltro = true;
+                switch(filtroActual) {
+                    case 'vencidos':
+                        pasaFiltro = alertaClase === 'alerta-vencido' || alertaTexto.includes('🔴') || alertaTexto.includes('VENCIDO') || alertaTexto.includes('VENCIDA');
+                        break;
+                    case 'proximos':
+                        pasaFiltro = alertaClase === 'alerta-proximo' || alertaTexto.includes('🟡') || alertaTexto.includes('VENCE') || alertaTexto.includes('Vence');
+                        break;
+                    case 'ok':
+                        pasaFiltro = alertaClase === 'alerta-ok' || alertaClase === '' || alertaTexto === '➖' || alertaTexto === '' || alertaTexto.includes('✅');
+                        break;
+                    case 'contrastacion':
+                        pasaFiltro = alertaClase === 'alerta-contrastacion' || estadoTexto === 'Contrastacion' || alertaTexto.includes('📊');
+                        break;
+                    case 'mantencion':
+                        pasaFiltro = alertaClase === 'alerta-mantencion' || estadoTexto === 'Mantencion' || alertaTexto.includes('🔧');
+                        break;
+                    case 'fuera_servicio':
+                        pasaFiltro = estadoTexto === 'Fuera de Servicio';
+                        break;
+                    default:
+                        pasaFiltro = true;
+                }
+                
+                const rowText = row.innerText.toLowerCase();
+                const coincideBusqueda = term === '' || rowText.includes(term);
+                
+                if (pasaFiltro && coincideBusqueda) {
+                    row.style.display = '';
+                    visible++;
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+            
+            const total = document.querySelectorAll('#tablaEquipos tbody tr').length;
+            document.getElementById('contador').innerHTML = term === '' ? 
+                `📋 Total: ${total} equipos` : 
+                `🔍 Mostrando ${visible} de ${total} equipos (búsqueda: "${term}")`;
+            
+            // Actualizar contador de filtros
+            const nombres = {
+                'todos': 'todos',
+                'vencidos': '🔴 vencidos',
+                'proximos': '🟡 próximos a vencer',
+                'ok': '🟢 OK',
+                'contrastacion': '📊 en contrastación',
+                'mantencion': '🔧 en mantención',
+                'fuera_servicio': '⚠️ fuera de servicio'
+            };
+            document.getElementById('contadorFiltro').textContent = `Mostrando: ${visible} equipos (${nombres[filtroActual] || filtroActual})`;
+        });
+
         document.addEventListener('DOMContentLoaded', function() {
-            document.getElementById('contador').innerHTML = `📋 Total: ${document.querySelectorAll('#tablaEquipos tbody tr').length} equipos`;
+            const totalRows = document.querySelectorAll('#tablaEquipos tbody tr').length;
+            document.getElementById('contador').innerHTML = `📋 Total: ${totalRows} equipos`;
             actualizarContadorExportar();
             document.querySelectorAll('.select-equipo').forEach(cb => cb.addEventListener('change', actualizarContadorExportar));
             document.getElementById('modalEditarEquipo').style.display = 'none';
@@ -1489,8 +1721,9 @@
             document.getElementById('modalObservacion').style.display = 'none';
             document.getElementById('menuExportar').style.display = 'none';
             
-            // Inicializar contador de filtro
-            document.getElementById('contadorFiltro').textContent = 'Mostrando: todos';
+            // Inicializar filtro "todos" activo
+            document.querySelector('.btn-filtro[data-filtro="todos"]').className = 'btn-filtro active-todos';
+            document.getElementById('contadorFiltro').textContent = `Mostrando: ${totalRows} equipos (todos)`;
         });
 
         window.onclick = function(e) {
@@ -1507,6 +1740,14 @@
                 cerrarModalEditar();
                 cerrarModalHistorial();
                 cerrarModalObservacion();
+                return;
+            }
+
+            // Ctrl+F o Cmd+F para enfocar la búsqueda
+            if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
+                e.preventDefault();
+                document.getElementById('search').focus();
+                document.getElementById('search').select();
                 return;
             }
 
