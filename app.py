@@ -438,12 +438,26 @@ def enviar_correo_alertas_general(vencidos, proximos, destinatarios):
     hoy = date.today()
     proximos_filtrados = []
     
+    print("=" * 60)
+    print("📧 ENVIANDO CORREO GENERAL")
+    print("=" * 60)
+    print(f"🔴 VENCIDOS RECIBIDOS: {len(vencidos)}")
+    for e in vencidos:
+        alerta = obtener_alerta(e)
+        print(f"   - {e.nro_int}: {alerta['texto']}")
+    
     for e in proximos:
         dias_restantes = obtener_dias_restantes(e)
         if dias_restantes is not None and dias_restantes <= 15:
             proximos_filtrados.append(e)
         elif dias_restantes is None:
             proximos_filtrados.append(e)
+    
+    print(f"🟡 PRÓXIMOS FILTRADOS: {len(proximos_filtrados)}")
+    for e in proximos_filtrados:
+        alerta = obtener_alerta(e)
+        print(f"   - {e.nro_int}: {alerta['texto']}")
+    print("=" * 60)
     
     if not vencidos and not proximos_filtrados:
         return False
@@ -465,7 +479,7 @@ def enviar_correo_alertas_general(vencidos, proximos, destinatarios):
 <p>Se detectaron equipos que requieren atención:</p>
 """
         if vencidos:
-            html += '<h3 style="color:#c62828;">⚠️ EQUIPOS VENCIDOS</h3>'
+            html += '<h3 style="color:#c62828;">🔴 EQUIPOS VENCIDOS</h3>'
             html += '<table border="1" cellpadding="8" style="border-collapse:collapse; width:100%;">'
             html += '<tr style="background:#1E88E5; color:white;"><th>Nro Int</th><th>Nro Serie</th><th>Equipo</th><th>Localidad</th><th>Responsable</th><th>Alerta</th></tr>'
             for e in vencidos:
@@ -474,7 +488,7 @@ def enviar_correo_alertas_general(vencidos, proximos, destinatarios):
             html += '</table><br>'
 
         if proximos_filtrados:
-            html += '<h3 style="color:#f57c00;">⚠️ EQUIPOS PRÓXIMOS A VENCER (15 días o menos)</h3>'
+            html += '<h3 style="color:#f57c00;">🟡 EQUIPOS PRÓXIMOS A VENCER (15 días o menos)</h3>'
             html += '<table border="1" cellpadding="8" style="border-collapse:collapse; width:100%;">'
             html += '<tr style="background:#1E88E5; color:white;"><th>Nro Int</th><th>Nro Serie</th><th>Equipo</th><th>Localidad</th><th>Responsable</th><th>Alerta</th></tr>'
             for e in proximos_filtrados:
@@ -520,7 +534,7 @@ def enviar_correo_alertas_responsable(email_responsable, nombre_responsable, ven
 <p>Estos son los equipos que tienes a tu cargo y requieren atención:</p>
 """
         if vencidos:
-            html += '<h3 style="color:#c62828;">⚠️ EQUIPOS VENCIDOS</h3>'
+            html += '<h3 style="color:#c62828;">🔴 EQUIPOS VENCIDOS</h3>'
             html += '<table border="1" cellpadding="8" style="border-collapse:collapse; width:100%;">'
             html += '<tr style="background:#1E88E5; color:white;"><th>Nro Int</th><th>Nro Serie</th><th>Equipo</th><th>Localidad</th><th>Alerta</th></tr>'
             for e in vencidos:
@@ -529,7 +543,7 @@ def enviar_correo_alertas_responsable(email_responsable, nombre_responsable, ven
             html += '</table><br>'
 
         if proximos:
-            html += '<h3 style="color:#f57c00;">⚠️ EQUIPOS PRÓXIMOS A VENCER</h3>'
+            html += '<h3 style="color:#f57c00;">🟡 EQUIPOS PRÓXIMOS A VENCER</h3>'
             html += '<table border="1" cellpadding="8" style="border-collapse:collapse; width:100%;">'
             html += '<tr style="background:#1E88E5; color:white;"><th>Nro Int</th><th>Nro Serie</th><th>Equipo</th><th>Localidad</th><th>Alerta</th></tr>'
             for e in proximos:
@@ -1252,39 +1266,150 @@ def grafico():
     grafico_url = base64.b64encode(img.getvalue()).decode()
     return render_template('grafico.html', grafico_url=grafico_url)
 
+# ============================================================
+# ========== FUNCIÓN ENVIAR_CORREO CORREGIDA ==========
+# ============================================================
 @app.route('/enviar_correo')
 @login_required
 def enviar_correo():
     if not EMAIL_CONFIG.get("activado", False):
         flash('📧 El envío de correos está desactivado.', 'warning')
         return redirect(url_for('dashboard'))
+    
     equipos = Equipo.query.all()
     vencidos = []
     proximos = []
     equipos_por_responsable = {}
+
+    print("\n" + "=" * 70)
+    print("📧 PROCESANDO ENVÍO DE CORREOS")
+    print("=" * 70)
+
+    for e in equipos:
+        # Saltar equipos en Contrastación o Mantención
+        if e.estado == 'Contrastacion':
+            continue
+        if e.estado == 'Mantencion':
+            continue
+        
+        alerta = obtener_alerta(e)
+        alerta_texto = alerta['texto'].upper()
+        
+        # ====== DETECTAR VENCIDOS ======
+        # Buscar cualquier indicador de vencido en el texto
+        es_vencido = (
+            'VENCIDO' in alerta_texto or 
+            'VENCIDA' in alerta_texto or
+            'VENCIMIENTO' in alerta_texto  # Por si acaso
+        )
+        
+        if es_vencido:
+            vencidos.append(e)
+            print(f"🔴 VENCIDO: {e.nro_int} | {e.tipo_equipo} | {alerta['texto']}")
+            if e.responsable:
+                if e.responsable not in equipos_por_responsable:
+                    equipos_por_responsable[e.responsable] = {'vencidos': [], 'proximos': []}
+                equipos_por_responsable[e.responsable]['vencidos'].append(e)
+        
+        # ====== DETECTAR PRÓXIMOS ======
+        elif 'VENCE' in alerta_texto:
+            dias_restantes = obtener_dias_restantes(e)
+            if dias_restantes is not None and dias_restantes <= 15:
+                proximos.append(e)
+                print(f"🟡 PRÓXIMO: {e.nro_int} | {e.tipo_equipo} | {alerta['texto']} ({dias_restantes} días)")
+                if e.responsable:
+                    if e.responsable not in equipos_por_responsable:
+                        equipos_por_responsable[e.responsable] = {'vencidos': [], 'proximos': []}
+                    equipos_por_responsable[e.responsable]['proximos'].append(e)
+            else:
+                print(f"⏭️  SALTADO (>{15}d): {e.nro_int} | {alerta['texto']} ({dias_restantes} días)")
+
+    print("-" * 70)
+    print(f"📊 RESULTADO: {len(vencidos)} vencidos, {len(proximos)} próximos")
+    print("=" * 70 + "\n")
+
+    config = ConfiguracionCorreo.query.first()
+    destinatarios_adicionales = []
+    if config and config.destinatarios:
+        try:
+            destinatarios_adicionales = json.loads(config.destinatarios)
+        except:
+            pass
+
+    # Enviar correo general
+    if (vencidos or proximos) and destinatarios_adicionales:
+        enviar_correo_alertas_general(vencidos, proximos, destinatarios_adicionales)
+
+    # Enviar correos por responsable
+    for nombre_responsable, equipos_dict in equipos_por_responsable.items():
+        responsable_db = Responsable.query.filter_by(nombre=nombre_responsable, activo=True).first()
+        if responsable_db and responsable_db.email:
+            enviar_correo_alertas_responsable(
+                responsable_db.email,
+                nombre_responsable,
+                equipos_dict['vencidos'],
+                equipos_dict['proximos']
+            )
+
+    flash(f'✅ Correos enviados. {len(vencidos)} vencidos, {len(proximos)} próximos.', 'success')
+    return redirect(url_for('dashboard'))
+
+# ============================================================
+# ========== ADMIN_CORREOS_PROBAR_ENVIO CORREGIDO ==========
+# ============================================================
+@app.route('/admin/correos/probar_envio')
+@login_required
+def admin_correos_probar_envio():
+    if not current_user.es_admin:
+        flash('No tienes permiso', 'error')
+        return redirect(url_for('dashboard'))
+    
+    equipos = Equipo.query.all()
+    vencidos = []
+    proximos = []
+    equipos_por_responsable = {}
+
+    print("\n" + "=" * 70)
+    print("📧 PROCESANDO ENVÍO DE CORREOS (PRUEBA)")
+    print("=" * 70)
 
     for e in equipos:
         if e.estado == 'Contrastacion':
             continue
         if e.estado == 'Mantencion':
             continue
+        
         alerta = obtener_alerta(e)
         alerta_texto = alerta['texto'].upper()
-        if 'VENCIDO' in alerta_texto or 'VENCIDA' in alerta_texto:
+        
+        # ====== DETECTAR VENCIDOS ======
+        es_vencido = (
+            'VENCIDO' in alerta_texto or 
+            'VENCIDA' in alerta_texto or
+            'VENCIMIENTO' in alerta_texto
+        )
+        
+        if es_vencido:
             vencidos.append(e)
+            print(f"🔴 VENCIDO: {e.nro_int} | {alerta['texto']}")
             if e.responsable:
                 if e.responsable not in equipos_por_responsable:
                     equipos_por_responsable[e.responsable] = {'vencidos': [], 'proximos': []}
                 equipos_por_responsable[e.responsable]['vencidos'].append(e)
+        
         elif 'VENCE' in alerta_texto:
-            # ====== FILTRO CRÍTICO: Solo agregar si vence en 15 días o menos ======
             dias_restantes = obtener_dias_restantes(e)
             if dias_restantes is not None and dias_restantes <= 15:
                 proximos.append(e)
+                print(f"🟡 PRÓXIMO: {e.nro_int} | {alerta['texto']} ({dias_restantes} días)")
                 if e.responsable:
                     if e.responsable not in equipos_por_responsable:
                         equipos_por_responsable[e.responsable] = {'vencidos': [], 'proximos': []}
                     equipos_por_responsable[e.responsable]['proximos'].append(e)
+
+    print("-" * 70)
+    print(f"📊 RESULTADO: {len(vencidos)} vencidos, {len(proximos)} próximos")
+    print("=" * 70 + "\n")
 
     config = ConfiguracionCorreo.query.first()
     destinatarios_adicionales = []
@@ -1307,8 +1432,87 @@ def enviar_correo():
                 equipos_dict['proximos']
             )
 
-    flash(f'✅ Correos enviados. {len(vencidos)} vencidos, {len(proximos)} próximos.', 'success')
-    return redirect(url_for('dashboard'))
+    flash('✅ Correo de prueba enviado correctamente', 'success')
+    return redirect(url_for('admin_correos'))
+
+# ============================================================
+# ========== ENVIAR_ALERTAS_AUTOMATICO CORREGIDO ==========
+# ============================================================
+def enviar_alertas_automatico():
+    equipos = Equipo.query.all()
+    vencidos = []
+    proximos = []
+    equipos_por_responsable = {}
+
+    print("\n" + "=" * 70)
+    print("🤖 ENVIANDO ALERTAS AUTOMÁTICAS")
+    print("=" * 70)
+
+    for e in equipos:
+        if e.estado == 'Contrastacion':
+            continue
+        if e.estado == 'Mantencion':
+            continue
+        
+        alerta = obtener_alerta(e)
+        alerta_texto = alerta['texto'].upper()
+        
+        es_vencido = (
+            'VENCIDO' in alerta_texto or 
+            'VENCIDA' in alerta_texto or
+            'VENCIMIENTO' in alerta_texto
+        )
+        
+        if es_vencido:
+            vencidos.append(e)
+            print(f"🔴 VENCIDO: {e.nro_int} | {alerta['texto']}")
+            if e.responsable:
+                if e.responsable not in equipos_por_responsable:
+                    equipos_por_responsable[e.responsable] = {'vencidos': [], 'proximos': []}
+                equipos_por_responsable[e.responsable]['vencidos'].append(e)
+        
+        elif 'VENCE' in alerta_texto:
+            dias_restantes = obtener_dias_restantes(e)
+            if dias_restantes is not None and dias_restantes <= 15:
+                proximos.append(e)
+                print(f"🟡 PRÓXIMO: {e.nro_int} | {alerta['texto']} ({dias_restantes} días)")
+                if e.responsable:
+                    if e.responsable not in equipos_por_responsable:
+                        equipos_por_responsable[e.responsable] = {'vencidos': [], 'proximos': []}
+                    equipos_por_responsable[e.responsable]['proximos'].append(e)
+
+    print("-" * 70)
+    print(f"📊 RESULTADO: {len(vencidos)} vencidos, {len(proximos)} próximos")
+    print("=" * 70 + "\n")
+
+    config = ConfiguracionCorreo.query.first()
+    destinatarios_adicionales = []
+    if config and config.destinatarios:
+        try:
+            destinatarios_adicionales = json.loads(config.destinatarios)
+        except:
+            pass
+
+    if (vencidos or proximos) and destinatarios_adicionales:
+        enviar_correo_alertas_general(vencidos, proximos, destinatarios_adicionales)
+
+    for nombre_responsable, equipos_dict in equipos_por_responsable.items():
+        responsable_db = Responsable.query.filter_by(nombre=nombre_responsable, activo=True).first()
+        if responsable_db and responsable_db.email:
+            enviar_correo_alertas_responsable(
+                responsable_db.email,
+                nombre_responsable,
+                equipos_dict['vencidos'],
+                equipos_dict['proximos']
+            )
+
+    if config:
+        config.ultimo_envio = get_chile_time()
+        db.session.commit()
+
+# ============================================================
+# ========== RESTO DE RUTAS (Backups, etc.) ==========
+# ============================================================
 
 @app.route('/exportar_pdf_alertas')
 @login_required
@@ -1678,64 +1882,6 @@ def admin_correos_eliminar_destinatario(email):
             config.destinatarios = json.dumps(destinatarios)
             db.session.commit()
             flash(f'✅ Correo {email} eliminado correctamente', 'success')
-    return redirect(url_for('admin_correos'))
-
-@app.route('/admin/correos/probar_envio')
-@login_required
-def admin_correos_probar_envio():
-    if not current_user.es_admin:
-        flash('No tienes permiso', 'error')
-        return redirect(url_for('dashboard'))
-    equipos = Equipo.query.all()
-    vencidos = []
-    proximos = []
-    equipos_por_responsable = {}
-
-    for e in equipos:
-        if e.estado == 'Contrastacion':
-            continue
-        if e.estado == 'Mantencion':
-            continue
-        alerta = obtener_alerta(e)
-        alerta_texto = alerta['texto'].upper()
-        if 'VENCIDO' in alerta_texto or 'VENCIDA' in alerta_texto:
-            vencidos.append(e)
-            if e.responsable:
-                if e.responsable not in equipos_por_responsable:
-                    equipos_por_responsable[e.responsable] = {'vencidos': [], 'proximos': []}
-                equipos_por_responsable[e.responsable]['vencidos'].append(e)
-        elif 'VENCE' in alerta_texto:
-            # ====== FILTRO CRÍTICO: Solo agregar si vence en 15 días o menos ======
-            dias_restantes = obtener_dias_restantes(e)
-            if dias_restantes is not None and dias_restantes <= 15:
-                proximos.append(e)
-                if e.responsable:
-                    if e.responsable not in equipos_por_responsable:
-                        equipos_por_responsable[e.responsable] = {'vencidos': [], 'proximos': []}
-                    equipos_por_responsable[e.responsable]['proximos'].append(e)
-
-    config = ConfiguracionCorreo.query.first()
-    destinatarios_adicionales = []
-    if config and config.destinatarios:
-        try:
-            destinatarios_adicionales = json.loads(config.destinatarios)
-        except:
-            pass
-
-    if (vencidos or proximos) and destinatarios_adicionales:
-        enviar_correo_alertas_general(vencidos, proximos, destinatarios_adicionales)
-
-    for nombre_responsable, equipos_dict in equipos_por_responsable.items():
-        responsable_db = Responsable.query.filter_by(nombre=nombre_responsable, activo=True).first()
-        if responsable_db and responsable_db.email:
-            enviar_correo_alertas_responsable(
-                responsable_db.email,
-                nombre_responsable,
-                equipos_dict['vencidos'],
-                equipos_dict['proximos']
-            )
-
-    flash('✅ Correo de prueba enviado correctamente', 'success')
     return redirect(url_for('admin_correos'))
 
 # ========== ADMINISTRACIÓN DE RESPONSABLES ==========
@@ -2428,60 +2574,6 @@ def verificar_y_enviar_alertas():
         elif config.frecuencia == 'mensual':
             if ahora.day == 1:
                 enviar_alertas_automatico()
-
-def enviar_alertas_automatico():
-    equipos = Equipo.query.all()
-    vencidos = []
-    proximos = []
-    equipos_por_responsable = {}
-
-    for e in equipos:
-        if e.estado == 'Contrastacion':
-            continue
-        if e.estado == 'Mantencion':
-            continue
-        alerta = obtener_alerta(e)
-        alerta_texto = alerta['texto'].upper()
-        if 'VENCIDO' in alerta_texto or 'VENCIDA' in alerta_texto:
-            vencidos.append(e)
-            if e.responsable:
-                if e.responsable not in equipos_por_responsable:
-                    equipos_por_responsable[e.responsable] = {'vencidos': [], 'proximos': []}
-                equipos_por_responsable[e.responsable]['vencidos'].append(e)
-        elif 'VENCE' in alerta_texto:
-            # ====== FILTRO CRÍTICO: Solo agregar si vence en 15 días o menos ======
-            dias_restantes = obtener_dias_restantes(e)
-            if dias_restantes is not None and dias_restantes <= 15:
-                proximos.append(e)
-                if e.responsable:
-                    if e.responsable not in equipos_por_responsable:
-                        equipos_por_responsable[e.responsable] = {'vencidos': [], 'proximos': []}
-                    equipos_por_responsable[e.responsable]['proximos'].append(e)
-
-    config = ConfiguracionCorreo.query.first()
-    destinatarios_adicionales = []
-    if config and config.destinatarios:
-        try:
-            destinatarios_adicionales = json.loads(config.destinatarios)
-        except:
-            pass
-
-    if (vencidos or proximos) and destinatarios_adicionales:
-        enviar_correo_alertas_general(vencidos, proximos, destinatarios_adicionales)
-
-    for nombre_responsable, equipos_dict in equipos_por_responsable.items():
-        responsable_db = Responsable.query.filter_by(nombre=nombre_responsable, activo=True).first()
-        if responsable_db and responsable_db.email:
-            enviar_correo_alertas_responsable(
-                responsable_db.email,
-                nombre_responsable,
-                equipos_dict['vencidos'],
-                equipos_dict['proximos']
-            )
-
-    if config:
-        config.ultimo_envio = get_chile_time()
-        db.session.commit()
 
 @app.route('/api/verificar_bloqueos')
 @login_required
